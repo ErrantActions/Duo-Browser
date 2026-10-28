@@ -1,0 +1,64 @@
+name: TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_upload:
+        description: Upload Duo Browser to App Store Connect for owner-only TestFlight
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: vars.ENABLE_TESTFLIGHT == 'true' && inputs.confirm_upload && github.ref == 'refs/heads/main'
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check JavaScript SDK and project
+        run: |
+          node --test Tests/duo-sdk.test.cjs Tests/workflow-safety.test.cjs Tests/demo-privacy.test.cjs
+          node Tests/validate-project.cjs
+      - name: Test native browser before signing
+        run: bash .github/scripts/test-ios.sh
+      - name: Save native test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: testflight-verification
+          retention-days: 3
+          path: TestResults.xcresult
+          if-no-files-found: ignore
+
+  upload:
+    needs: verify
+    runs-on: xcode-27
+    environment: app-store
+    timeout-minutes: 45
+    env:
+      APP_BUNDLE_ID: ${{ vars.APP_BUNDLE_ID }}
+      APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Archive, sign, and upload beta
+        env:
+          DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.DISTRIBUTION_CERTIFICATE_BASE64 }}
+          DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: bash .github/scripts/testflight.sh

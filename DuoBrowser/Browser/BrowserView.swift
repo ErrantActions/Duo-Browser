@@ -1,0 +1,242 @@
+import SwiftUI
+
+enum BrowserSheet: String, Identifiable {
+    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs
+    var id: String { rawValue }
+}
+
+struct BrowserView: View {
+    @StateObject private var library: BrowserLibrary
+    @StateObject private var manager: BrowserTabManager
+    @State private var sheet: BrowserSheet?
+    @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        let library = BrowserLibrary()
+        _library = StateObject(wrappedValue: library)
+        _manager = StateObject(wrappedValue: BrowserTabManager(library: library))
+    }
+
+    var body: some View {
+        Group {
+            if let tab = manager.selectedTab {
+                BrowserTabView(model: tab, manager: manager, present: present)
+                    .id(tab.id)
+            } else {
+                ProgressView(manager.isClearingData ? "Clearing Browsing Data" : "Opening Browser")
+            }
+        }
+        .preferredColorScheme(colorScheme)
+        .sheet(item: $sheet, onDismiss: { manager.selectedTab?.isActive = true }) { selection in
+            NavigationStack {
+                sheetContent(selection)
+                    .toolbar {
+                        if selection != .tabs && selection != .bookmark {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { sheet = nil }
+                                    .disabled(manager.isClearingData)
+                            }
+                        }
+                    }
+            }
+            .interactiveDismissDisabled(manager.isClearingData)
+            .alert("Duo Browser", isPresented: statusAlert(inSheet: true)) {
+                Button("OK", action: clearStatus)
+            } message: {
+                Text(statusMessage)
+            }
+        }
+        .alert("Duo Browser", isPresented: statusAlert(inSheet: false)) {
+            Button("OK", action: clearStatus)
+        } message: {
+            Text(statusMessage)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active, sheet == nil {
+                manager.selectedTab?.isActive = true
+            } else if phase == .background {
+                manager.selectedTab?.deactivate()
+                manager.saveSession()
+            }
+        }
+        .onChange(of: manager.selectedID) { _, _ in
+            if sheet != nil { manager.selectedTab?.deactivate() }
+        }
+    }
+
+    @ViewBuilder
+    private func sheetContent(_ selection: BrowserSheet) -> some View {
+        switch selection {
+        case .tabs:
+            TabOverviewView(
+                manager: manager, done: { sheet = nil },
+                showRecentlyClosed: { sheet = .recentlyClosedTabs }
+            )
+        case .bookmarks: BookmarksView(library: library, open: open, openInNewTab: openInNewTab)
+        case .history: HistoryView(library: library, open: open, openInNewTab: openInNewTab)
+        case .readingList: ReadingListView(library: library, open: open, openInNewTab: openInNewTab)
+        case .recentlyClosedTabs: RecentlyClosedTabsView(manager: manager) { sheet = nil }
+        case .downloads: DownloadsView(manager: manager.downloads)
+        case .settings: BrowserSettingsView(library: library, manager: manager)
+        case .permissions: SitePermissionsView(library: library, manager: manager)
+        case .bookmark:
+            if let tab = manager.selectedTab, let url = tab.shareURL {
+                BookmarkEditor(
+                    library: library,
+                    bookmark: Bookmark(title: tab.pageTitle, url: url)
+                ) { sheet = nil }
+            }
+        }
+    }
+
+    private var colorScheme: ColorScheme? {
+        switch library.settings.appearance {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+
+    private func present(_ selection: BrowserSheet) {
+        manager.selectedTab?.deactivate()
+        sheet = selection
+    }
+
+    private func open(_ url: URL) {
+        sheet = nil
+        manager.selectedTab?.isActive = true
+        manager.selectedTab?.load(url)
+    }
+
+    private func openInNewTab(_ url: URL) {
+        let isPrivate = manager.selectedTab?.isPrivate ?? false
+        guard let tab = manager.addTab(url: url, isPrivate: isPrivate) else { return }
+        sheet = nil
+        tab.isActive = true
+    }
+
+    private var statusMessage: String { library.storageError ?? manager.notice ?? "" }
+
+    private func statusAlert(inSheet: Bool) -> Binding<Bool> {
+        Binding(
+            get: { (sheet != nil) == inSheet && (library.storageError != nil || manager.notice != nil) },
+            set: { if !$0 { clearStatus() } }
+        )
+    }
+
+    private func clearStatus() {
+        library.storageError = nil
+        manager.notice = nil
+    }
+}
+
+private struct BrowserTabView: View {
+    @ObservedObject var model: BrowserViewModel
+    @ObservedObject var manager: BrowserTabManager
+    let present: (BrowserSheet) -> Void
+    @State private var sharedPage: SharedPage?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                WebViewContainer(webView: model.webView)
+                    .accessibilityHidden(model.showingStartPage || model.navigationError != nil)
+                    .allowsHitTesting(!model.showingStartPage && model.navigationError == nil)
+                if model.showingStartPage {
+                    startPage
+                } else if let error = model.navigationError {
+                    BrowserErrorView(error: error, retry: model.reload, goHome: model.goToStartPage)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack(spacing: 4) {
+                if model.isPrivate {
+                    Label("Private Browsing", systemImage: "hand.raised.fill")
+                        .font(.caption.bold())
+                }
+                if model.isLoading && !model.showingStartPage {
+                    ProgressView(value: model.estimatedProgress)
+                        .accessibilityLabel("Page loading progress")
+                }
+                BrowserAddressBar(model: model)
+                if model.bridge.panel != nil, !model.bridge.browserControlsVisible {
+                    DuoPanelView(bridge: model.bridge)
+                } else {
+                    BrowserToolbar(
+                        model: model,
+                        manager: manager,
+                        share: {
+                            if let url = model.shareURL {
+                                model.deactivate()
+                                sharedPage = SharedPage(url: url)
+                            }
+                        },
+                        present: present
+                    )
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+            .background(.bar)
+        }
+        .sheet(item: $sharedPage, onDismiss: { model.isActive = true }) { ShareSheet(url: $0.url) }
+        .sheet(item: $model.pageDialog, onDismiss: model.cancelPageDialog) { dialog in
+            PageDialogView(dialog: dialog, complete: model.completePageDialog)
+                .interactiveDismissDisabled()
+        }
+        .fullScreenCover(item: Binding(
+            get: { model.bridge.scannerRequest },
+            set: { model.bridge.scannerRequest = $0 }
+        )) { request in
+            ScannerView { model.bridge.completeScanner($0, request: request) }
+                .interactiveDismissDisabled()
+        }
+        .confirmationDialog(
+            "Website Permission",
+            isPresented: Binding(
+                get: { model.bridge.permissionRequest != nil },
+                set: { if !$0 { model.bridge.decidePermission(false) } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Allow for This Site") { model.bridge.decidePermission(true) }
+            Button("Deny for This Site", role: .destructive) { model.bridge.decidePermission(false) }
+        } message: {
+            if let request = model.bridge.permissionRequest {
+                Text("\(request.origin) requests \(request.capability.rawValue). \(request.capability == .scanner ? "Scanning opens the camera only after you activate a native control." : "This site can display native controls in the Duo Panel.") You can revoke access in Duo Site Permissions.")
+            }
+        }
+        .alert(item: $model.alert) { alert in
+            switch alert.content {
+            case .notice(let message):
+                return Alert(title: Text("Duo Browser"), message: Text(message))
+            case .openExternal(let url):
+                return Alert(
+                    title: Text("Open another app?"),
+                    message: Text("This link uses \(url.scheme ?? "an external app"). Only continue if you trust the website."),
+                    primaryButton: .default(Text("Open")) { model.openExternal(url) },
+                    secondaryButton: .cancel()
+                )
+            }
+        }
+        .onChange(of: model.bridge.errorMessage) { _, message in
+            if let message {
+                model.showNotice(message)
+                model.bridge.errorMessage = nil
+            }
+        }
+    }
+
+    private var startPage: some View {
+        BrowserStartPageView(
+            library: model.library, isPrivate: model.isPrivate,
+            open: model.load,
+            openInNewTab: { url in manager.addTab(url: url, isPrivate: model.isPrivate) },
+            showBookmarks: { present(.bookmarks) },
+            showHistory: { present(.history) },
+            showReadingList: { present(.readingList) },
+            openDemo: model.loadDemo,
+            openSettings: { present(.settings) }
+        )
+    }
+}

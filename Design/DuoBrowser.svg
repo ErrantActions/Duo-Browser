@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="background" x2=".8" y2="1">
+      <stop stop-color="#153650"/>
+      <stop offset="1" stop-color="#061421"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#2aa9a5" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#2aa9a5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ground">
+      <stop stop-color="#020c18" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#020c18" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="silhouette" x2=".5" y2="1">
+      <stop stop-color="#d5fff1"/>
+      <stop offset=".5" stop-color="#89e1d8"/>
+      <stop offset="1" stop-color="#4ea4b7"/>
+    </linearGradient>
+    <linearGradient id="face" x2=".8" y2="1">
+      <stop stop-color="#83f4d8"/>
+      <stop offset="1" stop-color="#1aa3ba"/>
+    </linearGradient>
+    <linearGradient id="display" x2="1" y2="0">
+      <stop stop-color="#0b2d42"/>
+      <stop offset=".46" stop-color="#082739"/>
+      <stop offset=".5" stop-color="#061f30"/>
+      <stop offset=".56" stop-color="#0b2e43"/>
+      <stop offset="1" stop-color="#10374c"/>
+    </linearGradient>
+    <linearGradient id="crease" x2="1" y2="0">
+      <stop stop-color="#02131f" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#02131f" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#02131f" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="screen">
+      <path d="M260 204L500 218Q512 219 524 218L741 206C766 204 784 222 784 250V758C784 782 770 798 748 793L524 741Q512 738 500 741L262 814C240 820 228 803 228 780V236C228 214 242 202 260 204Z"/>
+    </clipPath>
+  </defs>
+  <path fill="url(#background)" d="M0 0h1024v1024H0z"/>
+  <ellipse cx="512" cy="514" rx="420" ry="420" fill="url(#glow)"/>
+  <ellipse cx="512" cy="831" rx="350" ry="52" fill="url(#ground)"/>
+  <path d="M258 188L500 202Q512 203 524 202L742 190C778 188 800 210 800 250V760C800 793 782 815 754 810L524 757Q512 754 500 757L266 830C234 838 212 815 212 782V234C212 202 232 186 258 188Z" fill="url(#silhouette)"/>
+  <g clip-path="url(#screen)">
+    <path d="M228 202H784V820H228Z" fill="url(#display)"/>
+    <g id="compass" transform="translate(512 506)">
+      <circle id="compass-dial" r="216" fill="url(#face)"/>
+      <circle r="194" fill="#103b54" stroke="#dcfff2" stroke-width="5"/>
+      <g stroke="#c6f9ee" stroke-width="8" stroke-linecap="round">
+        <path d="M0-174v-12"/>
+        <path d="M0-174v-12" transform="rotate(45)"/>
+        <path d="M0-174v-12" transform="rotate(90)"/>
+        <path d="M0-174v-12" transform="rotate(135)"/>
+        <path d="M0-174v-12" transform="rotate(180)"/>
+        <path d="M0-174v-12" transform="rotate(225)"/>
+        <path d="M0-174v-12" transform="rotate(270)"/>
+        <path d="M0-174v-12" transform="rotate(315)"/>
+      </g>
+      <path d="M82-142L20 12L-82 142L-20-12Z" fill="#f3fff2"/>
+      <path d="M82-142L20 12L0 0Z" fill="#d0ff86"/>
+      <path d="M-82 142L-20-12L0 0Z" fill="#48c8c0"/>
+      <circle r="17" fill="#103b54" stroke="#f3fff2" stroke-width="6"/>
+    </g>
+    <path d="M484 217H540V745Q512 737 484 746Z" fill="url(#crease)"/>
+    <circle cx="650" cy="237" r="6" fill="#020e1c"/>
+  </g>
+</svg>

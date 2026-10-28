@@ -1,0 +1,62 @@
+name: Duo Browser iOS
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: JavaScript SDK tests
+        run: |
+          node --test Tests/duo-sdk.test.cjs Tests/workflow-safety.test.cjs Tests/demo-privacy.test.cjs
+          node Tests/validate-project.cjs
+      - name: Select an available iPhone simulator
+        run: |
+          xcodebuild -version
+          DEVICE_ID=$(xcrun simctl list devices available --json | python3 -c 'import json,sys; devices=json.load(sys.stdin)["devices"]; print(next(d["udid"] for runtime,items in devices.items() if "iOS" in runtime for d in items if d["name"].startswith("iPhone") and d["isAvailable"]))')
+          echo "DEVICE_ID=$DEVICE_ID" >> "$GITHUB_ENV"
+      - name: Boot iPhone simulator
+        timeout-minutes: 10
+        run: xcrun simctl bootstatus "$DEVICE_ID" -b
+      - name: Build and test for iPhone
+        run: |
+          set -o pipefail
+          xcodebuild -project DuoBrowser.xcodeproj -scheme DuoBrowser \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+            -parallel-testing-enabled NO \
+            -test-timeouts-enabled YES \
+            -default-test-execution-time-allowance 120 \
+            -maximum-test-execution-time-allowance 180 \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO test
+      - name: Export simulator screenshots and attachments
+        if: always()
+        run: |
+          if [ -d TestResults.xcresult ]; then
+            xcrun xcresulttool export attachments \
+              --path TestResults.xcresult --output-path TestAttachments
+          fi
+      - name: Save simulator test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ios-test-results
+          retention-days: 3
+          path: |
+            TestResults.xcresult
+            TestAttachments
+          if-no-files-found: ignore

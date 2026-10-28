@@ -1,0 +1,35 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Duo: Configure TestFlight signing secrets",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"RemoteSigned",
+				"-File",
+				"${workspaceFolder}\\Tools\\Set-TestFlightSecrets.ps1",
+				"-CertificatePath",
+				"${input:duoCertificatePath}",
+				"-ApiKeyPath",
+				"${input:duoApiKeyPath}"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "duoCertificatePath",
+			"type": "promptString",
+			"description": "Local path to your existing encrypted Apple Distribution .p12 file"
+		},
+		{
+			"id": "duoApiKeyPath",
+			"type": "promptString",
+			"description": "Local path to your existing App Store Connect team API .p8 file"
+		}
+	]
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>DuoKit Demo</title>
+    <link rel="stylesheet" href="demo.css">
+    <script defer src="demo.js"></script>
+</head>
+<body>
+    <main>
+        <h1>DuoKit Demo</h1>
+        <p id="availability" role="status">Detecting Duo Browser…</p>
+        <p>Duo Controls appear in the native Duo Panel. Your webpage stays visible.
+            Use <strong>Browser</strong> in the panel to return to standard navigation.</p>
+        <section aria-labelledby="panel-heading">
+            <h2 id="panel-heading">Panel lifecycle</h2>
+            <button id="install">Install Duo Panel</button>
+            <button id="update">Update Duo Controls</button>
+            <button id="clear">Clear Duo Panel</button>
+        </section>
+        <section id="fallback" aria-labelledby="fallback-heading">
+            <h2 id="fallback-heading">HTML fallback controls</h2>
+            <p>These controls also work outside Duo Browser. Native scanning requires
+                an approved origin and a fresh tap on the native Scan control.</p>
+            <button id="html-reserve">Reserve</button>
+            <label><input id="html-toggle" type="checkbox"> Urgent</label>
+            <label>Quantity
+                <select id="html-quantity">
+                    <option value="one">One</option>
+                    <option value="two">Two</option>
+                    <option value="three">Three</option>
+                </select>
+            </label>
+        </section>
+        <section>
+            <h2>Browser checks</h2>
+            <a href="https://example.com">Open example.com</a>
+            <a href="https://www.apple.com" target="_blank" rel="noopener">Open Apple in a new tab</a>
+            <label>Text input <input placeholder="Type here to check keyboard behavior"></label>
+            <button id="alert">JavaScript alert</button>
+            <button id="confirm">JavaScript confirmation</button>
+            <button id="prompt">JavaScript prompt</button>
+        </section>
+        <section>
+            <h2>Event log</h2>
+            <p>Scan results stay on this local page; this demo makes no network requests.</p>
+            <button id="clear-log">Clear Log</button>
+            <pre id="log" role="log" aria-live="polite"></pre>
+        </section>
+    </main>
+</body>
+</html>

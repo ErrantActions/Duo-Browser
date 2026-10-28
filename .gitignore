@@ -1,0 +1,82 @@
+# macOS local metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Xcode and Swift build products
+DerivedData/
+[Bb]uild/
+.build/
+*.xcarchive/
+*.ipa
+*.dSYM/
+*.dSYM.zip
+*.hmap
+*.profdata
+*.profraw
+*.xctestrun
+*.xcresult
+
+# Xcode personal state; shared projects, schemes, and lockfiles stay eligible
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+*.moved-aside
+
+# Local copies of generated CI results
+/TestAttachments/
+/ios-test-results/
+/testflight-verification/
+
+# Signing material, private keys, and certificate exports
+*.p8
+*.p12
+*.pfx
+*.pem
+*.key
+*.cer
+*.crt
+*.csr
+*.der
+*.mobileprovision
+*.provisionprofile
+*.keystore
+*.jks
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+/Signing/
+/signing/
+/.signing/
+/secrets/
+/.secrets/
+
+# Local credentials; reviewed placeholder templates stay eligible
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.netrc
+.npmrc.local
+.swiftpm/security/
+
+# VS Code personal state; retain intentional shared configuration
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+.history/
+
+# Logs, editor recovery, and temporary files
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
