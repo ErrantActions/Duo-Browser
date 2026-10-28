@@ -22,12 +22,13 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   The macOS [CI workflow](.github/workflows/ios.yml) builds and runs simulator
   tests after publication. This repository starts from a cleaned source snapshot
   with one initial commit, not a fork or a copy of prior Git history.
-  See its Actions tab for current build and test results; historical results
-  from other repositories are not proof that this snapshot passes.
-- This public repository was created on October 28, 2026. Unsigned simulator CI uses
-  the standard `macos-15` GitHub-hosted runner, which is free for public
-  repositories. Larger runners can still be billed. Public test artifacts
-  expire after three days; build/test secrets are not supplied to this workflow.
+  Existing native validation passed 61 unit tests and the panel/tab-grid UI cases.
+  Two HTTPS UI cases had an external page-heading assumption; corrected assertions
+  and the newest workflow still require a native run.
+- Both workflows are **manual only**, using the documented standard `xcode-27`
+  public runner with Xcode 27.1/iOS 27.1 selected explicitly. Standard public
+  compute is free; larger runners can be billed and are not selected here.
+  Optional artifacts contain sanitized test counts only and expire after one day.
 - The existing App Store Connect listing is **DuoKit**, with **Duo Browser** as
   the installed app name. TestFlight is disabled in this new repository until
   signing secrets are configured privately and the owner explicitly resumes
@@ -61,12 +62,25 @@ xcodebuild -project DuoBrowser.xcodeproj -scheme DuoBrowser \
   CODE_SIGNING_ALLOWED=NO test
 ```
 
-Cross-platform checks (Node.js 18+, no package installation):
+Cross-platform checks (Node.js 22+ and Python 3.11+, no third-party packages):
 
 ```sh
-node --test Tests/duo-sdk.test.cjs Tests/workflow-safety.test.cjs Tests/demo-privacy.test.cjs
+node --test Tests/*.test.cjs
+python -m unittest discover -s Tests -p "test_*.py"
 node Tests/validate-project.cjs
 ```
+
+Manual GitHub simulator validation:
+
+```sh
+gh workflow run ios.yml --repo ErrantActions/Duo-Browser --ref main \
+  -f confirm_run=true -f save_summary=false
+```
+
+For a release candidate, use the protected TestFlight workflow instead of
+duplicating a separate native validation run. Its signing preflight checks
+credentials/profile/entitlements and selects a build number above Apple's
+existing uploads before compilation. See [secure TestFlight steps](Documentation/TESTFLIGHT.md).
 
 ## Using the browser
 
@@ -201,21 +215,22 @@ exact-origin permission persistence, rate limiting, and the JS SDK.
 Additional regression tests cover saving still-loading restored tabs,
 late callbacks to closed tabs, serialized data clearing, download filename byte
 limits, interrupted-file cleanup, deletion containment, and private download
-record exclusions. These newer Swift tests have not yet been executed on an
-Apple toolchain; the earlier 28-test result does not verify these changes.
+record exclusions.
 Further tests cover old saved-data decoding, favorites/folder filtering, write
 rollback, Reading List state, calendar-day grouping across daylight-saving
 changes, recently closed/private exclusions, bulk tab closing, page zoom, and
-Quick Look data-source wiring. These tests are also pending native execution.
+Quick Look data-source wiring. The existing native run passed all 61 unit tests.
 The UI tests cover demo permission, event delivery, panel clearing,
 tab creation/closing, regular/private grid switching, selection preservation,
 an ordinary HTTPS address, and back/forward navigation.
-The new grid and lifecycle tests still require a simulator run.
-There is also a native UI case for saving and opening a start-page favorite;
-it has not yet been executed.
+The existing run passed the panel/tab-grid UI cases. Its favorite and HTTPS
+cases failed an external page-heading assumption; the corrected assertions
+still need an approved native rerun. No all-green native suite is claimed.
 CI boots one simulator explicitly and runs the native suites sequentially.
-Its `ios-test-results` artifact includes the result bundle and exported
-screenshots, so the native interface can also be inspected from Windows.
+Optional artifacts contain whitelisted test counts only; raw result bundles,
+screenshots, and signing files are not uploaded. The new release contracts have
+19 passing Node tests and 3 passing Python tests locally. Actual profile/API/
+archive validation still requires privately configured secrets and an approved job.
 Do not equate project syntax checks or SDK tests with
 successful iOS compilation or runtime acceptance.
 

@@ -1,65 +1,103 @@
-# Duo Browser: protected TestFlight publishing
+# Duo Browser: secure manual builds and TestFlight
 
-The installed app is **Duo Browser**. Its existing App Store Connect listing is
-**DuoKit**. This document describes owner-only beta distribution, not public
-App Store submission.
+The app remains **Duo Browser**, with the existing **DuoKit** App Store Connect
+listing. This project uses its checked-in `DuoBrowser.xcodeproj` and
+`DuoBrowser` scheme, not another app's generator, SDK integration, or identity.
+The source snapshot began with a fresh root commit; normal reviewed development
+commits may follow. The original repository remains privately preserved.
 
-## Fresh repository and existing Apple resources
+## App identity
 
-This public repository has a new Git database and one initial commit containing
-only the reviewed source snapshot. It is not a fork and does not import an
-earlier repository's branches, tags, commits, checkpoint refs, logs, or artifacts.
-
-| Item | Value |
+| Item | Duo configuration |
 | --- | --- |
-| Repository | `ErrantActions/Duo-Browser` |
-| Project / scheme | `DuoBrowser.xcodeproj` / `DuoBrowser` |
+| Public repository | `ErrantActions/Duo-Browser` |
 | Bundle identifier | `com.errantactions.duobrowser` |
 | Apple team | `QM3794NUZS` |
-| Existing App Store Connect app | [6827739657](https://appstoreconnect.apple.com/apps/6827739657/distribution) |
-| Primary language / SKU | English (U.S.) / `duobrowser-ios` |
-| Distribution profile | `Duo Browser App Store` |
-| Intended testers | Owner only, internal testing with manual build assignment |
+| App Store Connect app | [6827739657](https://appstoreconnect.apple.com/apps/6827739657/distribution) |
+| Marketing version | `1.0`, from `MARKETING_VERSION` |
+| Deployment target | iOS 17 |
+| Distribution profile | `Duo Browser App Store`, matching this bundle/team |
+| Intended testers | Owner-only internal testing, manual build assignment |
 
-These identifiers are configuration metadata, not passwords or private keys.
-Do not recreate the app record, revoke certificates, or generate replacement
-API keys merely because the source repository changed. Existing valid signing
-resources can be reused after checking their app, team, expiry, and key pairing.
+Team/bundle/app IDs are configuration metadata, not passwords. Do not copy
+another app's IDs or recreate valid Apple resources because a repository changed.
+This app currently declares no custom signing entitlements; camera/microphone/
+location purpose strings and the used-API privacy manifest are checked in.
+Do not add push, app-group, iCloud, or other capabilities without a feature need.
+Export-compliance answers remain an owner decision; no exemption is fabricated.
 
-## Current release state
+## Standard runner and cost
 
-- Unsigned simulator CI runs on the standard public `macos-15` runner. It receives
-  no signing secrets and does not upload to Apple.
-- The TestFlight workflow is disabled. Its verification job also requires the
-  repository variable `ENABLE_TESTFLIGHT` to be exactly `true`.
-- The new `app-store` environment requires owner approval, disables administrator
-  bypass, and permits only `main`.
-- Signing secrets are not imported through Git. GitHub does not expose their
-  decrypted values for copying from another repository.
-- Native tests, signed archive/export, Apple processing, build assignment, and
-  physical-phone installation must each be verified for the relevant build.
+Both workflows use **`xcode-27`**, explicitly listed under GitHub's
+[standard runners for public repositories](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
+[GitHub billing documentation](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
+states that standard public-repository compute is free; larger runners can
+still be billed. This setup changes no billing settings and selects no larger
+runner.
 
-## Configure signing privately
+The [published runner image](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md)
+provides Xcode **27.1 release** and iOS **27.1**. `DEVELOPER_DIR` pins that
+installation rather than the separate release candidate. Simulator selection
+requires the matching runtime and prefers iPhone Duo when available.
+If the image removes that installation, fail clearly and review the pin;
+do not silently switch SDKs. Preview runner images have GitHub's stated SLA limits.
 
-Keep all signing files outside the checkout in a protected local directory.
-The [local setup helper](../Tools/Set-TestFlightSecrets.ps1) reads them directly
-and sends secret values to GitHub over stdin without printing them.
+## Manual unsigned validation
 
-Variables in the `app-store` environment:
+No push or pull request automatically runs these workflows.
+
+```powershell
+gh workflow run ios.yml --repo ErrantActions/Duo-Browser --ref main `
+  -f confirm_run=true -f save_summary=false
+```
+
+This runs build/security contracts, Python plist tests, and native unit/UI tests
+with `CODE_SIGNING_ALLOWED=NO`. It never receives Apple signing secrets.
+The simulator job is bounded to 30 minutes and its native step to 20 minutes.
+
+Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
+with one-day retention. It does not publish an app, IPA, screenshot, result
+bundle, profile, keychain, API key, or raw diagnostic logs. A missing result
+bundle is reported as unavailable, never as passing tests.
+
+Do not run this separate native validation again for the same release candidate
+when the TestFlight workflow is about to run those same tests.
+
+## Private signing setup
+
+The new repository's signing environment must be populated privately; encrypted
+secret values cannot be read back and copied through GitHub's API. Reuse valid
+existing resources only after verifying them.
+
+The `app-store` environment requires the owner as its sole reviewer, disables
+administrator bypass, and allows only the `main` branch. The local helper
+checks those protections without changing them.
+
+Nonsecret environment variables:
 
 - `APP_BUNDLE_ID`: `com.errantactions.duobrowser`
 - `APPLE_TEAM_ID`: `QM3794NUZS`
+- `APP_STORE_CONNECT_APP_ID`: `6827739657`
 
-Required environment secrets:
+Encrypted environment secrets:
 
-- `DISTRIBUTION_CERTIFICATE_BASE64`: encrypted P12 containing its matching private key.
-- `DISTRIBUTION_CERTIFICATE_PASSWORD`: P12 password.
-- `PROVISIONING_PROFILE_BASE64`: the matching App Store Connect distribution profile.
-- `APP_STORE_CONNECT_KEY_ID`: existing team API key identifier.
-- `APP_STORE_CONNECT_ISSUER_ID`: team API issuer identifier.
-- `APP_STORE_CONNECT_PRIVATE_KEY`: the original `.p8` text.
+- `DISTRIBUTION_CERTIFICATE_BASE64`
+- `DISTRIBUTION_CERTIFICATE_PASSWORD`
+- `PROVISIONING_PROFILE_BASE64`
+- `APP_STORE_CONNECT_KEY_ID`
+- `APP_STORE_CONNECT_ISSUER_ID`
+- `APP_STORE_CONNECT_PRIVATE_KEY`
 
-Example local paths, not files that belong in this repository:
+The `.p8` must be an **App Store Connect team upload key**, with a matching
+issuer and sufficient app/build access, not an APNs provider key. A `.p8`
+extension alone does not establish purpose. Apple metadata lookup verifies
+authentication and this app's bundle before compilation.
+That read-only lookup is not proof of every upload permission; the owner must
+verify the key's upload-capable role in App Store Connect as well.
+
+Use the [local setup helper](../Tools/Set-TestFlightSecrets.ps1) from an
+owner-visible terminal. These are example protected paths; use the actual
+approved locations outside the checkout:
 
 ```powershell
 & .\Tools\Set-TestFlightSecrets.ps1 `
@@ -68,66 +106,94 @@ Example local paths, not files that belong in this repository:
   -ApiKeyPath "$env:LOCALAPPDATA\DuoBrowser\Signing\AuthKey_KEYID.p8"
 ```
 
-Supply the actual approved file locations. Enter the issuer identifier and
-existing P12 password only in the owner-visible terminal; the password prompt
-is hidden. Never paste passwords or private keys into chat.
+The VS Code task **Duo: Configure TestFlight signing secrets** also opens this
+helper. Review its one-process `RemoteSigned` policy before use; it does not
+change persistent execution policy. Enter the existing P12 password only in
+the masked terminal prompt, never in chat.
 
-The VS Code task **Duo: Configure TestFlight signing secrets** also runs this
-helper. Review and approve its process-only `RemoteSigned` policy before use.
-It does not change persistent execution policy or trigger an Apple upload.
+The helper verifies profile CMS signature, app/team, expiry/distribution type,
+certificate membership, matching private/public keys, and certificate expiry.
+It sends secret values over stdin to GitHub without printing them or putting
+passwords in process arguments. It does not generate keys, move files, replace
+environment protections, enable a workflow, or upload an app.
 
-The helper verifies the main-only environment, profile CMS signature, app/team,
-expiry, and P12 password. It does not create resources, move files, replace
-environment protections, or enable TestFlight.
+Repository admins, the owner account, and the exact code approved for release
+must remain trusted. Protect GitHub and Apple accounts with MFA and review the
+release commit; encrypted secrets cannot protect against deliberately approving
+malicious workflow code.
 
-## Explicitly resume owner-only publishing
+## Release preflight and build numbers
 
-Only after signing setup, passing native tests, and explicit owner approval:
+The release is one owner-approved macOS job:
+
+1. Run local build/security contract tests.
+2. Before native compilation, open the encrypted P12 and confirm its private key
+   matches its certificate. Validate the certificate's identity/expiry and
+   membership in the matching App Store distribution profile.
+3. Check profile team, bundle, expiry, UUID/type and every custom entitlement
+   declared by this project's resolved Release build settings. Do not add a
+   capability to make a mismatched profile pass.
+4. Use a short-lived ES256 App Store Connect JWT to verify this app and enumerate
+   its existing uploaded build versions. No token/private key is printed.
+5. Select a numeric `CFBundleVersion` strictly greater than all enumerated builds.
+   A new repository's workflow run counter is **not** used as the build number.
+6. Remove all temporary preflight signing material, then run native tests once.
+7. Revalidate signing and the selected number, archive for `generic/platform=iOS`,
+   verify the archive's embedded bundle/build values, export an App Store Connect
+   IPA, and upload with Xcode's `altool`.
+   The build number is checked again immediately before delivery in case another
+   uploader used it during compilation. Apple still enforces uniqueness against
+   unavoidable concurrent-upload races.
+
+Builds use one to three numeric components: major 1-9999, minor/patch 0-99.
+For example, the next value after `1000` is `1000.0.1`; after `10.99.99` it is
+`11`. An optional manual `build_number` must still exceed Apple's existing
+uploads. Unreadable/partial build history, denied API access, invalid versions,
+or a superseded number fail closed rather than guessing an offset.
+
+Generated keychain passwords and personal certificate identities are masked.
+Private signing values are scoped to signing steps, removed from child-process
+environments before archive tools run, and restored only as restricted temporary
+files when required. Cleanup removes certificate/profile/API-key files and the
+temporary keychain and restores the original keychain search list, including
+on failure. No signing material or raw private diagnostics become artifacts.
+
+## Owner-approved TestFlight run
+
+TestFlight remains disabled and `ENABLE_TESTFLIGHT=false` until signing setup,
+reviewed source, and explicit owner approval are ready:
 
 ```powershell
 gh variable set ENABLE_TESTFLIGHT --body true --repo ErrantActions/Duo-Browser
 gh workflow enable testflight.yml --repo ErrantActions/Duo-Browser
-gh workflow run testflight.yml --repo ErrantActions/Duo-Browser `
-  --ref main -f confirm_upload=true
+gh workflow run testflight.yml --repo ErrantActions/Duo-Browser --ref main `
+  -f confirm_upload=true -f save_summary=false
 ```
 
 Approve the pending `app-store` deployment in GitHub only after reviewing the
-exact commit and verification results. Its secrets are not released beforehand.
-To pause again, disable the workflow and set `ENABLE_TESTFLIGHT` to `false`.
+exact commit. The preflight gets secrets only inside that approved main-branch
+job; forks and public PRs do not get them. To pause, disable the workflow and set
+the activation variable to false.
 
-The release route uses the configured Xcode 27 runner. Confirm runner access
-and billing separately; public repository visibility does not make larger
-runners free.
+## What is and is not verified
 
-## Signing and upload lifecycle
+Windows checks prove local helper/contracts, not native iOS compilation.
+Native validation requires Xcode. Existing run
+[40766913589](https://github.com/ErrantActions/Duo-Browser/actions/runs/40766913589)
+compiled the source and passed 61 unit tests plus the panel/tab-grid UI cases;
+two HTTPS UI cases failed because they depended on a changed external page
+heading. The corrected assertions and new workflow still need an approved
+native run. No signed upload is claimed.
 
-The [release script](../.github/scripts/testflight.sh) checks the expected app/
-team/build number, validates profile distribution type and expiry, imports the
-certificate into a temporary keychain, and archives for a physical iOS device.
-It exports an App Store Connect IPA and uses Xcode's `altool` uploader, not a
-separate Mac App Store Transporter installation.
+After an upload:
 
-Private signing values are removed from child-process environments before
-archive tools run. The `.p8` is restored only as a protected temporary upload
-file. Temporary keychain/profile/certificate/API-key files are removed on exit,
-including failure. Signing files and IPA exports are never public artifacts.
+1. Confirm archive, export, and delivery success separately.
+2. Wait for [Apple processing](https://appstoreconnect.apple.com/apps/6827739657/testflight).
+3. Let the owner resolve compliance/legal prompts.
+4. Assign the processed build to **Owner Testing**, with manual distribution and
+   only the owner included. No public links or external testers without approval.
+5. Install through Apple's TestFlight app and confirm actual launch, browsing,
+   native panel permissions, and scanning on a supported physical phone.
 
-The marketing version comes from `MARKETING_VERSION`; the upload's build number
-comes from the TestFlight workflow run number. Before a first upload from this
-new workflow, check the existing App Store Connect builds and ensure its number
-is greater than any already accepted build. Do not rerun an already-successful
-upload with the same version/build number.
-
-## Verify distribution separately
-
-1. Verify native tests, archive, export, and upload separately.
-2. Wait for the build in [TestFlight](https://appstoreconnect.apple.com/apps/6827739657/testflight).
-3. Let the owner resolve export-compliance or legal questions; do not invent an
-   encryption exemption.
-4. Use **Owner Testing**, with manual distribution and only the owner included.
-   Do not create a public link or invite external testers without approval.
-5. Assign the processed build and verify actual installation and launch through
-   Apple's TestFlight app.
-
-Successful delivery is not proof of completed Apple processing or phone launch.
-Do not repeatedly upload solely because Apple has not displayed the build yet.
+Delivery is not proof of completed processing or phone installation. Do not
+repeatedly upload solely because Apple has not displayed a build yet.

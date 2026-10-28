@@ -74,6 +74,7 @@ function Set-Secret {
 }
 
 $password = $null
+$privateBag = $null
 $previousPassword = [Environment]::GetEnvironmentVariable('DUO_P12_PASSWORD', 'Process')
 try {
     $null = Invoke-PrivateProcess $gh 'auth status --hostname github.com' $null
@@ -81,6 +82,14 @@ try {
         ConvertFrom-Json
     if (-not $environment.deployment_branch_policy.custom_branch_policies) {
         throw 'Configure the app-store environment with a selected main-branch deployment policy first.'
+    }
+    $reviewRules = @($environment.protection_rules | Where-Object { $_.type -eq 'required_reviewers' })
+    if ($reviewRules.Count -ne 1 -or $environment.can_admins_bypass -ne $false -or
+        @($reviewRules[0].reviewers).Count -ne 1 -or
+        @($reviewRules[0].reviewers | Where-Object {
+            $_.type -eq 'User' -and $_.reviewer.id -eq 11909244
+        }).Count -ne 1) {
+        throw 'The signing environment must require owner approval with administrator bypass disabled.'
     }
     $policies = Invoke-PrivateProcess $gh "api repos/$repository/environments/app-store/deployment-branch-policies" $null |
         ConvertFrom-Json
@@ -128,10 +137,28 @@ try {
     $env:DUO_P12_PASSWORD = $password
     $resolvedCertificate = (Get-Item -LiteralPath $CertificatePath).FullName
     $null = Invoke-PrivateProcess $openssl "pkcs12 -in `"$resolvedCertificate`" -passin env:DUO_P12_PASSWORD -noout" $null
+    $certificateBag = Invoke-PrivateProcess $openssl "pkcs12 -in `"$resolvedCertificate`" -passin env:DUO_P12_PASSWORD -clcerts -nokeys" $null
+    $certificates = [regex]::Matches($certificateBag, '-----BEGIN CERTIFICATE-----\s*(.*?)-----END CERTIFICATE-----', [Text.RegularExpressions.RegexOptions]::Singleline)
+    if ($certificates.Count -ne 1) { throw 'The P12 must contain exactly one signing certificate.' }
+    $certificateBase64 = $certificates[0].Groups[1].Value -replace '\s', ''
+    $profileCertificates = @($profile.SelectNodes("/plist/dict/key[text()='DeveloperCertificates']/following-sibling::array[1]/data") |
+        ForEach-Object { $_.InnerText -replace '\s', '' })
+    if ($profileCertificates -notcontains $certificateBase64) {
+        throw 'The P12 certificate is not included in this app provisioning profile.'
+    }
+    $privateBag = Invoke-PrivateProcess $openssl "pkcs12 -in `"$resolvedCertificate`" -passin env:DUO_P12_PASSWORD -nocerts -nodes" $null
+    $privatePublicKey = Invoke-PrivateProcess $openssl 'pkey -pubout' $privateBag
+    $privateBag = $null
+    $certificatePublicKey = Invoke-PrivateProcess $openssl 'x509 -pubkey -noout' $certificateBag
+    if ($privatePublicKey.Trim() -cne $certificatePublicKey.Trim()) {
+        throw 'The P12 certificate and private key do not match.'
+    }
+    $null = Invoke-PrivateProcess $openssl 'x509 -checkend 0 -noout' $certificateBag
     Remove-Item Env:DUO_P12_PASSWORD
 
     $null = Invoke-PrivateProcess $gh "variable set APP_BUNDLE_ID --body $bundleId --repo $repository --env app-store" $null
     $null = Invoke-PrivateProcess $gh "variable set APPLE_TEAM_ID --body $teamId --repo $repository --env app-store" $null
+    $null = Invoke-PrivateProcess $gh "variable set APP_STORE_CONNECT_APP_ID --body 6827739657 --repo $repository --env app-store" $null
     Set-Secret 'DISTRIBUTION_CERTIFICATE_BASE64' ([Convert]::ToBase64String([IO.File]::ReadAllBytes($CertificatePath)))
     Set-Secret 'DISTRIBUTION_CERTIFICATE_PASSWORD' $password
     Set-Secret 'PROVISIONING_PROFILE_BASE64' ([Convert]::ToBase64String([IO.File]::ReadAllBytes($ProfilePath)))
@@ -142,4 +169,5 @@ try {
 } finally {
     [Environment]::SetEnvironmentVariable('DUO_P12_PASSWORD', $previousPassword, 'Process')
     $password = $null
+    $privateBag = $null
 }

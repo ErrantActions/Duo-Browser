@@ -62,7 +62,7 @@ final class BrowserUITests: XCTestCase {
         menu.tap()
         app.buttons["New Tab"].tap()
         navigate("https://example.com", in: app)
-        XCTAssertTrue(app.webViews.staticTexts["Example Domain"].waitForExistence(timeout: 30))
+        assertLoadedHTTPSPage(in: app, host: "example.com")
 
         menu.tap()
         let addBookmark = app.buttons["Add Bookmark"]
@@ -83,7 +83,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(favorite.waitForExistence(timeout: 10))
         captureScreenshot(app, name: "Start Page Favorites")
         favorite.tap()
-        XCTAssertTrue(app.webViews.staticTexts["Example Domain"].waitForExistence(timeout: 30))
+        assertLoadedHTTPSPage(in: app, host: "example.com")
     }
 
     @MainActor
@@ -99,20 +99,18 @@ final class BrowserUITests: XCTestCase {
         app.buttons["New Tab"].tap()
 
         navigate("example.com", in: app)
-        let heading = app.webViews.staticTexts["Example Domain"]
-        XCTAssertTrue(heading.waitForExistence(timeout: 30))
-        XCTAssertTrue(app.buttons["HTTPS connection information"].exists)
+        assertLoadedHTTPSPage(in: app, host: "example.com")
         captureScreenshot(app, name: "Ordinary HTTPS Browsing")
 
         navigate("https://example.com/?duo=second", in: app)
-        XCTAssertTrue(heading.waitForExistence(timeout: 30))
+        assertLoadedHTTPSPage(in: app, host: "example.com")
         let back = app.buttons["Back"]
         waitUntilEnabled(back)
         back.tap()
         let forward = app.buttons["Forward"]
         waitUntilEnabled(forward)
         forward.tap()
-        XCTAssertTrue(heading.waitForExistence(timeout: 30))
+        assertLoadedHTTPSPage(in: app, host: "example.com")
     }
 
     @MainActor
@@ -167,6 +165,17 @@ final class BrowserUITests: XCTestCase {
         close.tap()
         XCTAssertFalse(app.buttons[privateID].exists)
         app.buttons["Done"].tap()
+    }
+
+    @MainActor
+    private func assertLoadedHTTPSPage(in app: XCUIApplication, host: String) {
+        let content = app.webViews.staticTexts.firstMatch
+        XCTAssertTrue(content.waitForExistence(timeout: 30))
+        XCTAssertFalse(content.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        XCTAssertTrue(app.buttons["HTTPS connection information"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.textFields["Address and search"].value as? String, host)
+        waitUntilEnabled(app.buttons["Share page"])
+        XCTAssertFalse(app.staticTexts["Unable to Open Page"].exists)
     }
 
     @MainActor

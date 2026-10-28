@@ -1,9 +1,18 @@
 name: Duo Browser iOS
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+    inputs:
+      confirm_run:
+        description: Run one unsigned iPhone simulator build and test job
+        required: true
+        type: boolean
+        default: false
+      save_summary:
+        description: Save sanitized test counts only (no logs, screenshots, app, or signing files)
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -14,49 +23,32 @@ concurrency:
 
 jobs:
   build-and-test:
-    runs-on: macos-15
+    if: inputs.confirm_run
+    runs-on: xcode-27
     timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+      EXPECTED_IOS_SDK: "27.1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: JavaScript SDK tests
+      - name: Test build and security contracts
         run: |
-          node --test Tests/duo-sdk.test.cjs Tests/workflow-safety.test.cjs Tests/demo-privacy.test.cjs
+          node --test Tests/*.test.cjs
+          python3 -m unittest discover -s Tests -p "test_*.py"
           node Tests/validate-project.cjs
-      - name: Select an available iPhone simulator
-        run: |
-          xcodebuild -version
-          DEVICE_ID=$(xcrun simctl list devices available --json | python3 -c 'import json,sys; devices=json.load(sys.stdin)["devices"]; print(next(d["udid"] for runtime,items in devices.items() if "iOS" in runtime for d in items if d["name"].startswith("iPhone") and d["isAvailable"]))')
-          echo "DEVICE_ID=$DEVICE_ID" >> "$GITHUB_ENV"
-      - name: Boot iPhone simulator
-        timeout-minutes: 10
-        run: xcrun simctl bootstatus "$DEVICE_ID" -b
-      - name: Build and test for iPhone
-        run: |
-          set -o pipefail
-          xcodebuild -project DuoBrowser.xcodeproj -scheme DuoBrowser \
-            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
-            -parallel-testing-enabled NO \
-            -test-timeouts-enabled YES \
-            -default-test-execution-time-allowance 120 \
-            -maximum-test-execution-time-allowance 180 \
-            -resultBundlePath TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO test
-      - name: Export simulator screenshots and attachments
-        if: always()
-        run: |
-          if [ -d TestResults.xcresult ]; then
-            xcrun xcresulttool export attachments \
-              --path TestResults.xcresult --output-path TestAttachments
-          fi
-      - name: Save simulator test results
-        if: always()
+      - name: Build and test the unsigned iPhone app
+        timeout-minutes: 20
+        run: bash .github/scripts/test-ios.sh
+      - name: Produce sanitized test counts
+        if: always() && inputs.save_summary
+        run: node .github/scripts/test-summary.cjs
+      - name: Save sanitized test counts
+        if: always() && inputs.save_summary
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ios-test-results
-          retention-days: 3
-          path: |
-            TestResults.xcresult
-            TestAttachments
-          if-no-files-found: ignore
+          name: unsigned-test-counts
+          path: ci-summary/test-counts.json
+          retention-days: 1
+          if-no-files-found: warn

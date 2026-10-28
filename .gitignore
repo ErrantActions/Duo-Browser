@@ -29,6 +29,21 @@ xcuserdata/
 /TestAttachments/
 /ios-test-results/
 /testflight-verification/
+/ci-summary/
+__pycache__/
+*.py[cod]
+/.venv/
+
+# Private local browser databases and journal files
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.db-wal
+*.db-shm
+/LocalData/
+/PrivateData/
 
 # Signing material, private keys, and certificate exports
 *.p8

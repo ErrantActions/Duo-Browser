@@ -22,11 +22,24 @@ test("workflow actions use immutable revisions and do not persist checkout crede
     }
 });
 
-test("unsigned CI does not receive signing secrets and publishes only test results", () => {
+test("both builds are manual, use a standard pinned Xcode runner, and export only optional sanitized counts", () => {
+    for (const workflow of [ios, release]) {
+        assert.doesNotMatch(workflow, /^\s+(?:push|pull_request|pull_request_target):/m);
+        assert.match(workflow, /workflow_dispatch:/);
+        assert.match(workflow, /runs-on:\s*xcode-27/);
+        assert.match(workflow, /DEVELOPER_DIR:\s*\/Applications\/Xcode_27\.1\.app\/Contents\/Developer/);
+        assert.match(workflow, /EXPECTED_IOS_SDK:\s*"27\.1"/);
+        assert.match(workflow, /if:\s*always\(\) && inputs\.save_summary/);
+        assert.match(workflow, /path:\s*ci-summary\/test-counts\.json/);
+        assert.match(workflow, /retention-days:\s*1/);
+        assert.doesNotMatch(workflow, /path:\s*(?:\||build\/|TestResults|TestAttachments|~|\$HOME)/);
+    }
+});
+
+test("unsigned CI does not receive signing secrets", () => {
     assert.doesNotMatch(ios, /secrets\.|environment:\s*app-store/);
-    assert.match(ios, /CODE_SIGNING_ALLOWED=NO/);
-    assert.match(ios, /path:\s*\|\s*\n\s+TestResults\.xcresult\s*\n\s+TestAttachments/);
-    assert.match(ios, /retention-days:\s*3/);
+    const runner = fs.readFileSync(path.join(root, ".github", "scripts", "test-ios.sh"), "utf8");
+    assert.match(runner, /CODE_SIGNING_ALLOWED=NO/);
 });
 
 test("signing requires manual confirmation, main, successful tests, and an environment", () => {
@@ -34,10 +47,12 @@ test("signing requires manual confirmation, main, successful tests, and an envir
     assert.doesNotMatch(release, /^\s+(?:push|pull_request|pull_request_target):/m);
     assert.match(release, /inputs\.confirm_upload && github\.ref == 'refs\/heads\/main'/);
     assert.match(release, /vars\.ENABLE_TESTFLIGHT == 'true'/);
-    assert.match(release, /upload:\s*\n\s+needs:\s*verify/);
     assert.match(release, /environment:\s*app-store/);
-    assert.match(release, /path:\s*TestResults\.xcresult/);
-    assert.doesNotMatch(release, /path:\s*(?:build|\.|~|\$HOME)(?:\s|\/)/);
+    assert.equal((release.match(/run: bash \.github\/scripts\/test-ios\.sh/g) || []).length, 1);
+    assert.ok(release.indexOf("testflight.sh preflight") < release.indexOf("test-ios.sh"));
+    assert.ok(release.indexOf("test-ios.sh") < release.indexOf("testflight.sh upload"));
+    assert.match(release, /steps\.preflight\.outputs\.build_number/);
+    assert.doesNotMatch(release, /github\.run_number/);
 });
 
 test("signing material is removed from child-process environments before native tools run", () => {
@@ -66,6 +81,7 @@ exec bash .github/scripts/testflight.sh
             ...process.env,
             APP_BUNDLE_ID: "com.errantactions.duobrowser",
             APPLE_TEAM_ID: "QM3794NUZS",
+            APP_STORE_CONNECT_APP_ID: "6827739657",
             BUILD_NUMBER: "1",
             APP_STORE_CONNECT_KEY_ID: "FIXTURE",
             APP_STORE_CONNECT_ISSUER_ID: "fixture",

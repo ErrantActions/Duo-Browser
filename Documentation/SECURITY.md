@@ -119,7 +119,8 @@ browsing content, or scanned values. The demo logs events visibly to its own
 page, only in memory, and redacts native gesture tokens from that visible log.
 UI tests do not deliberately print the full accessibility hierarchy into public
 console logs. Test screenshots/result bundles can still contain the synthetic
-demo page, so CI must never browse real accounts or production private data.
+demo page, so they remain local to the job and are not uploaded. CI must never
+browse real accounts or production private data.
 There is no analytics or synchronization service.
 
 ## Repository and release controls
@@ -138,8 +139,15 @@ There is no analytics or synchronization service.
   is disabled.
 - Private signing values are removed from child-process environments before
   native archive tools execute. Temporary keychain/profile/API-key files are
-  cleaned up even after failures. Only test results, not signing files or IPA
-  exports, are uploaded as artifacts, with three-day retention.
+  cleaned up even after failures. Both workflows are manual only on a documented
+  standard public runner, with the Xcode release/SDK explicitly selected.
+- Profile/certificate/app/entitlement validation and Apple build-history checks
+  happen before native compilation. TestFlight runs native tests once in its
+  approved job rather than automatically duplicating unsigned validation.
+- Optional artifacts contain whitelisted numeric test counts only, with one-day
+  retention. No screenshots, raw result bundles/logs, app/IPA exports, or signing
+  material are uploaded. Build numbers are checked against App Store Connect,
+  not assumed safe from a reset repository workflow counter.
 - Local agent/checkpoint refs are not publication branches. Never mirror-push
   local refs or publish local audit backups; they may contain workstation
   identity metadata that is not present in the public branch.
