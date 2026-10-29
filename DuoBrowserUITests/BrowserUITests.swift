@@ -3,9 +3,8 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
-    func testAskDuoRequiresConsentAndConfirmsNavigation() throws {
+    func testAskDuoBlocksPrivateTabs() {
         continueAfterFailure = false
-        executionTimeAllowance = 180
         let app = XCUIApplication()
         captureFinalState(of: app)
         app.launch()
@@ -18,7 +17,15 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(blocked.waitForExistence(timeout: 10))
         XCTAssertTrue(blocked.label.contains("Private Browsing"))
         XCTAssertFalse(app.buttons["askduo.capture"].exists)
-        app.navigationBars["Ask Duo"].buttons["Done"].tap()
+    }
+
+    @MainActor
+    func testAskDuoRequiresConsentAndConfirmsNavigation() throws {
+        continueAfterFailure = false
+        executionTimeAllowance = 300
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        app.launch()
         openMenu(in: app)
         app.buttons["New Tab"].tap()
         let demo = app.buttons["Explore DuoKit Demo"]

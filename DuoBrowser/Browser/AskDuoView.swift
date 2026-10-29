@@ -47,6 +47,8 @@ struct AskDuoView: View {
                     }
                     VStack(alignment: .leading, spacing: 8) {
                         Button(showsExcerpt ? "Hide Page Excerpt" : "Show Page Excerpt") { showsExcerpt.toggle() }
+                            .buttonStyle(.borderless)
+                            .frame(minHeight: 44, alignment: .leading)
                             .accessibilityIdentifier("askduo.preview.toggle")
                         if showsExcerpt {
                             Text(verbatim: context.text)

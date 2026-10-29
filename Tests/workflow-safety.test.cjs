@@ -107,9 +107,11 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             } else if (suite === "ask-duo") {
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoBlocksPrivateTabs>/);
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoRequiresConsentAndConfirmsNavigation>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             } else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
+            assert.match(result.stdout, new RegExp(`XCODE_ARG<-maximum-test-execution-time-allowance>\\nXCODE_ARG<${suite === "all" || suite === "ask-duo" ? 300 : 180}>`));
         }
     }
 });

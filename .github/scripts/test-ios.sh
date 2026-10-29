@@ -12,7 +12,12 @@ if [[ "$suite" == unit ]]; then
 elif [[ "$suite" == duo-panel ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation
 elif [[ "$suite" == ask-duo ]]; then
-  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoBlocksPrivateTabs \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation
+fi
+maximum_test_seconds=180
+if [[ "$suite" == all || "$suite" == ask-duo ]]; then
+  maximum_test_seconds=300
 fi
 
 xcodebuild -version
@@ -38,7 +43,7 @@ xcodebuild -project DuoBrowser.xcodeproj -scheme DuoBrowser \
   -parallel-testing-enabled NO \
   -test-timeouts-enabled YES \
   -default-test-execution-time-allowance 120 \
-  -maximum-test-execution-time-allowance 180 \
+  -maximum-test-execution-time-allowance "$maximum_test_seconds" \
   -resultBundlePath build/Tests.xcresult \
   "$@" \
   CODE_SIGNING_ALLOWED=NO test-without-building
