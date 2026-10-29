@@ -5,6 +5,7 @@ struct AskDuoView: View {
     @StateObject private var assistant = AskDuoModel()
     @State private var selectedLink: AskDuoLink?
     @State private var confirmsNavigation = false
+    @State private var showsExcerpt = false
     @FocusState private var questionFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
     let navigate: (AskDuoNavigation) -> Void
@@ -36,17 +37,31 @@ struct AskDuoView: View {
                 Section("Reviewed page excerpt") {
                     Text(context.title).font(.headline)
                     Text(context.url.host ?? "DuoKit Demo").font(.caption)
-                    Text(verbatim: context.text)
-                        .textSelection(.enabled)
-                        .accessibilityIdentifier("askduo.context")
-                    Text(context.truncated ? "This is a truncated excerpt, not the entire page." : "This is a filtered excerpt, not a complete page copy.")
-                        .font(.caption)
+                    if !assistant.hasApprovedContext {
+                        Button("Use This Excerpt") { assistant.approvePage(model) }
+                            .disabled(assistant.isBusy)
+                            .accessibilityIdentifier("askduo.approve")
+                    } else {
+                        Label("Excerpt approved", systemImage: "checkmark.shield")
+                            .font(.caption)
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Button(showsExcerpt ? "Hide Page Excerpt" : "Show Page Excerpt") { showsExcerpt.toggle() }
+                            .accessibilityIdentifier("askduo.preview.toggle")
+                        if showsExcerpt {
+                            Text(verbatim: context.text)
+                                .textSelection(.enabled)
+                                .accessibilityIdentifier("askduo.context")
+                            Text(context.truncated ? "This is a truncated excerpt, not the entire page." : "This is a filtered excerpt, not a complete page copy.")
+                                .font(.caption)
+                        }
+                    }
                 }
                 Section("2. Ask about this excerpt") {
                     TextField("What would you like to know?", text: $assistant.question, axis: .vertical)
                         .lineLimit(2...5)
                         .focused($questionFocused)
-                        .disabled(assistant.isBusy)
+                        .disabled(assistant.isBusy || !assistant.hasApprovedContext)
                         .accessibilityIdentifier("askduo.question")
                     Text("\(assistant.question.count)/400 characters").font(.caption)
                     Toggle("Allow a link suggestion", isOn: $assistant.allowsNavigation)
@@ -55,7 +70,7 @@ struct AskDuoView: View {
                         questionFocused = false
                         assistant.ask(model)
                     }
-                        .disabled(assistant.isBusy || assistant.availabilityMessage != nil || assistant.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || assistant.question.count > 400)
+                        .disabled(assistant.isBusy || !assistant.hasApprovedContext || assistant.availabilityMessage != nil || assistant.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || assistant.question.count > 400)
                         .accessibilityIdentifier("askduo.ask")
                         .accessibilityValue(assistant.availabilityMessage == nil ? "available" : "unavailable")
                     Text(assistant.isBusy ? "Working locally…" : (assistant.answer == nil ? "No answer yet." : "Answer ready below."))

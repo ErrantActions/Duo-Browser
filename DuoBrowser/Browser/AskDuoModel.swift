@@ -21,6 +21,7 @@ private struct AskDuoGeneratedAnswer {
 @MainActor
 final class AskDuoModel: ObservableObject {
     @Published private(set) var context: AskDuoContext?
+    @Published private(set) var hasApprovedContext = false
     @Published private(set) var answer: AskDuoAnswer?
     @Published private(set) var isBusy = false
     @Published private(set) var errorMessage: String?
@@ -56,6 +57,7 @@ final class AskDuoModel: ObservableObject {
     func clear(notice: String? = nil) {
         cancel()
         context = nil
+        hasApprovedContext = false
         answer = nil
         question = ""
         allowsNavigation = false
@@ -82,7 +84,7 @@ final class AskDuoModel: ObservableObject {
         clear()
         perform(seconds: 15, work: { try await AskDuoPageReader.read(from: model) }) { [weak self] context in
             self?.context = context
-            self?.notice = "Review this local excerpt before asking Apple Intelligence. No form values or full link addresses are included in the model prompt."
+            self?.notice = "Review this local excerpt before asking Apple Intelligence. Form inputs and href metadata are excluded; visible text can still contain private information."
         }
     }
 
@@ -90,6 +92,7 @@ final class AskDuoModel: ObservableObject {
         refreshAvailability()
         if let availabilityMessage { errorMessage = availabilityMessage; return }
         guard let context, context.isCurrent(for: model) else { errorMessage = AskDuoError.staleContext.localizedDescription; return }
+        guard hasApprovedContext else { errorMessage = "Review and approve the page excerpt first."; return }
         let question = question.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !question.isEmpty, question.count <= 400 else { errorMessage = "Enter a question of 1–400 characters."; return }
         let allowsNavigation = allowsNavigation
@@ -100,6 +103,16 @@ final class AskDuoModel: ObservableObject {
             guard context.isCurrent(for: model) else { throw AskDuoError.staleContext }
             return response
         }) { [weak self] response in self?.answer = response }
+    }
+
+    func approvePage(_ model: BrowserViewModel) {
+        guard !isBusy, let context, context.isCurrent(for: model) else {
+            errorMessage = AskDuoError.staleContext.localizedDescription
+            return
+        }
+        hasApprovedContext = true
+        errorMessage = nil
+        notice = "This excerpt is approved for on-device Apple Intelligence. Nothing is sent until you choose Ask."
     }
 
     func open(_ link: AskDuoLink, model: BrowserViewModel, confirmed: @escaping (AskDuoNavigation) -> Void) {

@@ -123,6 +123,7 @@ final class AskDuoTests: XCTestCase {
         XCTAssertEqual(assistant.question, "")
         XCTAssertFalse(assistant.allowsNavigation)
         XCTAssertNil(assistant.context)
+        XCTAssertFalse(assistant.hasApprovedContext)
         XCTAssertNil(assistant.answer)
         XCTAssertFalse(assistant.isBusy)
         print("Ask Duo availability: onDeviceModelAvailable=\(AskDuoModel.modelUnavailableReason == nil)")

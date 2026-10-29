@@ -41,13 +41,20 @@ final class BrowserUITests: XCTestCase {
         capture.tap()
         let excerpt = app.staticTexts["askduo.context"]
         XCTAssertTrue(app.buttons["Read Page Again"].waitForExistence(timeout: 15))
-        revealAssistant(excerpt, in: app)
+        let preview = app.buttons["askduo.preview.toggle"]
+        revealAssistant(preview, in: app)
+        preview.tap()
+        XCTAssertTrue(excerpt.waitForExistence(timeout: 10))
         XCTAssertTrue(excerpt.exists)
         XCTAssertTrue(excerpt.label.contains("DuoKit Demo"))
         XCTAssertTrue(excerpt.label.contains("Browser checks"))
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_INPUT_SENTINEL"))
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_FORM_SENTINEL"))
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_EDITABLE_SENTINEL"))
+        preview.tap()
+        let approve = app.buttons["askduo.approve"]
+        revealAssistant(approve, in: app)
+        approve.tap()
         let question = app.descendants(matching: .any).matching(identifier: "askduo.question").firstMatch
         revealAssistant(question, in: app)
         question.tap()
@@ -62,11 +69,13 @@ final class BrowserUITests: XCTestCase {
         XCTAssertEqual(ask.isEnabled, available)
         print("Ask Duo native verification: consentedExcerpt=true, excludedFields=true, onDeviceModelAvailable=\(available)")
         if available {
+            let status = app.staticTexts["askduo.request.status"]
+            revealAssistant(status, in: app)
             ask.tap()
             print("Ask Duo live generation: requested=true")
             let finished = XCTNSPredicateExpectation(
                 predicate: NSPredicate(format: "value == %@", "answered"),
-                object: app.staticTexts["askduo.request.status"]
+                object: status
             )
             XCTAssertEqual(XCTWaiter.wait(for: [finished], timeout: 75), .completed)
             revealAssistant(app.staticTexts["askduo.answer"], in: app)

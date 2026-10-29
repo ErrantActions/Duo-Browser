@@ -143,11 +143,13 @@ key. Generation requires iOS 26+ on a supported device with Apple Intelligence
 enabled and its model ready. The browser still supports iOS 17.
 
 Nothing is read automatically. Choose **Read This Page**, review the filtered
-excerpt, enter a question, choose **Done Typing**, and choose **Ask Apple Intelligence**. The excerpt is
+excerpt using **Show Page Excerpt**, choose **Use This Excerpt**, enter a question,
+choose **Done Typing**, and choose **Ask Apple Intelligence**. The excerpt is
 limited to 1,800 characters and up to 12 HTTPS link labels, so it is not a full
 copy of a long page. Forms, editable/input values, hidden content and frames are
 excluded; other visible text can still contain personal information.
-URL query values and full link addresses are not included in the model prompt.
+The model receives the page origin and link labels, not current-URL query or
+href metadata. Visible page text can itself contain URLs or private information.
 The preview remains local even if Apple Intelligence is unavailable.
 
 **Allow a link suggestion** lets the model propose an existing page-link ID.

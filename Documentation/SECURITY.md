@@ -8,8 +8,9 @@ or complete resistance to WebKit/OS vulnerabilities.
 Ask Duo uses Apple's on-device `SystemLanguageModel`; it has no OpenAI/Copilot
 backend, API key, cloud fallback, or model-registered action tools. The browser
 menu opens a native sheet but does not read the page. A separate Read This Page
-tap is required before a filtered preview is captured, and a separate Ask tap
-starts generation. Private tabs, error/start/loading pages and non-verified
+tap is required before a filtered preview is captured. Use This Excerpt
+explicitly approves that snapshot; a separate Ask tap starts generation.
+Private tabs, error/start/loading pages and non-verified
 HTTPS documents are excluded, with only the exact bundled demo excepted.
 
 The reader is a fixed bundled script in a separate `WKContentWorld`, not code
@@ -25,7 +26,9 @@ existing HTTPS link ID, and rejects navigation suggestions unless the user
 allowed them. With suggestions off, the generated schema has no navigation field
 at all. Answers are rendered as plain text, not actionable Markdown.
 There is no arbitrary script, DOM click, form submission, purchase, or file
-action. Full hrefs and URL queries are omitted from the model prompt.
+action. Full href and current-URL query metadata are omitted from the model
+prompt; this does not remove URLs or private information already displayed
+as visible text in the reviewed excerpt or link labels.
 
 Every link opening, including a manual link from the preview, requires native
 confirmation of the actual destination. The source tab, exact URL, navigation

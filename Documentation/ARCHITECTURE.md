@@ -16,8 +16,9 @@ checked and an unavailable state never becomes a sample or fabricated answer.
 links with bounded DOM work and no reads of input values, cookies, or storage.
 Native decoding revalidates the 32 KiB envelope, source URL, document UUID,
 text/link limits, credential-free HTTPS URLs, and contiguous link IDs.
-Only origin/title/excerpt/link labels reach the model; query values and full
-hrefs stay in native memory. Context is untrusted data, not model instructions.
+Only origin/title/excerpt/link labels reach the model; native URL-query and
+full-href metadata stay in native memory. Visible text can still contain URLs
+or private information. Context is untrusted data, not model instructions.
 
 Every context/action is bound to the original tab, exact URL, navigation UUID,
 and isolated document UUID. Explicit navigation invalidates the UUID
