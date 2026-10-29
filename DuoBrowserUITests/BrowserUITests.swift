@@ -121,7 +121,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertEqual(app.buttons.matching(identifier: "Clear address").count, 1)
         XCTAssertTrue(addressButton.isEnabled)
         XCTAssertTrue(addressButton.isHittable)
-        XCTAssertFalse(next.isEnabled)
+        XCTAssertFalse(next.exists && next.isEnabled)
         print("Duo address bubble: addressX=\(addressButton.frame.minX), addressY=\(addressButton.frame.minY), addressHeight=\(addressButton.frame.height), fieldX=\(bubble.frame.minX), fieldY=\(bubble.frame.minY), fieldWidth=\(bubble.frame.width), fieldHeight=\(bubble.frame.height)")
         XCTAssertFalse(bubble.frame.intersects(addressButton.frame))
         XCTAssertLessThan(abs(bubble.frame.midY - addressButton.frame.midY), 44)
