@@ -63,7 +63,6 @@ struct ScannerInputView: View {
     @State private var scanning = false
     @State private var working = false
     @State private var error: String?
-    @State private var status: String?
     @State private var operation = UUID()
     @State private var token: String?
     @State private var source: URL?
@@ -91,7 +90,6 @@ struct ScannerInputView: View {
                             Text("Select a text field on the page before opening this tool. Scanned text goes only into that field; it is not saved by Duo.")
                             if let reason = ScannerInput.blockedReason(for: model) { Text(reason).foregroundStyle(.secondary) }
                             if let error { Text(error).foregroundStyle(.red).accessibilityIdentifier("scanner.input.error") }
-                            if let status { Text(status).accessibilityIdentifier("scanner.input.status") }
                             Button("Start Scanning", systemImage: "barcode.viewfinder") {
                                 Task { await start() }
                             }
@@ -109,7 +107,11 @@ struct ScannerInputView: View {
                 }
             }
         }
-        .onChange(of: model.navigationID) { _, _ in cancel("The page changed. Open the scanner again after selecting a field.") }
+        .onChange(of: model.navigationID) { _, _ in
+            cancel(nil)
+            logger.info("Scanner closed after page navigation.")
+            dismiss()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { cancel("Scanning stopped because Duo went into the background. Start a new scan to continue.") }
         }
@@ -118,7 +120,6 @@ struct ScannerInputView: View {
 
     private func start() async {
         error = nil
-        status = nil
         guard scenePhase == .active, let url = model.webView.url,
               ScannerInput.blockedReason(for: model) == nil else {
             error = ScannerInput.blockedReason(for: model) ?? "Bring Duo to the foreground before scanning."
@@ -187,7 +188,7 @@ struct ScannerInputView: View {
                     ])
                     guard operation == id else { return }
                     guard result as? Bool == true else { throw ScannerInputError.changedPage }
-                    status = scanPreferences.suffix == .none ? "Scanned text entered." : "Scanned text entered and Enter sent. The website controls validation and submission."
+                    dismiss()
                 } catch {
                     guard operation == id else { return }
                     report(error, fallback: "The field rejected input, changed, or does not support these settings. Check the page before retrying.")

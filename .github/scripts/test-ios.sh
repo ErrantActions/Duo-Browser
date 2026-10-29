@@ -20,8 +20,7 @@ elif [[ "$suite" == reading ]]; then
     -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewPrivateExportRequiresConfirmation \
     -only-testing:DuoBrowserUITests/BrowserUITests/testFavoriteCanBeSavedAndOpenedFromTheStartPage
 elif [[ "$suite" == scanner ]]; then
-  set -- -only-testing:DuoBrowserTests/ScannerTests \
-    -only-testing:DuoBrowserUITests/BrowserUITests/testScannerUsesCompactSheetAndRequiresASelectedField
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testScannerUsesCompactSheetAndRequiresASelectedField
 fi
 maximum_test_seconds=180
 if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading ]]; then

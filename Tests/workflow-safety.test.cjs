@@ -117,8 +117,8 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testFavoriteCanBeSavedAndOpenedFromTheStartPage>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             } else if (suite === "scanner") {
-                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests\/ScannerTests>/);
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testScannerUsesCompactSheetAndRequiresASelectedField>/);
+                assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests/);
             } else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
             assert.match(result.stdout, new RegExp(`XCODE_ARG<-maximum-test-execution-time-allowance>\\nXCODE_ARG<${["all", "ask-duo", "reading"].includes(suite) ? 300 : 180}>`));
         }

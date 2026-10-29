@@ -70,7 +70,7 @@
             target: (form.getAttribute("target") || document.querySelector("base[target]")?.getAttribute("target") || "_self").toLowerCase()
         };
     }
-    const info = form ? formInfo() : null;
+    const info = suffix === "submit" && form ? formInfo() : null;
     if (suffix === "submit" && (!info || info.action.origin !== location.origin
         || !["https:", "file:"].includes(info.action.protocol) || !["get", "post"].includes(info.method)
         || (info.action.protocol === "file:" && info.action.href !== sourceURL)
@@ -89,7 +89,12 @@
     }));
     if (!accepted || !unchanged()) throw new Error("The website canceled input or changed the selected field.");
     const prototype = field instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    Object.getOwnPropertyDescriptor(prototype, "value").set.call(field, text);
+    const setter = Object.getOwnPropertyDescriptor(prototype, "value").set;
+    setter.call(field, text);
+    if (field.value !== text) {
+        setter.call(field, ticket.value);
+        throw new Error("This field cannot preserve the code exactly. Nothing was entered. Choose a plain text field.");
+    }
     if (field.selectionStart !== null) field.setSelectionRange(start + value.length, start + value.length);
     field.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
     field.dispatchEvent(new Event("change", { bubbles: true }));

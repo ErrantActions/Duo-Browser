@@ -377,6 +377,7 @@ demo without requiring a site integration. Select the destination text field on
 the page first, then open the tool and choose **Start Scanning**. The first code
 ends the camera session. Settings in this tool are saved immediately; global
 **Settings → Scanner Settings** uses the existing **Save Settings** button.
+Successful input returns to the page; navigation also closes the scanner.
 
 - Compact half-height camera sheet by default; drag taller, or disable Compact
   Scanner for an expanded sheet. The page remains visible but cannot be edited

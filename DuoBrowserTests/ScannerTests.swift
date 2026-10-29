@@ -126,12 +126,21 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         let cancelled = try await capture(view)
         await ScannerInput.clear(on: view, token: cancelled)
         await reject { try await self.apply(view, token: cancelled) }
+        try await view.evaluateJavaScript("document.querySelector('#form').setAttribute('action', 'http://['); true")
+        let ordinaryInput = try await capture(view)
+        try await apply(view, token: ordinaryInput, insertion: "append", value: "ZZ")
+        let noSubmissionDependency = try await view.evaluateJavaScript("document.querySelector('#target').value")
+        XCTAssertEqual(noSubmissionDependency as? String, "987654ZZ", "Plain input must not depend on a valid form action")
     }
 
     func testScannerRejectsChangedSensitiveHiddenAndOversizedTargets() async throws {
         let view = try await page()
         let expired = try await capture(view)
         await reject { try await self.apply(view, token: expired, deadline: -1) }
+        let sanitized = try await capture(view)
+        await reject { try await self.apply(view, token: sanitized, insertion: "replace", value: "123\n456") }
+        let preserved = try await view.evaluateJavaScript("document.querySelector('#target').value")
+        XCTAssertEqual(preserved as? String, "abcdef", "Browser input sanitization must not silently corrupt a barcode")
         let token = try await capture(view)
         try await view.evaluateJavaScript("document.querySelector('#target').value = 'changed'")
         await reject { try await self.apply(view, token: token) }
@@ -168,7 +177,7 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         try await apply(view, token: token, suffix: "submit")
         count = try await view.evaluateJavaScript("window.submissions")
         XCTAssertEqual(count as? Int, 1)
-        try await view.evaluateJavaScript("document.querySelector('#target').onkeydown = event => event.preventDefault()")
+        try await view.evaluateJavaScript("document.querySelector('#target').onkeydown = event => event.preventDefault(); true")
         token = try await capture(view)
         try await apply(view, token: token, suffix: "submit")
         count = try await view.evaluateJavaScript("window.submissions")
