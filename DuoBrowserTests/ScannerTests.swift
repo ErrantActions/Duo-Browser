@@ -186,4 +186,18 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         token = try await capture(view)
         await reject { try await self.apply(view, token: token, suffix: "submit") }
     }
+
+    func testScannerPreferencesPersistToDiskWithoutChangingOtherSettings() throws {
+        let folder = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let file = folder.appendingPathComponent("test.json")
+        addTeardownBlock { if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) } }
+        let library = BrowserLibrary(fileURL: file)
+        var settings = library.settings
+        settings.scanner.insertion = .replace
+        settings.scanner.suffix = .submit
+        XCTAssertTrue(library.updateSettings(settings))
+        let restored = BrowserLibrary(fileURL: file)
+        XCTAssertEqual(restored.settings, settings)
+        XCTAssertEqual(restored.settings.scanner.suffix, .submit)
+    }
 }

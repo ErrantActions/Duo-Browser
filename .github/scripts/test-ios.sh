@@ -2,8 +2,8 @@
 set -euo pipefail
 
 suite="${1:-all}"
-if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo && "$suite" != reading && "$suite" != scanner ) ]]; then
-  echo "::error::Choose all, unit, duo-panel, ask-duo, reading, or scanner for the native test suite."
+if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo && "$suite" != reading && "$suite" != scanner && "$suite" != page-tools ) ]]; then
+  echo "::error::Choose all, unit, duo-panel, ask-duo, reading, scanner, or page-tools for the native test suite."
   exit 1
 fi
 set --
@@ -14,7 +14,8 @@ elif [[ "$suite" == duo-panel ]]; then
     -only-testing:DuoBrowserUITests/BrowserUITests/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation
 elif [[ "$suite" == ask-duo ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoBlocksPrivateTabs \
-    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext
 elif [[ "$suite" == reading ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewAppearanceAndPDF \
     -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewPrivateExportRequiresConfirmation \
@@ -22,9 +23,15 @@ elif [[ "$suite" == reading ]]; then
 elif [[ "$suite" == scanner ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testScannerUsesCompactSheetAndRequiresASelectedField \
     -only-testing:DuoBrowserUITests/BrowserUITests/testScannerSettingsPersistAfterReturningFromEditor
+elif [[ "$suite" == page-tools ]]; then
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testScannerUsesCompactSheetAndRequiresASelectedField \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testScannerSettingsPersistAfterReturningFromEditor \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoBlocksPrivateTabs \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext
 fi
 maximum_test_seconds=180
-if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading ]]; then
+if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading || "$suite" == page-tools ]]; then
   maximum_test_seconds=300
 fi
 

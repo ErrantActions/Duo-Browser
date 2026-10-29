@@ -12,6 +12,7 @@ struct BrowserView: View {
     @State private var pageToolTab: BrowserViewModel?
     @State private var pendingAssistantNavigation: AskDuoNavigation?
     @State private var scannerDetent: PresentationDetent = .fraction(0.45)
+    @State private var assistantDetent: PresentationDetent = .fraction(0.55)
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -38,19 +39,15 @@ struct BrowserView: View {
                         .presentationCompactAdaptation(.none)
                         .presentationDragIndicator(.visible)
                         .presentationBackgroundInteraction(.disabled)
+                } else if selection == .assistant {
+                    sheetNavigation(selection)
+                        .presentationDetents([.fraction(0.55), .large], selection: $assistantDetent)
+                        .presentationCompactAdaptation(.none)
+                        .presentationDragIndicator(.visible)
+                        .presentationBackgroundInteraction(.disabled)
                 } else {
-                NavigationStack {
-                sheetContent(selection)
-                    .toolbar {
-                        if selection != .tabs && selection != .bookmark {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Done") { sheet = nil }
-                                    .disabled(manager.isClearingData)
-                            }
-                            }
-                            }
-                        }
-                    }
+                    sheetNavigation(selection)
+                }
             }
             .interactiveDismissDisabled(manager.isClearingData)
             .alert("Duo Browser", isPresented: statusAlert(inSheet: true)) {
@@ -102,10 +99,11 @@ struct BrowserView: View {
         case .permissions: SitePermissionsView(library: library, manager: manager)
         case .assistant:
             if let pageToolTab {
-                AskDuoView(model: pageToolTab) { navigation in
+                AskDuoView(model: pageToolTab, expand: { assistantDetent = .large }) { navigation in
                     pendingAssistantNavigation = navigation
                     sheet = nil
                 }
+
             }
         case .reader:
             if let pageToolTab { ReaderView(model: pageToolTab, library: pageToolTab.library) }
@@ -121,6 +119,20 @@ struct BrowserView: View {
         }
     }
 
+    private func sheetNavigation(_ selection: BrowserSheet) -> some View {
+        NavigationStack {
+            sheetContent(selection)
+                .toolbar {
+                    if selection != .tabs && selection != .bookmark {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { sheet = nil }
+                                .disabled(manager.isClearingData)
+                        }
+                    }
+                }
+        }
+    }
+
     private var colorScheme: ColorScheme? {
         switch library.settings.appearance {
         case .system: nil
@@ -130,6 +142,7 @@ struct BrowserView: View {
     }
 
     private func present(_ selection: BrowserSheet) {
+        if selection == .assistant { assistantDetent = .fraction(0.55) }
         if selection == .scanner {
             scannerDetent = library.settings.scanner.compact ? .fraction(0.45) : .large
         }

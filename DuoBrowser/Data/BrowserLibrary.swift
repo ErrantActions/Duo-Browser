@@ -183,14 +183,15 @@ final class BrowserLibrary: ObservableObject {
 
     private var isReadOnly = false
 
-    func updateSettings(_ settings: BrowserSettings) {
+    @discardableResult
+    func updateSettings(_ settings: BrowserSettings) -> Bool {
         var settings = settings
         settings.maximumTabs = min(100, max(1, settings.maximumTabs))
         settings.historyRetentionDays = min(365, max(0, settings.historyRetentionDays))
         snapshot.settings = settings
         pruneHistory()
         if !settings.restoreTabs { snapshot.session = SavedSession() }
-        save()
+        return save()
     }
 
     @discardableResult

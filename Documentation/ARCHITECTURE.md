@@ -29,17 +29,23 @@ monograms rather than fetching third-party favicons.
 
 ### Ask Duo
 
-`AskDuoView` is a browser-owned sheet, opened directly by the trusted sparkle
+`AskDuoView` is a browser-owned compact/expandable chat sheet, opened directly by the trusted sparkle
 button in the native Duo strip. The nonvertical/legacy browser toolbar has the
 same direct action, and the menu does not repeat it. Opening the icon uses the
 existing page-tool presenter and does not capture content automatically.
 `AskDuoModel` uses an explicit on-device `SystemLanguageModel` and a fresh
-`LanguageModelSession` for each question. `@Generable` constrains the response
+`LanguageModelSession` for each question. A bounded in-memory conversation retains
+six completed exchanges, supplying only two shortened question/answer pairs as
+untrusted JSON context. Native link objects, identifiers and href metadata are
+not serialized into conversation history. New Chat resets exchanges; turning
+page access off also removes page context and history. `@Generable` constrains the response
 to answer text and a bounded existing-link ID; no model tools, JavaScript,
 network client, or cloud provider are registered. OS/model availability is
 checked and an unavailable state never becomes a sample or fabricated answer.
 
-`AskDuoContext.js` runs only after Read This Page in a separate named
+General chat starts with page access off and does not invoke the page reader.
+`AskDuoContext.js` runs only after an explicit page shortcut, Read This Page,
+or Send with page access enabled, in a separate named
 `WKContentWorld`. It extracts visible non-form/non-editable text and HTTPS
 links with bounded DOM work and no reads of input values, cookies, or storage.
 Native decoding revalidates the 32 KiB envelope, source URL, document UUID,
@@ -59,9 +65,10 @@ Assistant presentation independently suspends website capability UI, including
 across scene reactivation. Capture/link checks have 15-second deadlines and
 generation has a 60-second deadline. Cancellation invalidates an operation
 token so late results cannot repopulate cleared UI. The sheet clears all
-context on close, inactivity, tab changes, or navigation. Private, loading,
-error, start, non-HTTPS and insecure pages are blocked, except the exact bundled
-DuoKit demo. There is no persistent conversation history.
+context and conversation on close, inactivity, tab changes, or navigation.
+Private tabs block all chat. Loading, error, start, non-HTTPS and insecure pages
+block page access, except the exact bundled DuoKit demo; general chat can still
+work without page access. No live web search or persistent conversation exists.
 
 ### Browser layout
 

@@ -23,6 +23,7 @@ on:
           - ask-duo
           - reading
           - scanner
+          - page-tools
         default: all
 
 permissions:

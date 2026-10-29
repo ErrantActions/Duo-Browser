@@ -37,10 +37,13 @@ struct BrowserSettingsView: View {
             }
             Section("Scanner") {
                 NavigationLink("Scanner Settings") {
-                    Form { ScannerSettingsSection(preferences: $settings.scanner) }
-                        .navigationTitle("Scanner Settings")
+                    ScannerSettingsView(preferences: $settings.scanner) {
+                        var saved = library.settings
+                        saved.scanner = settings.scanner
+                        return library.updateSettings(saved)
+                    }
                 }
-                Text("Choose camera size, barcode types, and text-field input behavior. Save Settings to keep changes.")
+                Text("Choose camera size, barcode types, and text-field input behavior. Save Scanner Settings in the editor to apply only those preferences.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section {
@@ -122,6 +125,25 @@ struct ScannerSettingsSection: View {
             Text("These input options apply only to Browser Menu → Scan Into Field. DuoKit Scan controls still return a result to the site without typing or submitting.")
                 .font(.caption).foregroundStyle(.secondary)
         }
+    }
+}
+
+struct ScannerSettingsView: View {
+    @Binding var preferences: ScannerPreferences
+    let save: () -> Bool
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Form { ScannerSettingsSection(preferences: $preferences) }
+            .navigationTitle("Scanner Settings")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save Scanner Settings") {
+                        if save() { dismiss() }
+                    }
+                    .accessibilityIdentifier("scanner.settings.save")
+                }
+            }
     }
 }
 

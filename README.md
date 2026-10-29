@@ -224,9 +224,17 @@ on-device Foundation Models**, not OpenAI, Copilot, a cloud fallback, or an API
 key. Generation requires iOS 26+ on a supported device with Apple Intelligence
 enabled and its model ready. The browser still supports iOS 17.
 
-Nothing is read automatically. Choose **Read This Page**, review the filtered
-excerpt using **Show Page Excerpt**, choose **Use This Excerpt**, enter a question,
-choose **Done Typing**, and choose **Ask Apple Intelligence**. The excerpt is
+Ask Duo opens as a compact, expandable chat panel with a persistent composer,
+**Summarize**, **Key points**, and **Explain** shortcuts, follow-up questions and
+**New Chat**. Use **Expand Chat** or drag the panel taller when needed.
+**Use This Page** starts off: general questions and writing requests do not read
+the webpage. The local model has no live web search and may not know current facts.
+
+Nothing is read automatically. A page shortcut, **Read This Page**, or sending
+with **Use This Page** enabled captures a local preview. Review the filtered
+excerpt using **Show Page Excerpt** and approve it before model use. A queued
+question uses the explicit **Use This Excerpt and Send** action; otherwise use
+**Use This Excerpt**, type a question and choose **Send**. The excerpt is
 limited to 1,800 characters and up to 12 HTTPS link labels, so it is not a full
 copy of a long page. Forms, editable/input values, hidden content and frames are
 excluded; other visible text can still contain personal information.
@@ -234,15 +242,17 @@ The model receives the page origin and link labels, not current-URL query or
 href metadata. Visible page text can itself contain URLs or private information.
 The preview remains local even if Apple Intelligence is unavailable.
 
-**Allow a link suggestion** lets the model propose an existing page-link ID.
+**Suggest page links** lets the model propose an existing page-link ID.
 It cannot invent a navigation destination or run page code. Opening any
 captured or suggested link requires a native confirmation showing its full
 destination. The page/document/tab is revalidated, the sheet closes, and only
 then does normal HTTPS navigation occur.
 
-Private tabs are excluded. Closing, backgrounding, changing the page, or
-changing tabs cancels work and clears the excerpt/question/answer. Nothing is
-saved as chat history. There is no arbitrary clicking, form submission,
+Private tabs are excluded, including general chat. Up to six completed exchanges
+remain in memory; only the last two shortened exchanges are included for
+follow-ups. Turning page access off removes its excerpt and previous chat.
+Closing, backgrounding, changing the page, or changing tabs cancels work and
+clears the conversation. Nothing is saved as chat history. There is no arbitrary clicking, form submission,
 purchase automation, image analysis, or Duo Control execution in this first
 version. AI can be wrong: verify its answer against the page.
 
@@ -376,7 +386,8 @@ The in-memory recently closed tab list is cleared.
 demo without requiring a site integration. Select the destination text field on
 the page first, then open the tool and choose **Start Scanning**. The first code
 ends the camera session. Settings in this tool are saved immediately; global
-**Settings → Scanner Settings** uses the existing **Save Settings** button.
+**Settings → Scanner Settings** has a **Save Scanner Settings** action that
+applies only scanner preferences. Other Settings drafts remain separate.
 Successful input returns to the page; navigation also closes the scanner.
 
 - Compact half-height camera sheet by default; drag taller, or disable Compact

@@ -3,6 +3,39 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext() {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        openReadingDemo(in: app, isPrivate: false)
+        openAskDuo(in: app, expanded: false)
+        let surface = app.otherElements["askduo.surface"]
+        XCTAssertTrue(surface.waitForExistence(timeout: 10))
+        print("Ask Duo compact chat: y=\(surface.frame.minY), height=\(surface.frame.height), windowHeight=\(app.frame.height)")
+        XCTAssertLessThan(surface.frame.height, app.frame.height * 0.85)
+        let question = app.descendants(matching: .any).matching(identifier: "askduo.question").firstMatch
+        XCTAssertTrue(question.exists)
+        XCTAssertFalse(app.staticTexts["askduo.context"].exists)
+        XCTAssertEqual(app.switches["askduo.usepage"].value as? String, "0")
+        app.buttons["askduo.expand"].tap()
+        let summary = app.buttons["askduo.quick.summary"]
+        revealAssistant(summary, in: app)
+        summary.tap()
+        let approve = app.buttons["askduo.approve"]
+        XCTAssertTrue(approve.waitForExistence(timeout: 15))
+        revealAssistant(approve, in: app)
+        XCTAssertEqual(question.value as? String, "Summarize this page in a few sentences.")
+        XCTAssertFalse(app.staticTexts["askduo.answer"].exists)
+        XCTAssertTrue(approve.label.contains("and Send"))
+        app.buttons["askduo.newchat"].tap()
+        let emptyComposer = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == '' OR value == %@", "Ask Duo..."), object: question
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [emptyComposer], timeout: 5), .completed)
+    }
+
+    @MainActor
     func testScannerSettingsPersistAfterReturningFromEditor() {
         continueAfterFailure = false
         executionTimeAllowance = 180
@@ -22,12 +55,9 @@ final class BrowserUITests: XCTestCase {
         feedback.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", expected), object: feedback)
         XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
-        let back = app.buttons["Settings"].firstMatch
-        XCTAssertTrue(back.waitForExistence(timeout: 10))
-        back.tap()
-        let save = app.buttons["Save Settings"]
-        revealControl(save, in: app.collectionViews.firstMatch)
-        save.tap()
+        let saveScanner = app.buttons["scanner.settings.save"]
+        XCTAssertTrue(saveScanner.waitForExistence(timeout: 10))
+        saveScanner.tap()
         app.buttons["Done"].firstMatch.tap()
         openMenu(in: app)
         scrollTo(settings, in: app)
@@ -36,8 +66,7 @@ final class BrowserUITests: XCTestCase {
         editor.tap()
         XCTAssertTrue(feedback.waitForExistence(timeout: 10))
         XCTAssertEqual(feedback.value as? String, expected, "Scanner preferences must survive Back, Save and reopening Settings")
-        XCTAssertTrue(back.waitForExistence(timeout: 10))
-        back.tap()
+        saveScanner.tap()
         app.buttons["Done"].firstMatch.tap()
     }
 
@@ -306,6 +335,9 @@ final class BrowserUITests: XCTestCase {
             XCTAssertFalse(ask.isEnabled)
             print("Ask Duo live generation: requested=false, modelUnavailable=true")
         }
+        let links = app.buttons["askduo.links.toggle"]
+        revealAssistant(links, in: app)
+        links.tap()
         let link = app.buttons["askduo.link.1"]
         revealAssistant(link, in: app)
         link.tap()
@@ -710,13 +742,18 @@ final class BrowserUITests: XCTestCase {
     }
 
     @MainActor
-    private func openAskDuo(in app: XCUIApplication) {
+    private func openAskDuo(in app: XCUIApplication, expanded: Bool = true) {
         let button = app.buttons["browser.askduo"]
         XCTAssertTrue(button.waitForExistence(timeout: 10))
         XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
         waitUntilHittable(button)
         button.tap()
         XCTAssertTrue(app.navigationBars["Ask Duo"].waitForExistence(timeout: 10))
+        if expanded {
+            let expand = app.buttons["askduo.expand"]
+            XCTAssertTrue(expand.waitForExistence(timeout: 10))
+            expand.tap()
+        }
     }
 
     @MainActor

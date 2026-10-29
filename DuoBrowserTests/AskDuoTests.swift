@@ -139,4 +139,56 @@ final class AskDuoTests: XCTestCase {
         XCTAssertFalse(failure.message.contains("PRIVATE_DIAGNOSTIC_MARKER"))
         XCTAssertEqual(AskDuoModel.describeFailure(AskDuoError.staleContext).code, "page.validation")
     }
+
+    func testConversationRetainsSixTurnsAndPromptsOnlyTwoShortenedExchanges() throws {
+        var chat = AskDuoConversation()
+        let link = AskDuoLink(id: 1, label: "Next", url: URL(string: "https://example.test/next?PRIVATE_NATIVE_HREF")!)
+        for index in 0..<8 {
+            try chat.append(
+                question: "Question \(index): " + String(repeating: "q", count: 250),
+                answer: AskDuoAnswer(text: "Answer \(index): " + String(repeating: "a", count: 700), link: link)
+            )
+        }
+        XCTAssertEqual(chat.turns.count, 6)
+        XCTAssertTrue(chat.turns[0].question.hasPrefix("Question 2:"))
+        let prompt = try chat.promptData()
+        let exchanges = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(prompt.utf8)) as? [[String: String]])
+        XCTAssertEqual(exchanges.count, 2)
+        XCTAssertEqual(Set(exchanges[0].keys), ["question", "answer"])
+        XCTAssertTrue(exchanges[0]["question"]?.hasPrefix("Question 6:") == true)
+        XCTAssertEqual(exchanges[0]["question"]?.count, 200)
+        XCTAssertEqual(exchanges[0]["answer"]?.count, 300)
+        XCTAssertFalse(prompt.contains("PRIVATE_NATIVE_HREF"))
+        XCTAssertLessThanOrEqual(prompt.utf8.count, 8192)
+    }
+
+    func testConversationRejectsInvalidTurnsWithoutChangingHistory() throws {
+        var chat = AskDuoConversation()
+        XCTAssertThrowsError(try chat.append(question: "", answer: AskDuoAnswer(text: "Answer", link: nil)))
+        XCTAssertThrowsError(try chat.append(question: String(repeating: "q", count: 401), answer: AskDuoAnswer(text: "Answer", link: nil)))
+        XCTAssertThrowsError(try chat.append(question: "Question", answer: AskDuoAnswer(text: " \n ", link: nil)))
+        XCTAssertThrowsError(try chat.append(question: "Question", answer: AskDuoAnswer(text: String(repeating: "a", count: 4001), link: nil)))
+        XCTAssertTrue(chat.turns.isEmpty)
+    }
+
+    func testNewChatAndQuestionValidationAreExplicitAndPrivateChatIsBlocked() throws {
+        let assistant = AskDuoModel()
+        assistant.question = " "
+        XCTAssertNil(assistant.validatedQuestion())
+        XCTAssertNotNil(assistant.errorMessage)
+        assistant.question = "  Explain the previous answer.  "
+        XCTAssertEqual(assistant.validatedQuestion(), "Explain the previous answer.")
+        assistant.allowsNavigation = true
+        assistant.newChat()
+        XCTAssertEqual(assistant.question, "")
+        XCTAssertTrue(assistant.conversation.turns.isEmpty)
+        XCTAssertFalse(assistant.allowsNavigation)
+        XCTAssertNil(assistant.pendingQuestion)
+        let manager = manager()
+        defer { for tab in manager.tabs { tab.tearDown() } }
+        let privateTab = try XCTUnwrap(manager.addTab(isPrivate: true))
+        assistant.ask(privateTab, usingPage: false)
+        XCTAssertTrue(assistant.errorMessage?.contains("Private Browsing") == true)
+        XCTAssertFalse(assistant.isBusy)
+    }
 }
