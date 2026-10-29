@@ -34,6 +34,14 @@ struct BrowserSettingsView: View {
                 Text("Scanner permission never opens the camera by itself. A fresh native Duo control action and iOS camera permission are still required.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section("Scanner") {
+                NavigationLink("Scanner Settings") {
+                    Form { ScannerSettingsSection(preferences: $settings.scanner) }
+                        .navigationTitle("Scanner Settings")
+                }
+                Text("Choose camera size, barcode types, and text-field input behavior. Save Settings to keep changes.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section {
                 if let error { Text(error).foregroundStyle(.red) }
                 Button("Save Settings", action: save)
@@ -55,6 +63,35 @@ struct BrowserSettingsView: View {
                     manager.selectedTab?.deactivate()
                     clearing = false
                 }
+            }
+        }
+    }
+
+    struct ScannerSettingsSection: View {
+        @Binding var preferences: ScannerPreferences
+
+        var body: some View {
+            Section("Camera") {
+                Toggle("Compact Scanner", isOn: $preferences.compact)
+                    .accessibilityIdentifier("scanner.settings.compact")
+                Toggle("Vibrate on Scan", isOn: $preferences.feedback)
+                Picker("Recognize", selection: $preferences.formats) {
+                    ForEach(ScannerFormats.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                }
+                Text("Compact scanning starts in a half-height sheet. Drag it taller if needed. The page cannot be edited behind the scanner.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Scan Into Field") {
+                Picker("Insert", selection: $preferences.insertion) {
+                    ForEach(ScannerInsertion.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                }
+                Picker("After Input", selection: $preferences.suffix) {
+                    ForEach(ScannerSuffix.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                }
+                Text("Enter Events notifies website keyboard handlers; these are not trusted hardware keystrokes. Enter and Submit Form also requests normal form submission if handlers do not cancel Enter. Submission can send data or perform an action. Enable it only on a site you trust.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Text("These input options apply only to Browser Menu → Scan Into Field. DuoKit Scan controls still return a result to the site without typing or submitting.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
         }
     }

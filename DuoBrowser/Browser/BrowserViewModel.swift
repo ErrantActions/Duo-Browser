@@ -13,8 +13,8 @@ final class BrowserViewModel: ObservableObject {
     var onNewWindow: ((URLRequest) -> Void)?
     var onStateChanged: (() -> Void)?
     var isActive: Bool {
-        get { !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader && bridge.isActive }
-        set { bridge.isActive = newValue && !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader }
+        get { !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader && !isShowingScanner && bridge.isActive }
+        set { bridge.isActive = newValue && !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader && !isShowingScanner }
     }
     @Published private(set) var navigationID = UUID()
     @Published private(set) var currentURL: URL?
@@ -35,6 +35,7 @@ final class BrowserViewModel: ObservableObject {
     private(set) var isEditingAddress = false
     private(set) var isShowingAssistant = false
     private(set) var isShowingReader = false
+    private(set) var isShowingScanner = false
 
     let webView: WKWebView
     private let webDelegate: BrowserWebDelegate
@@ -98,7 +99,7 @@ final class BrowserViewModel: ObservableObject {
         webDelegate.owner = self
         bridge.canPresentNativeUI = { [weak self] in
             guard let self else { return false }
-            return !self.isEditingAddress && !self.isShowingAssistant && !self.isShowingReader && self.pageDialog == nil && self.alert == nil
+            return !self.isEditingAddress && !self.isShowingAssistant && !self.isShowingReader && !self.isShowingScanner && self.pageDialog == nil && self.alert == nil
         }
         webView.navigationDelegate = webDelegate
         webView.uiDelegate = webDelegate
@@ -115,6 +116,11 @@ final class BrowserViewModel: ObservableObject {
             try bridge.install(on: webView)
         } catch {
             showNotice("DuoKit could not be loaded. Normal browsing remains available. \(error.localizedDescription)")
+        }
+        do {
+            try ScannerInput.install(on: webView)
+        } catch {
+            showNotice("Scanner text input could not be loaded. \(error.localizedDescription)")
         }
         bridgeObservation = bridge.objectWillChange.sink { [weak self] _ in
             self?.objectWillChange.send()
@@ -156,7 +162,14 @@ final class BrowserViewModel: ObservableObject {
     func endPageToolPresentation(isActive: Bool) {
         isShowingAssistant = false
         isShowingReader = false
+        isShowingScanner = false
         self.isActive = isActive
+    }
+
+    func beginScannerPresentation() {
+        guard !isClosed else { return }
+        isShowingScanner = true
+        deactivate()
     }
 
     func navigate(_ input: String) {

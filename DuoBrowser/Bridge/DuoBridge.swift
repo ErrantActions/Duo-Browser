@@ -32,6 +32,7 @@ final class DuoBridge: ObservableObject {
     var isActive = true
     var canPresentNativeUI: (() -> Bool)?
     @Published var browserControlsVisible = false
+    var scannerPreferences: ScannerPreferences { library.settings.scanner }
 
     private weak var webView: WKWebView?
     private let library: BrowserLibrary

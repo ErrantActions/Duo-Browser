@@ -149,6 +149,34 @@ No background scanning or automatic camera grant exists. No photos/video are
 saved. Scanned strings are not logged, interpreted as URLs, persisted by Duo,
 or forwarded elsewhere. Sites may process the values they explicitly receive.
 
+### Browser-initiated field input
+
+The separate **Scan Into Field** browser action requires an explicit native
+launch and camera authorization, not a website API request. It does not grant
+DuoKit permissions. A fixed main-frame helper in an isolated content world
+remembers the last focused eligible input/textarea. The capture ticket is
+single-use, expires after 75 seconds, and binds the exact element, source URL,
+value, selection and form. Native code also checks tab/navigation identity,
+foreground state and page-tool ownership. Backgrounding, closing or navigation
+invalidates native work; generation and insertion have 15-second UI deadlines.
+
+Only verified HTTPS and the exact bundled demo are supported. Passwords and
+autocomplete-marked payment/one-time-code inputs, hidden, disabled/read-only,
+disconnected fields, iframes and contenteditable editors are excluded. Existing
+field values stay in the isolated helper, not native preferences or logs. Codes
+are bounded to 4 KB and never interpolated into executable JavaScript. Changed
+targets and length violations fail without silently choosing another field.
+
+Input emits cancellable beforeinput followed by input/change. Enter is disabled
+by default. Enter Events is synthetic, not a hardware-trusted key. The separately
+chosen Enter and Submit Form mode can perform a consequential website action:
+it honors canceled Enter, uses requestSubmit and ordinary browser validation,
+and restricts form targets to the same HTTPS origin/current tab or exact bundled
+demo. It never clicks an arbitrary button. Sites with custom handlers should use
+Enter Events to avoid requesting an additional standard form submission.
+DuoKit result delivery remains separate: no typing/submission is added to it.
+Compact sheets disable interaction with the page behind the camera.
+
 ## Other browser data and permissions
 
 WebKit's normal permission prompts govern ordinary site media. A setting can

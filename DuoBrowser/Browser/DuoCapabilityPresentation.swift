@@ -6,7 +6,7 @@ struct DuoCapabilityPresentation: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .fullScreenCover(item: Binding(
+            .sheet(item: Binding(
                 get: { enabled ? bridge.scannerRequest : nil },
                 set: { request in
                     if enabled, request == nil, let pending = bridge.scannerRequest {
@@ -14,8 +14,13 @@ struct DuoCapabilityPresentation: ViewModifier {
                     }
                 }
             )) { request in
-                ScannerView { bridge.completeScanner($0, request: request) }
-                    .interactiveDismissDisabled()
+                ScannerView(preferences: bridge.scannerPreferences) { bridge.completeScanner($0, request: request) }
+                    .presentationDetents(bridge.scannerPreferences.compact ? [.medium, .large] : [.large])
+                    .presentationDragIndicator(.visible)
+                    .presentationBackgroundInteraction(.disabled)
+                    .onDisappear {
+                        bridge.completeScanner(.cancelled, request: request)
+                    }
             }
             .confirmationDialog(
                 "Website Permission",

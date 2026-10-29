@@ -46,6 +46,8 @@ struct BrowserToolbar: View {
             NavigationStack {
                 List {
                     Section("Page Tools") {
+                        menuAction("Scan Into Field", icon: "barcode.viewfinder") { present(.scanner) }
+                            .accessibilityIdentifier("browser.scanner")
                         menuAction("Reading View", icon: "doc.plaintext") { present(.reader) }
                             .accessibilityIdentifier("browser.reader")
                         menuAction("Find on Page", icon: "doc.text.magnifyingglass", action: model.findInPage)

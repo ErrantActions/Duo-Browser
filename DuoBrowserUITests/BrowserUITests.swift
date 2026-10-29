@@ -3,6 +3,28 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testScannerUsesCompactSheetAndRequiresASelectedField() {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        openReadingDemo(in: app, isPrivate: false)
+        openMenu(in: app)
+        app.buttons["browser.scanner"].tap()
+        XCTAssertTrue(app.navigationBars["Scan Into Field"].waitForExistence(timeout: 10))
+        let start = app.buttons["scanner.input.start"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        let bar = app.navigationBars["Scan Into Field"]
+        XCTAssertGreaterThan(bar.frame.minY, app.frame.height * 0.2, "Compact scanner must leave the page visible")
+        start.tap()
+        XCTAssertTrue(app.staticTexts["scanner.input.error"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.navigationBars["Scan Into Field"].exists)
+        XCTAssertFalse(app.navigationBars["Scan Barcode or QR"].exists)
+        app.navigationBars["Scan Into Field"].buttons["Done"].tap()
+        XCTAssertTrue(app.webViews.buttons["Install Duo Panel"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
     func testAskDuoHasOneDirectToolbarControl() {
         continueAfterFailure = false
         executionTimeAllowance = 180

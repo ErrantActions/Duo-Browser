@@ -87,3 +87,15 @@ test("page background checks switch readable light and dark colors without nativ
     assert.equal(panels.length, 0);
     assert.equal(requests.length, 0);
 });
+
+test("a DuoKit scanner result fills the local demo field without implicit form submission", () => {
+    const { elements, callbacks, requests } = createDemo();
+    callbacks[0]({ type: "duo.scannerResult", requestId: "test", value: "123456789", format: "EAN13" });
+    assert.equal(elements.get("#barcode-input").value, "123456789");
+    assert.equal(elements.get("#barcode-status").textContent, "Scan received. Select Look Up Barcode to submit.");
+    assert.equal(requests.length, 0);
+    let prevented = false;
+    elements.get("#barcode-lookup").onsubmit({ preventDefault() { prevented = true; } });
+    assert.ok(prevented);
+    assert.equal(elements.get("#barcode-status").textContent, "Local lookup submitted: 123456789");
+});

@@ -72,6 +72,10 @@ if (available) {
     perform(() => window.duo.device.capabilities());
     window.duo.events.subscribe(event => {
         log(event);
+        if (event.type === "duo.scannerResult") {
+            document.querySelector("#barcode-input").value = event.value;
+            document.querySelector("#barcode-status").textContent = "Scan received. Select Look Up Barcode to submit.";
+        }
         if (event.type !== "duo.controlActivated") return;
         const control = panel.controls.find(item => item.id === event.controlId);
         if (control && event.payload.value !== undefined) control.value = event.payload.value;
@@ -95,3 +99,8 @@ document.querySelector("#alert").onclick = () => alert("Hello from the DuoKit de
 document.querySelector("#confirm").onclick = () => log({ confirmed: confirm("Confirm this demo website action?") });
 document.querySelector("#prompt").onclick = () => log({ response: prompt("Enter a demo response", "Hello") });
 document.querySelector("#clear-log").onclick = () => { logElement.textContent = ""; };
+document.querySelector("#barcode-lookup").onsubmit = event => {
+    event.preventDefault();
+    document.querySelector("#barcode-status").textContent =
+        `Local lookup submitted: ${document.querySelector("#barcode-input").value}`;
+};

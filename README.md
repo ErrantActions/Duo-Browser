@@ -370,6 +370,33 @@ start screen opens without contacting your configured custom start page.
 Bookmarks, Reading List, settings, and completed downloads are preserved.
 The in-memory recently closed tab list is cleared.
 
+### Configurable scanner and text-field input
+
+**Browser Menu → Scan Into Field** works on verified HTTPS pages and the bundled
+demo without requiring a site integration. Select the destination text field on
+the page first, then open the tool and choose **Start Scanning**. The first code
+ends the camera session. Settings in this tool are saved immediately; global
+**Settings → Scanner Settings** uses the existing **Save Settings** button.
+
+- Compact half-height camera sheet by default; drag taller, or disable Compact
+  Scanner for an expanded sheet. The page remains visible but cannot be edited
+  behind the scanner.
+- All supported codes, QR only, or non-QR barcodes; optional vibration.
+- Insert at the saved cursor/selection, replace the field, or append.
+- After Input: None (default), Enter Events, or **Enter and Submit Form**.
+  The last option can send data or perform an action; enable it only for a trusted
+  site. It uses normal same-site form validation and respects canceled Enter.
+  Custom sites may need Enter Events instead. Synthetic events are not trusted
+  hardware keystrokes, so not every site accepts them.
+
+Only the selected main-page input/textarea is eligible, excluding passwords,
+marked payment/one-time-code fields, hidden/disabled/read-only inputs, frames,
+and custom contenteditable editors. Changed/expired targets fail rather than
+typing elsewhere. Scans are not retained by Duo; the receiving website controls
+its own handling. This is separate from **DuoKit Scan**: site integrations still
+receive their existing result event without automatic typing or submission.
+Camera capture and vibration still need supported-iPhone verification.
+
 ### DuoKit demo
 
 On the built-in start screen tap **Explore DuoKit Demo**, or select **DuoKit

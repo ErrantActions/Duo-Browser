@@ -6,6 +6,9 @@
     objects = {
 
 /* Begin PBXBuildFile section */
+        A00000000000000000000129 = {isa = PBXBuildFile; fileRef = B00000000000000000000129; };
+        A0000000000000000000012A = {isa = PBXBuildFile; fileRef = B0000000000000000000012A; };
+        A0000000000000000000012B = {isa = PBXBuildFile; fileRef = B0000000000000000000012B; };
         A00000000000000000000001 /* DuoBrowserApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001; };
         A00000000000000000000002 /* URLNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002; };
         A00000000000000000000003 /* BrowserPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003; };
@@ -72,6 +75,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+        B00000000000000000000129 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerInputView.swift; sourceTree = "<group>"; };
+        B0000000000000000000012A = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ScannerInput.js; sourceTree = "<group>"; };
+        B0000000000000000000012B = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerTests.swift; sourceTree = "<group>"; };
         B00000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoBrowserApp.swift; sourceTree = "<group>"; };
         B00000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLNormalizer.swift; sourceTree = "<group>"; };
         B00000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserPresentation.swift; sourceTree = "<group>"; };
@@ -196,13 +202,13 @@
         };
         C00000000000000000000006 = {
             isa = PBXGroup;
-            children = (B0000000000000000000000E, B00000000000000000000111, B00000000000000000000112, B00000000000000000000114, B00000000000000000000124);
+            children = (B0000000000000000000000E, B00000000000000000000111, B00000000000000000000112, B00000000000000000000114, B00000000000000000000124, B0000000000000000000012A);
             path = Resources;
             sourceTree = "<group>";
         };
         C00000000000000000000007 = {
             isa = PBXGroup;
-            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A, B00000000000000000000123, B00000000000000000000128);
+            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A, B00000000000000000000123, B00000000000000000000128, B0000000000000000000012B);
             path = DuoBrowserTests;
             sourceTree = "<group>";
         };
@@ -232,7 +238,7 @@
         };
         C00000000000000000000104 = {
             isa = PBXGroup;
-            children = (B0000000000000000000010B);
+            children = (B0000000000000000000010B, B00000000000000000000129);
             path = Scanner;
             sourceTree = "<group>";
         };
@@ -316,7 +322,7 @@
         F00000000000000000000003 = {
             isa = PBXResourcesBuildPhase;
             buildActionMask = 2147483647;
-            files = (A00000000000000000000110, A00000000000000000000111, A00000000000000000000112, A00000000000000000000114, A00000000000000000000124);
+            files = (A00000000000000000000110, A00000000000000000000111, A00000000000000000000112, A00000000000000000000114, A00000000000000000000124, A0000000000000000000012A);
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000006 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
@@ -368,13 +374,14 @@
                 A00000000000000000000125,
                 A00000000000000000000126,
                 A00000000000000000000127,
+                A00000000000000000000129,
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000004 = {
             isa = PBXSourcesBuildPhase;
             buildActionMask = 2147483647;
-            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A, A00000000000000000000123, A00000000000000000000128);
+            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A, A00000000000000000000123, A00000000000000000000128, A0000000000000000000012B);
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000101 = {

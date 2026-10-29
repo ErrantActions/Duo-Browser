@@ -2,8 +2,8 @@
 set -euo pipefail
 
 suite="${1:-all}"
-if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo && "$suite" != reading ) ]]; then
-  echo "::error::Choose all, unit, duo-panel, ask-duo, or reading for the native test suite."
+if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo && "$suite" != reading && "$suite" != scanner ) ]]; then
+  echo "::error::Choose all, unit, duo-panel, ask-duo, reading, or scanner for the native test suite."
   exit 1
 fi
 set --
@@ -19,6 +19,9 @@ elif [[ "$suite" == reading ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewAppearanceAndPDF \
     -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewPrivateExportRequiresConfirmation \
     -only-testing:DuoBrowserUITests/BrowserUITests/testFavoriteCanBeSavedAndOpenedFromTheStartPage
+elif [[ "$suite" == scanner ]]; then
+  set -- -only-testing:DuoBrowserTests/ScannerTests \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testScannerUsesCompactSheetAndRequiresASelectedField
 fi
 maximum_test_seconds=180
 if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading ]]; then

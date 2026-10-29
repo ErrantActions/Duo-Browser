@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum BrowserSheet: String, Identifiable {
-    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs, assistant, reader
+    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs, assistant, reader, scanner
     var id: String { rawValue }
 }
 
@@ -30,7 +30,11 @@ struct BrowserView: View {
         }
         .preferredColorScheme(colorScheme)
         .sheet(item: $sheet, onDismiss: finishSheet) { selection in
-            NavigationStack {
+            Group {
+                if selection == .scanner, let pageToolTab {
+                    ScannerInputView(model: pageToolTab, library: library)
+                } else {
+                NavigationStack {
                 sheetContent(selection)
                     .toolbar {
                         if selection != .tabs && selection != .bookmark {
@@ -38,7 +42,12 @@ struct BrowserView: View {
                                 Button("Done") { sheet = nil }
                                     .disabled(manager.isClearingData)
                             }
+                            }
+                            }
                         }
+                        .presentationDetents(selection == .scanner && library.settings.scanner.compact ? [.medium, .large] : [.large])
+                        .presentationDragIndicator(selection == .scanner ? .visible : .automatic)
+                        .presentationBackgroundInteraction(.disabled)
                     }
             }
             .interactiveDismissDisabled(manager.isClearingData)
@@ -62,7 +71,7 @@ struct BrowserView: View {
             }
         }
         .onChange(of: manager.selectedID) { _, _ in
-            if (sheet == .assistant || sheet == .reader), pageToolTab?.id != manager.selectedID {
+            if (sheet == .assistant || sheet == .reader || sheet == .scanner), pageToolTab?.id != manager.selectedID {
                 pendingAssistantNavigation = nil
                 sheet = nil
                 manager.notice = "The page tool was closed because the selected tab changed."
@@ -95,6 +104,8 @@ struct BrowserView: View {
             }
         case .reader:
             if let pageToolTab { ReaderView(model: pageToolTab, library: pageToolTab.library) }
+        case .scanner:
+            EmptyView()
         case .bookmark:
             if let tab = manager.selectedTab, let url = tab.shareURL {
                 BookmarkEditor(
@@ -114,9 +125,10 @@ struct BrowserView: View {
     }
 
     private func present(_ selection: BrowserSheet) {
-        if selection == .assistant || selection == .reader {
+        if selection == .assistant || selection == .reader || selection == .scanner {
             pageToolTab = manager.selectedTab
             if selection == .assistant { pageToolTab?.beginAssistantPresentation() }
+            else if selection == .scanner { pageToolTab?.beginScannerPresentation() }
             else { pageToolTab?.beginReaderPresentation() }
         }
         manager.selectedTab?.deactivate()

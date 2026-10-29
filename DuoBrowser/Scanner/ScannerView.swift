@@ -11,6 +11,7 @@ enum ScannerOutcome {
 
 struct ScannerView: View {
     static var isSupported: Bool { DataScannerViewController.isSupported }
+    var preferences = ScannerPreferences()
     let complete: (ScannerOutcome) -> Void
     @State private var authorized = false
     @State private var didFinish = false
@@ -19,7 +20,7 @@ struct ScannerView: View {
         NavigationStack {
             Group {
                 if authorized {
-                    CameraScanner(complete: finish)
+                    CameraScanner(preferences: preferences, complete: finish)
                         .ignoresSafeArea(edges: .bottom)
                 } else {
                     ProgressView("Preparing Camera")
@@ -72,15 +73,19 @@ struct ScannerView: View {
 }
 
 private struct CameraScanner: UIViewControllerRepresentable {
+    let preferences: ScannerPreferences
     let complete: (ScannerOutcome) -> Void
 
-    func makeCoordinator() -> Coordinator { Coordinator(complete: complete) }
+    func makeCoordinator() -> Coordinator { Coordinator(feedback: preferences.feedback, complete: complete) }
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
+        let barcodes: [VNBarcodeSymbology] = [
+            .ean13, .ean8, .code128, .code39, .pdf417, .aztec, .dataMatrix, .upce
+        ]
+        let symbologies: [VNBarcodeSymbology] = preferences.formats == .qr ? [.qr]
+            : (preferences.formats == .barcodes ? barcodes : [.qr] + barcodes)
         let scanner = DataScannerViewController(
-            recognizedDataTypes: [.barcode(symbologies: [
-                .qr, .ean13, .ean8, .code128, .code39, .pdf417, .aztec, .dataMatrix, .upce
-            ])],
+            recognizedDataTypes: [.barcode(symbologies: symbologies)],
             qualityLevel: .balanced,
             recognizesMultipleItems: false,
             isHighFrameRateTrackingEnabled: false,
@@ -109,9 +114,13 @@ private struct CameraScanner: UIViewControllerRepresentable {
     @MainActor
     final class Coordinator: NSObject, DataScannerViewControllerDelegate {
         private let complete: (ScannerOutcome) -> Void
+        private let feedback: Bool
         private var finished = false
 
-        init(complete: @escaping (ScannerOutcome) -> Void) { self.complete = complete }
+        init(feedback: Bool, complete: @escaping (ScannerOutcome) -> Void) {
+            self.feedback = feedback
+            self.complete = complete
+        }
 
         func finish(_ outcome: ScannerOutcome) {
             guard !finished else { return }
@@ -127,7 +136,11 @@ private struct CameraScanner: UIViewControllerRepresentable {
             for item in addedItems {
                 if case .barcode(let barcode) = item, let value = barcode.payloadStringValue {
                     dataScanner.stopScanning()
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    guard !value.isEmpty, value.utf8.count <= 4096 else {
+                        finish(.failure("The scanned code is empty or too large. Try a code under 4 KB."))
+                        return
+                    }
+                    if feedback { UINotificationFeedbackGenerator().notificationOccurred(.success) }
                     finish(.scanned(value: value, format: barcode.observation.symbology.rawValue))
                     return
                 }

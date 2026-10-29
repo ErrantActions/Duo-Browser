@@ -202,6 +202,24 @@ handling; disclose that behavior to your users.
 
 ## Lifecycle and permissions
 
+### Scanner presentation and browser keyboard input
+
+The native scanner now defaults to a compact, resizable sheet instead of taking
+over the entire screen. Users choose compact/expanded presentation, recognition
+types, and vibration in Scanner Settings. These preferences can restrict which
+codes a DuoKit scan recognizes; `capabilities().scanner` continues to mean hardware
+support, not a guarantee of camera authorization or any particular code.
+
+**Browser Menu → Scan Into Field** is a separate, user-initiated browser tool.
+Its insertion and Enter/form-submit preferences do not change
+`duo.scanner.request` or `duo.scannerResult`. DuoKit sites remain responsible for
+putting a received result into their own UI and deciding whether to submit.
+Do not process a result both as a site event and as keyboard-wedge input.
+The bundled demo fills its Barcode field from a DuoKit result but deliberately
+does not submit it. Its local lookup form also demonstrates the browser tool.
+
+### Document ownership
+
 The user must approve native panels for an exact HTTPS origin (scheme, host,
 port). Different ports/subdomains do not inherit approval. The built-in demo
 has a dedicated `duo-demo` identity. Stored decisions can authorize subsequent

@@ -50,7 +50,7 @@ function visit(id, base) {
         const file = path.join(base, object.path);
         assert.ok(fs.existsSync(file), `Missing project file ${file}`);
         if (file.endsWith(".swift")) referencedSources.push(id);
-        if (["duo.js", "AskDuoContext.js", "Demo", "PrivacyInfo.xcprivacy", "Assets.xcassets"].includes(object.path)) resources.push(id);
+        if (["duo.js", "AskDuoContext.js", "ScannerInput.js", "Demo", "PrivacyInfo.xcprivacy", "Assets.xcassets"].includes(object.path)) resources.push(id);
     }
 }
 visit(objects[project.rootObject].mainGroup, root);
@@ -60,7 +60,7 @@ assert.equal(memberships.length, referencedSources.length);
 for (const id of referencedSources) assert.equal(memberships.filter(item => item === id).length, 1);
 const resourceMemberships = Object.values(objects).filter(object => object.isa === "PBXResourcesBuildPhase")
     .flatMap(object => object.files).map(id => objects[id].fileRef);
-assert.equal(resources.length, 5);
+assert.equal(resources.length, 6);
 for (const id of resources) assert.equal(resourceMemberships.filter(item => item === id).length, 1);
 function countSources(directory) {
     return fs.readdirSync(directory, { withFileTypes: true }).reduce((sum, entry) => {

@@ -136,6 +136,20 @@ controls cancels pending capability work and activation tokens without erasing
 the site's approved panel. Navigation, tab switching, and revocation retain the
 existing document/origin checks.
 
+Both website scanning and the separate browser Scan Into Field tool use
+ScannerView and persisted scanner preferences. Camera presentation is a
+resizable medium/large sheet, with background interaction disabled. The website
+bridge still emits only its existing scanner outcome events.
+
+ScannerInput installs a fixed focus tracker at main-document start in its own
+isolated content world. Only an explicit browser scan captures a one-shot field
+ticket; a successful camera result applies through structured arguments after
+native tab/navigation/foreground checks. Original values remain in JavaScript,
+not the native model. A selected eligible input/textarea is revalidated before
+insertion and optional synthetic Enter/normal requestSubmit. ScannerInputView
+uses the page-tool ownership lifecycle, suspends site capability presentation,
+and bounds asynchronous capture/insertion without persisting barcode values.
+
 WebKit delegates and observable state are main-actor isolated. KVO callbacks
 capture the view model weakly and dispatch state synchronization to the main
 actor. The delegate references the view model weakly. WebKit retains a proxy

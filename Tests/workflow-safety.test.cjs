@@ -81,7 +81,7 @@ defaults() {
 export -f xcodebuild xcrun mkdir defaults
 exec bash .github/scripts/test-ios.sh "$SUITE"
 `;
-    for (const suite of ["unit", "all", "duo-panel", "ask-duo", "reading", "invalid"]) {
+    for (const suite of ["unit", "all", "duo-panel", "ask-duo", "reading", "scanner", "invalid"]) {
         const result = cp.spawnSync(bash, ["-c", fixture], {
             cwd: root, encoding: "utf8",
             env: { ...process.env, SUITE: suite, EXPECTED_IOS_SDK: "27.1" }
@@ -116,6 +116,9 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testReadingViewPrivateExportRequiresConfirmation>/);
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testFavoriteCanBeSavedAndOpenedFromTheStartPage>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
+            } else if (suite === "scanner") {
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests\/ScannerTests>/);
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testScannerUsesCompactSheetAndRequiresASelectedField>/);
             } else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
             assert.match(result.stdout, new RegExp(`XCODE_ARG<-maximum-test-execution-time-allowance>\\nXCODE_ARG<${["all", "ask-duo", "reading"].includes(suite) ? 300 : 180}>`));
         }

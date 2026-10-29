@@ -16,6 +16,26 @@ enum ReaderTheme: String, Codable, CaseIterable {
     case paper, sepia, night
 }
 
+enum ScannerFormats: String, Codable, CaseIterable {
+    case all = "All Codes", barcodes = "Barcodes Only", qr = "QR Only"
+}
+
+enum ScannerInsertion: String, Codable, CaseIterable {
+    case selection = "At Cursor", replace = "Replace Field", append = "Append"
+}
+
+enum ScannerSuffix: String, Codable, CaseIterable {
+    case none = "None", enter = "Enter Events", submit = "Enter and Submit Form"
+}
+
+struct ScannerPreferences: Codable, Equatable {
+    var compact = true
+    var feedback = true
+    var formats: ScannerFormats = .all
+    var insertion: ScannerInsertion = .selection
+    var suffix: ScannerSuffix = .none
+}
+
 struct ReaderPreferences: Codable, Equatable {
     var fontSize = 19
     var theme: ReaderTheme = .paper
@@ -45,12 +65,13 @@ struct BrowserSettings: Codable, Equatable {
     var defaultScannerPermission: SitePermission = .ask
     var denyWebsiteMedia = false
     var reader = ReaderPreferences()
+    var scanner = ScannerPreferences()
 }
 
 extension BrowserSettings {
     private enum CodingKeys: String, CodingKey {
         case searchProvider, maximumTabs, restoreTabs, historyRetentionDays, startPageAddress
-        case appearance, defaultDuoPermission, defaultScannerPermission, denyWebsiteMedia, reader
+        case appearance, defaultDuoPermission, defaultScannerPermission, denyWebsiteMedia, reader, scanner
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +86,7 @@ extension BrowserSettings {
         defaultScannerPermission = try container.decode(SitePermission.self, forKey: .defaultScannerPermission)
         denyWebsiteMedia = try container.decode(Bool.self, forKey: .denyWebsiteMedia)
         reader = try container.decodeIfPresent(ReaderPreferences.self, forKey: .reader) ?? ReaderPreferences()
+        scanner = try container.decodeIfPresent(ScannerPreferences.self, forKey: .scanner) ?? ScannerPreferences()
     }
 }
 
