@@ -78,9 +78,11 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(allow.waitForExistence(timeout: 10))
         allow.tap()
 
-        let rightPane = app.otherElements["duo.panel.right"]
-        XCTAssertTrue(rightPane.waitForExistence(timeout: 10))
+        let rightPane = app.descendants(matching: .any).matching(identifier: "duo.panel.right").firstMatch
+        let paneExists = rightPane.waitForExistence(timeout: 10)
         let webpage = app.webViews.firstMatch
+        print("Duo layout: windowWidth=\(app.frame.width), webWidth=\(webpage.frame.width), pane=\(paneExists), launcher=\(app.buttons["duo.controls.open"].exists), next=\(app.buttons["duo.control.next"].exists), back=\(app.buttons["duo.browser.back"].exists)")
+        XCTAssertTrue(paneExists)
         XCTAssertGreaterThan(webpage.frame.width, 0)
         XCTAssertGreaterThanOrEqual(rightPane.frame.width, 320)
         XCTAssertGreaterThanOrEqual(rightPane.frame.minX, webpage.frame.maxX - 1)
