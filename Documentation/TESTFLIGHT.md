@@ -201,11 +201,16 @@ The published logs verify:
   US Central on October 28, 2026.
 - The temporary signing cleanup completed successfully.
 
-The immediate Apple status query had not yet listed the build. Apple processing,
-assignment to Owner Testing, and actual phone installation/launch are therefore
-not yet verified. Owner Testing was separately confirmed as an internal group
-with one tester and manual build assignment. Do not re-upload merely because
-processing is asynchronous.
+Apple processing subsequently completed with **VALID** for build 1, ID
+`79ca0ac0-fc8f-435d-bcab-e881c447a631`. Apple's beta detail currently reports
+**MISSING_EXPORT_COMPLIANCE**. The owner was unavailable to confirm that answer;
+no encryption exemption or legal declaration was submitted automatically.
+
+Next, the owner must resolve export compliance in App Store Connect. Then assign
+the processed build to Owner Testing and verify actual phone installation and
+launch. Owner Testing was separately confirmed as an internal group with one
+tester and manual build assignment. Those assignment/install/launch steps are
+not yet verified. Do not upload another copy to resolve a compliance question.
 
 Windows checks prove local helper/contracts, not native iOS compilation.
 Native validation requires Xcode. Earlier full UI runs found failures in the

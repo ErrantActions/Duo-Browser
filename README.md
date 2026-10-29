@@ -32,8 +32,9 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   the installed app name. Version **1.0 (1)** was signed, exported, and
   successfully uploaded on October 28, 2026 in
   [release run 40795353458](https://github.com/ErrantActions/Duo-Browser/actions/runs/40795353458).
-  Apple processing, build assignment, and phone installation remain separate
-  checkpoints; successful delivery is not proof of installation.
+  Apple processing is verified **VALID**. Owner export-compliance confirmation
+  is still required before testing (`MISSING_EXPORT_COMPLIANCE`); build assignment
+  and phone installation are not yet verified.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 
