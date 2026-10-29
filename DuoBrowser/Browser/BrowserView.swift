@@ -11,6 +11,7 @@ struct BrowserView: View {
     @State private var sheet: BrowserSheet?
     @State private var pageToolTab: BrowserViewModel?
     @State private var pendingAssistantNavigation: AskDuoNavigation?
+    @State private var scannerDetent: PresentationDetent = .fraction(0.45)
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -33,6 +34,10 @@ struct BrowserView: View {
             Group {
                 if selection == .scanner, let pageToolTab {
                     ScannerInputView(model: pageToolTab, library: library)
+                        .presentationDetents(library.settings.scanner.compact ? [.fraction(0.45), .large] : [.large], selection: $scannerDetent)
+                        .presentationCompactAdaptation(.none)
+                        .presentationDragIndicator(.visible)
+                        .presentationBackgroundInteraction(.disabled)
                 } else {
                 NavigationStack {
                 sheetContent(selection)
@@ -45,9 +50,6 @@ struct BrowserView: View {
                             }
                             }
                         }
-                        .presentationDetents(selection == .scanner && library.settings.scanner.compact ? [.medium, .large] : [.large])
-                        .presentationDragIndicator(selection == .scanner ? .visible : .automatic)
-                        .presentationBackgroundInteraction(.disabled)
                     }
             }
             .interactiveDismissDisabled(manager.isClearingData)
@@ -77,6 +79,9 @@ struct BrowserView: View {
                 manager.notice = "The page tool was closed because the selected tab changed."
             }
             if sheet != nil { manager.selectedTab?.deactivate() }
+        }
+        .onChange(of: library.settings.scanner.compact) { _, compact in
+            scannerDetent = compact ? .fraction(0.45) : .large
         }
     }
 
@@ -125,6 +130,9 @@ struct BrowserView: View {
     }
 
     private func present(_ selection: BrowserSheet) {
+        if selection == .scanner {
+            scannerDetent = library.settings.scanner.compact ? .fraction(0.45) : .large
+        }
         if selection == .assistant || selection == .reader || selection == .scanner {
             pageToolTab = manager.selectedTab
             if selection == .assistant { pageToolTab?.beginAssistantPresentation() }

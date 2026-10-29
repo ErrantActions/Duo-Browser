@@ -138,7 +138,9 @@ existing document/origin checks.
 
 Both website scanning and the separate browser Scan Into Field tool use
 ScannerView and persisted scanner preferences. Camera presentation is a
-resizable medium/large sheet, with background interaction disabled. The website
+resizable 45%-height/large sheet with an explicit initial detent and compact
+adaptation disabled, so compact-height layouts do not discard the smaller
+detent. Background interaction is disabled. The website
 bridge still emits only its existing scanner outcome events.
 
 ScannerInput installs a fixed focus tracker at main-document start in its own

@@ -107,6 +107,8 @@ struct ScannerInputView: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("scanner.input.surface")
         .onChange(of: model.navigationID) { _, _ in
             cancel(nil)
             logger.info("Scanner closed after page navigation.")

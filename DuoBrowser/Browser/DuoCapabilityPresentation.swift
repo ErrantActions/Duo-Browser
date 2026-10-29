@@ -3,6 +3,7 @@ import SwiftUI
 struct DuoCapabilityPresentation: ViewModifier {
     @ObservedObject var bridge: DuoBridge
     let enabled: Bool
+    @State private var scannerDetent: PresentationDetent = .fraction(0.45)
 
     func body(content: Content) -> some View {
         content
@@ -15,11 +16,17 @@ struct DuoCapabilityPresentation: ViewModifier {
                 }
             )) { request in
                 ScannerView(preferences: bridge.scannerPreferences) { bridge.completeScanner($0, request: request) }
-                    .presentationDetents(bridge.scannerPreferences.compact ? [.medium, .large] : [.large])
+                    .presentationDetents(bridge.scannerPreferences.compact ? [.fraction(0.45), .large] : [.large], selection: $scannerDetent)
+                    .presentationCompactAdaptation(.none)
                     .presentationDragIndicator(.visible)
                     .presentationBackgroundInteraction(.disabled)
                     .onDisappear {
                         bridge.completeScanner(.cancelled, request: request)
+                    }
+                    .onChange(of: bridge.scannerRequest?.id, initial: true) { _, request in
+                        if request != nil {
+                            scannerDetent = bridge.scannerPreferences.compact ? .fraction(0.45) : .large
+                        }
                     }
             }
             .confirmationDialog(

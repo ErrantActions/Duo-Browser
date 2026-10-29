@@ -19,8 +19,9 @@ final class BrowserUITests: XCTestCase {
         let feedback = app.switches["scanner.settings.feedback"]
         XCTAssertTrue(feedback.waitForExistence(timeout: 10))
         let expected = feedback.value as? String == "1" ? "0" : "1"
-        feedback.tap()
-        XCTAssertEqual(feedback.value as? String, expected)
+        feedback.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", expected), object: feedback)
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
         app.navigationBars["Scanner Settings"].buttons["Settings"].tap()
         let save = app.buttons["Save Settings"]
         revealControl(save, in: app.collectionViews.firstMatch)
@@ -49,7 +50,12 @@ final class BrowserUITests: XCTestCase {
         let start = app.buttons["scanner.input.start"]
         XCTAssertTrue(start.waitForExistence(timeout: 10))
         let bar = app.navigationBars["Scan Into Field"]
-        XCTAssertGreaterThan(bar.frame.minY, app.frame.height * 0.2, "Compact scanner must leave the page visible")
+        let surface = app.otherElements["scanner.input.surface"]
+        XCTAssertTrue(surface.waitForExistence(timeout: 10))
+        print("Compact scanner geometry: y=\(surface.frame.minY), height=\(surface.frame.height), width=\(surface.frame.width), barY=\(bar.frame.minY), windowHeight=\(app.frame.height)")
+        XCTAssertGreaterThan(surface.frame.height, 200)
+        XCTAssertLessThan(surface.frame.height, app.frame.height * 0.7, "Compact scanner must not cover the page")
+        XCTAssertGreaterThan(surface.frame.minY, app.frame.height * 0.1)
         start.tap()
         XCTAssertTrue(app.staticTexts["scanner.input.error"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.navigationBars["Scan Into Field"].exists)
