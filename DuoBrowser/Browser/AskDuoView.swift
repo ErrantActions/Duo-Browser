@@ -5,6 +5,7 @@ struct AskDuoView: View {
     @StateObject private var assistant = AskDuoModel()
     @State private var selectedLink: AskDuoLink?
     @State private var confirmsNavigation = false
+    @FocusState private var questionFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
     let navigate: (AskDuoNavigation) -> Void
 
@@ -44,12 +45,16 @@ struct AskDuoView: View {
                 Section("2. Ask about this excerpt") {
                     TextField("What would you like to know?", text: $assistant.question, axis: .vertical)
                         .lineLimit(2...5)
+                        .focused($questionFocused)
                         .disabled(assistant.isBusy)
                         .accessibilityIdentifier("askduo.question")
                     Text("\(assistant.question.count)/400 characters").font(.caption)
                     Toggle("Allow a link suggestion", isOn: $assistant.allowsNavigation)
                         .disabled(assistant.isBusy)
-                    Button("Ask Apple Intelligence") { assistant.ask(model) }
+                    Button("Ask Apple Intelligence") {
+                        questionFocused = false
+                        assistant.ask(model)
+                    }
                         .disabled(assistant.isBusy || assistant.availabilityMessage != nil || assistant.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || assistant.question.count > 400)
                         .accessibilityIdentifier("askduo.ask")
                     Text(assistant.isBusy ? "Working locally…" : (assistant.answer == nil ? "No answer yet." : "Answer ready below."))
@@ -88,9 +93,17 @@ struct AskDuoView: View {
             }
             if let notice = assistant.notice { Section { Text(notice).font(.footnote) } }
         }
+        .scrollDismissesKeyboard(.interactively)
         .accessibilityIdentifier("askduo.content")
         .navigationTitle("Ask Duo")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done Typing") { questionFocused = false }
+                    .accessibilityIdentifier("askduo.keyboard.done")
+            }
+        }
         .confirmationDialog("Open this link?", isPresented: $confirmsNavigation, titleVisibility: .visible) {
             if let selectedLink {
                 Button("Open in This Tab") { assistant.open(selectedLink, model: model, confirmed: navigate) }
@@ -108,6 +121,7 @@ struct AskDuoView: View {
         .onChange(of: model.currentURL) { _, _ in clearForPageChange() }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active {
+                questionFocused = false
                 selectedLink = nil
                 confirmsNavigation = false
                 assistant.clear(notice: "Page context was cleared when the app became inactive.")
@@ -132,6 +146,7 @@ struct AskDuoView: View {
     private func clearForPageChange() {
         if let context = assistant.context, context.isCurrent(for: model) { return }
         if assistant.context != nil || assistant.isBusy {
+            questionFocused = false
             selectedLink = nil
             confirmsNavigation = false
             assistant.clear(notice: "The page changed. Read it again before asking or opening a link.")

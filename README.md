@@ -143,7 +143,7 @@ key. Generation requires iOS 26+ on a supported device with Apple Intelligence
 enabled and its model ready. The browser still supports iOS 17.
 
 Nothing is read automatically. Choose **Read This Page**, review the filtered
-excerpt, enter a question, and choose **Ask Apple Intelligence**. The excerpt is
+excerpt, enter a question, choose **Done Typing**, and choose **Ask Apple Intelligence**. The excerpt is
 limited to 1,800 characters and up to 12 HTTPS link labels, so it is not a full
 copy of a long page. Forms, editable/input values, hidden content and frames are
 excluded; other visible text can still contain personal information.

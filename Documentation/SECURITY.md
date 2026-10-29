@@ -22,7 +22,8 @@ general-purpose secret detector or a complete copy of the page.
 Page text and link labels are untrusted model data. Prompt instructions are
 not the only defense: native code accepts only bounded answer text and an
 existing HTTPS link ID, and rejects navigation suggestions unless the user
-allowed them. Answers are rendered as plain text, not actionable Markdown.
+allowed them. With suggestions off, the generated schema has no navigation field
+at all. Answers are rendered as plain text, not actionable Markdown.
 There is no arbitrary script, DOM click, form submission, purchase, or file
 action. Full hrefs and URL queries are omitted from the model prompt.
 

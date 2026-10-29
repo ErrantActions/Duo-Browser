@@ -49,15 +49,20 @@ final class BrowserUITests: XCTestCase {
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_INPUT_SENTINEL"))
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_FORM_SENTINEL"))
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_EDITABLE_SENTINEL"))
-        print("Ask Duo native verification: consentedExcerpt=true, excludedFields=true, onDeviceModelAvailable=\(available), liveGenerationExercised=\(available)")
+        print("Ask Duo native verification: consentedExcerpt=true, excludedFields=true, onDeviceModelAvailable=\(available)")
+        let question = app.descendants(matching: .any).matching(identifier: "askduo.question").firstMatch
+        revealAssistant(question, in: app)
+        question.tap()
+        question.typeText("What is this demo about?")
+        let doneTyping = app.buttons["askduo.keyboard.done"]
+        XCTAssertTrue(doneTyping.waitForExistence(timeout: 10))
+        doneTyping.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 10))
+        let ask = app.buttons["askduo.ask"]
+        revealAssistant(ask, in: app)
         if available {
-            let question = app.descendants(matching: .any).matching(identifier: "askduo.question").firstMatch
-            revealAssistant(question, in: app)
-            question.tap()
-            question.typeText("What is this demo about?")
-            let ask = app.buttons["askduo.ask"]
-            revealAssistant(ask, in: app)
             ask.tap()
+            print("Ask Duo live generation: requested=true")
             let finished = XCTNSPredicateExpectation(
                 predicate: NSPredicate(format: "value == %@", "answered"),
                 object: app.staticTexts["askduo.request.status"]
@@ -65,10 +70,10 @@ final class BrowserUITests: XCTestCase {
             XCTAssertEqual(XCTWaiter.wait(for: [finished], timeout: 75), .completed)
             revealAssistant(app.staticTexts["askduo.answer"], in: app)
             XCTAssertFalse(app.staticTexts["askduo.answer"].label.isEmpty)
+            print("Ask Duo live generation: completed=true")
         } else {
-            let ask = app.buttons["askduo.ask"]
-            revealAssistant(ask, in: app)
             XCTAssertFalse(ask.isEnabled)
+            print("Ask Duo live generation: requested=false, modelUnavailable=true")
         }
         let link = app.buttons["askduo.link.1"]
         revealAssistant(link, in: app)
