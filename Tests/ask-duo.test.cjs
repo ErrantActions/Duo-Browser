@@ -24,6 +24,13 @@ class Element {
             ? [...(node.tagName === tag.toUpperCase() ? [node] : []), ...node.getElementsByTagName(tag)]
             : []);
     }
+    querySelectorAll(selector) {
+        const tags = selector.split(",").map(value => value.toUpperCase());
+        return this.nodes.flatMap(node => node instanceof Element
+            ? [...(tags.includes(node.tagName) ? [node] : []), ...node.querySelectorAll(selector)]
+            : []);
+    }
+    querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null; }
     closest() {
         for (let node = this; node; node = node.parentElement) {
             if (["FORM", "INPUT", "TEXTAREA", "SELECT", "OPTION", "BUTTON", "SCRIPT", "STYLE", "NOSCRIPT", "IFRAME"].includes(node.tagName)
@@ -131,6 +138,7 @@ test("Ask Duo validates the original isolated document, source address and still
         mode: "validate", sourceURL: "https://example.test/article",
         documentID, href: anchor.href
     });
+
     assert.equal(page.run(), true);
     page.context.documentID = "different-document";
     assert.equal(page.run(), false);
@@ -140,4 +148,33 @@ test("Ask Duo validates the original isolated document, source address and still
     page.context.location.href = page.context.sourceURL;
     anchor.style.display = "none";
     assert.equal(page.run(), false);
+});
+
+test("Reading View uses structured local blocks and still excludes forms and hidden/editable content", () => {
+    const page = environment();
+    page.context.mode = "reader";
+    text(new Element("h1", page.body), "Article heading");
+    text(new Element("p", page.body), "Readable paragraph.");
+    text(new Element("li", page.body), "A list item");
+    text(new Element("blockquote", page.body), "A quotation");
+    const form = new Element("form", page.body);
+    text(new Element("p", form), "PRIVATE_FIELD_MARKER");
+    text(new Element("p", page.body, { contenteditable: "true" }), "PRIVATE_FIELD_MARKER");
+    const hidden = new Element("p", page.body);
+    hidden.style.visibility = "hidden";
+    text(hidden, "HIDDEN_MARKER");
+    const result = JSON.parse(page.run());
+    assert.deepEqual(result.blocks.map(block => block.kind), ["heading", "body", "list", "quote"]);
+    assert.ok(!JSON.stringify(result.blocks).includes("PRIVATE_FIELD_MARKER"));
+    assert.ok(!JSON.stringify(result.blocks).includes("HIDDEN_MARKER"));
+});
+
+test("Reading View bounds long articles rather than returning an unbounded page", () => {
+    const page = environment();
+    page.context.mode = "reader";
+    for (let index = 0; index < 900; index++) text(new Element("p", page.body), "Article ".repeat(100));
+    const result = JSON.parse(page.run());
+    assert.ok(result.blocks.length <= 400);
+    assert.ok(result.blocks.reduce((sum, block) => sum + block.text.length, 0) <= 30000);
+    assert.equal(result.truncated, true);
 });

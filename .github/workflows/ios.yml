@@ -21,6 +21,7 @@ on:
           - all
           - duo-panel
           - ask-duo
+          - reading
         default: all
 
 permissions:

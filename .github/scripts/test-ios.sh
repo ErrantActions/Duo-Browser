@@ -2,8 +2,8 @@
 set -euo pipefail
 
 suite="${1:-all}"
-if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo ) ]]; then
-  echo "::error::Choose all, unit, duo-panel, or ask-duo for the native test suite."
+if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo && "$suite" != reading ) ]]; then
+  echo "::error::Choose all, unit, duo-panel, ask-duo, or reading for the native test suite."
   exit 1
 fi
 set --
@@ -14,9 +14,13 @@ elif [[ "$suite" == duo-panel ]]; then
 elif [[ "$suite" == ask-duo ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoBlocksPrivateTabs \
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation
+elif [[ "$suite" == reading ]]; then
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewAppearanceAndPDF \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewPrivateExportRequiresConfirmation \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testFavoriteCanBeSavedAndOpenedFromTheStartPage
 fi
 maximum_test_seconds=180
-if [[ "$suite" == all || "$suite" == ask-duo ]]; then
+if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading ]]; then
   maximum_test_seconds=300
 fi
 

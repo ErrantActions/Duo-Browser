@@ -39,10 +39,38 @@ if (mode === "validate") {
     }
     return false;
 }
-if (mode !== "capture") throw new Error("Unsupported context operation.");
+if (mode !== "capture" && mode !== "reader") throw new Error("Unsupported context operation.");
 if (!globalThis.__askDuoDocumentID) globalThis.__askDuoDocumentID = crypto.randomUUID();
 const main = document.querySelector("main,article,[role='main']");
 const root = main && visible(main) ? main : document.body;
+if (mode === "reader") {
+    const blocks = [];
+    const nodes = root ? root.querySelectorAll("h1,h2,h3,p,li,blockquote,pre") : [];
+    let remaining = 30000, truncated = nodes.length > 800;
+    for (let index = 0; index < Math.min(nodes.length, 800); index++) {
+        const node = nodes[index];
+        if (!visible(node) || node.querySelector("h1,h2,h3,p,li,blockquote,pre")) continue;
+        if (blocks.length >= 400 || remaining <= 0) { truncated = true; break; }
+        const part = readable(node, Math.min(4000, remaining));
+        if (!part.text) continue;
+        const tag = node.tagName.toLowerCase();
+        const kind = tag.startsWith("h") ? "heading" : ({ li: "list", blockquote: "quote", pre: "code" }[tag] || "body");
+        blocks.push({ kind, level: kind === "heading" ? Number(tag[1]) : 0, text: part.text });
+        remaining -= part.text.length;
+        truncated ||= part.truncated;
+    }
+    if (!blocks.length) {
+        const part = readable(root, 30000);
+        if (part.text) blocks.push({ kind: "body", level: 0, text: part.text });
+        truncated ||= part.truncated;
+    }
+    return JSON.stringify({
+        url: location.href, documentID: globalThis.__askDuoDocumentID,
+        title: document.title.slice(0, 160),
+        language: (document.documentElement?.lang || "").slice(0, 20),
+        blocks, truncated
+    });
+}
 const excerpt = readable(root, 1800);
 const links = [], seen = new Set();
 const collections = root === document.body ? [document.links] : [root.getElementsByTagName("a"), document.links];

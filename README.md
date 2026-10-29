@@ -151,6 +151,33 @@ An uploaded owner-only beta is not proof of a passing UI suite.
 
 ## Using the browser
 
+### Reading View and reading PDFs
+
+The browser menu's **Page Tools** brings **Reading View**, **Ask Duo**, and
+**Find on Page** together without adding duplicate rail controls.
+Reading View creates a local, text-only snapshot with headings, paragraphs,
+lists, quotes, and code. Choose Paper, Sepia, or Night and adjust text size;
+these preferences persist without changing the original page.
+
+**Read Aloud** uses the system speech synthesizer, with pause/resume and stop.
+It starts only after a tap and stops when the reader closes or the app becomes
+inactive. Actual voice output still requires a device check.
+
+**Share Reading PDF** creates a searchable, paginated PDF of the reading text,
+not a full-fidelity copy of the webpage. It uses a generic temporary filename,
+omits URL-query metadata, and cleans the protected export after sharing or
+cancellation. Private reading stays local; exporting from a private tab asks
+for an additional confirmation because another app may retain its own copy.
+
+Forms, editable/hidden text and frames are excluded. Extraction is capped at
+30,000 characters and 400 blocks, with an explicit shortened-snapshot notice.
+This is not offline Reading List storage, translation, or Safari's proprietary
+Reader engine.
+
+The start page has a new adaptive card layout, original gradient hero, richer
+favorite tiles and a distinct private palette. No remote favicon requests,
+background tracking calls, or second URL/navigation bar were added.
+
 ### Ask Duo
 
 Open the browser menu and choose **Ask Duo**. It uses **Apple Intelligence's
@@ -262,7 +289,8 @@ List support opening in a new tab in the current regular/private session.
 **Add to Reading List** stores a link for later; its list supports search,
 read/unread filtering, explicit mark-read/unread actions, deletion, and sharing.
 Resaving a link updates its existing entry and marks it unread. These are local
-saved links, **not offline article downloads or Reader mode**. Explicitly saved
+saved links, **not offline article downloads**. Reading View is a separate local
+snapshot tool. Explicitly saved
 bookmarks, favorites, and Reading List entries persist even when saved from a
 private tab, and remain when browsing data is cleared.
 
@@ -403,7 +431,7 @@ system integration.
 
 | Area | Implemented in Duo | Important gaps |
 | --- | --- | --- |
-| Browsing | URL/search, navigation, dialogs, sharing, find, mobile/desktop preference, native zoom | Reader extraction, page translation, full popup/window semantics |
+| Browsing | URL/search, navigation, dialogs, sharing, find, mobile/desktop preference, native zoom, local Reading View, read aloud, reading PDF | Page translation, full-fidelity offline articles, full popup/window semantics |
 | Tabs | Regular/private sessions, preview grid, search, close-all, recently closed pages, URL/zoom restore | Tab groups, pinned tabs, complete session-stack serialization, cross-device tabs |
 | Saved pages | Favorites, bookmark editing/folder filters, local Reading List/read state | Offline Reading List articles, bookmark import/export, cloud synchronization |
 | History | Local day groups, search, deletion, retention, private exclusions | Synced browsing history |

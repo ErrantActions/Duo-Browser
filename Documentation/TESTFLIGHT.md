@@ -86,6 +86,13 @@ or claim that generation ran. The native unit suite covers response/link bounds,
 stale contexts, modal capability suspension and clearing local data.
 Eligible physical hardware with Apple Intelligence enabled is required to
 complete live-model acceptance when CI reports unavailable.
+For local reading/start-page changes, `test_scope=reading` selects reader
+appearance/persistence, original-page-state retention, real PDF share
+presentation and private-export confirmation plus continued private-AI
+exclusion, alongside the existing favorite-save/open start-page regression.
+Native unit tests separately inspect actual PDF pages/searchable
+text, metadata omission, extraction bounds, settings migration and capability
+suspension. Audible speech output requires physical-device acceptance.
 Private-tab coverage is a separate focused case. The complete integration case
 has a bounded 300-second budget to include model generation and slow simulator
 accessibility; unit and Duo-only scopes retain their 180-second maximum.

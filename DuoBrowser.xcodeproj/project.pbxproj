@@ -50,6 +50,10 @@
         A00000000000000000000122 = {isa = PBXBuildFile; fileRef = B00000000000000000000122; };
         A00000000000000000000123 = {isa = PBXBuildFile; fileRef = B00000000000000000000123; };
         A00000000000000000000124 = {isa = PBXBuildFile; fileRef = B00000000000000000000124; };
+        A00000000000000000000125 = {isa = PBXBuildFile; fileRef = B00000000000000000000125; };
+        A00000000000000000000126 = {isa = PBXBuildFile; fileRef = B00000000000000000000126; };
+        A00000000000000000000127 = {isa = PBXBuildFile; fileRef = B00000000000000000000127; };
+        A00000000000000000000128 = {isa = PBXBuildFile; fileRef = B00000000000000000000128; };
         A00000000000000000000110 = {isa = PBXBuildFile; fileRef = B00000000000000000000110; };
         A00000000000000000000111 = {isa = PBXBuildFile; fileRef = B00000000000000000000111; };
         A00000000000000000000112 = {isa = PBXBuildFile; fileRef = B00000000000000000000112; };
@@ -115,6 +119,10 @@
         B00000000000000000000122 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskDuoView.swift; sourceTree = "<group>"; };
         B00000000000000000000123 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskDuoTests.swift; sourceTree = "<group>"; };
         B00000000000000000000124 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = AskDuoContext.js; sourceTree = "<group>"; };
+        B00000000000000000000125 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDocument.swift; sourceTree = "<group>"; };
+        B00000000000000000000126 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderModel.swift; sourceTree = "<group>"; };
+        B00000000000000000000127 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
+        B00000000000000000000128 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTests.swift; sourceTree = "<group>"; };
         B00000000000000000000110 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = duo.js; sourceTree = "<group>"; };
         B00000000000000000000111 = {isa = PBXFileReference; lastKnownFileType = folder; path = Demo; sourceTree = "<group>"; };
         B00000000000000000000112 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -173,6 +181,9 @@
                 B00000000000000000000120,
                 B00000000000000000000121,
                 B00000000000000000000122,
+                B00000000000000000000125,
+                B00000000000000000000126,
+                B00000000000000000000127,
             );
             path = Browser;
             sourceTree = "<group>";
@@ -191,7 +202,7 @@
         };
         C00000000000000000000007 = {
             isa = PBXGroup;
-            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A, B00000000000000000000123);
+            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A, B00000000000000000000123, B00000000000000000000128);
             path = DuoBrowserTests;
             sourceTree = "<group>";
         };
@@ -354,13 +365,16 @@
                 A00000000000000000000120,
                 A00000000000000000000121,
                 A00000000000000000000122,
+                A00000000000000000000125,
+                A00000000000000000000126,
+                A00000000000000000000127,
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000004 = {
             isa = PBXSourcesBuildPhase;
             buildActionMask = 2147483647;
-            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A, A00000000000000000000123);
+            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A, A00000000000000000000123, A00000000000000000000128);
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000101 = {

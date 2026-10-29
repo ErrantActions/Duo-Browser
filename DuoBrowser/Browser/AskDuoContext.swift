@@ -153,6 +153,30 @@ enum AskDuoPageReader {
         return try String(contentsOf: url, encoding: .utf8)
     }
 
+    static func readingBlockedReason(for model: BrowserViewModel) -> String? {
+        if model.isClosed { return "This tab is closed." }
+        if model.showingStartPage { return "Open a webpage or the DuoKit demo first." }
+        if model.navigationError != nil { return "Resolve the page error before opening Reading View." }
+        if model.webView.isLoading { return "Wait for the page to finish loading." }
+        guard let url = model.webView.url, ReaderDocument.allowedSource(url) else {
+            return "Reading View supports webpages and the bundled DuoKit demo."
+        }
+        return nil
+    }
+
+    static func readArticle(from model: BrowserViewModel) async throws -> ReaderDocument {
+        if let reason = readingBlockedReason(for: model) { throw ReaderError.unavailable(reason) }
+        guard let url = model.webView.url else { throw ReaderError.invalidDocument }
+        let generation = model.navigationID
+        let value = try await model.webView.callAsyncJavaScript(
+            script(), arguments: ["mode": "reader"], in: nil, contentWorld: world
+        )
+        guard let raw = value as? String, let data = raw.data(using: .utf8) else { throw ReaderError.invalidDocument }
+        let document = try ReaderDocument(data: data, tabID: model.id, navigationID: generation, sourceURL: url)
+        guard document.isCurrent(for: model) else { throw ReaderError.changedPage }
+        return document
+    }
+
     static func read(from model: BrowserViewModel) async throws -> AskDuoContext {
         if let reason = blockedReason(for: model) { throw AskDuoError.unavailable(reason) }
         guard let source = model.webView.url else { throw AskDuoError.invalidContext }

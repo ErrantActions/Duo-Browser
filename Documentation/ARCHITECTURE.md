@@ -2,6 +2,31 @@
 
 ## Ownership and UI
 
+### Local reading tools
+
+Reading View reuses the bounded, isolated page-context script with a separate
+`reader` mode. It copies plain blocks, not executable HTML or subresources.
+`ReaderDocument` rechecks source URL, tab/navigation identity, document UUID,
+block types/counts and aggregate text limits. The AI path remains 1,800
+characters/private-disabled; local reading permits private tabs without
+calling any model. The original WKWebView is retained and never reloaded merely
+to open or close the reader.
+
+Reader appearance lives in `BrowserSettings.reader`; older saved settings
+decode with safe defaults, and malformed reader settings fail explicitly.
+The common page-tool presenter suspends website capability UI for both Reader
+and Ask Duo, including scene reactivation and tab-change cleanup.
+
+`ReaderModel` bounds extraction time, stops speech on dismissal/inactivity, and
+keeps article text in memory. System speech is explicitly user initiated; no
+Personal Voice or background-audio capability is enabled.
+`ReadingPDF` draws plain attributed text using Core Text into paginated A4
+pages, with progress/page/size guards. A source host is attributed, not URL
+queries. Export files are protected, generic-named, and owned by the active
+share lifecycle; completion/dismissal removes only the generated UUID folder.
+The start page uses native adaptive cards and locally generated favorite
+monograms rather than fetching third-party favicons.
+
 ### Ask Duo
 
 `AskDuoView` is a browser-owned sheet, opened once through the shared menu.

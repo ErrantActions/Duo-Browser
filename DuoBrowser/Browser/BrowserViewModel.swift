@@ -13,8 +13,8 @@ final class BrowserViewModel: ObservableObject {
     var onNewWindow: ((URLRequest) -> Void)?
     var onStateChanged: (() -> Void)?
     var isActive: Bool {
-        get { !isClosed && !isEditingAddress && !isShowingAssistant && bridge.isActive }
-        set { bridge.isActive = newValue && !isClosed && !isEditingAddress && !isShowingAssistant }
+        get { !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader && bridge.isActive }
+        set { bridge.isActive = newValue && !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader }
     }
     @Published private(set) var navigationID = UUID()
     @Published private(set) var currentURL: URL?
@@ -34,6 +34,7 @@ final class BrowserViewModel: ObservableObject {
     private(set) var isClosed = false
     private(set) var isEditingAddress = false
     private(set) var isShowingAssistant = false
+    private(set) var isShowingReader = false
 
     let webView: WKWebView
     private let webDelegate: BrowserWebDelegate
@@ -97,7 +98,7 @@ final class BrowserViewModel: ObservableObject {
         webDelegate.owner = self
         bridge.canPresentNativeUI = { [weak self] in
             guard let self else { return false }
-            return !self.isEditingAddress && !self.isShowingAssistant && self.pageDialog == nil && self.alert == nil
+            return !self.isEditingAddress && !self.isShowingAssistant && !self.isShowingReader && self.pageDialog == nil && self.alert == nil
         }
         webView.navigationDelegate = webDelegate
         webView.uiDelegate = webDelegate
@@ -143,6 +144,18 @@ final class BrowserViewModel: ObservableObject {
 
     func endAssistantPresentation(isActive: Bool) {
         isShowingAssistant = false
+        self.isActive = isActive
+    }
+
+    func beginReaderPresentation() {
+        guard !isClosed else { return }
+        isShowingReader = true
+        deactivate()
+    }
+
+    func endPageToolPresentation(isActive: Bool) {
+        isShowingAssistant = false
+        isShowingReader = false
         self.isActive = isActive
     }
 

@@ -41,9 +41,13 @@ struct BrowserToolbar: View {
         .sheet(isPresented: $showsMenu, onDismiss: completeMenuAction) {
             NavigationStack {
                 List {
-                    Section {
+                    Section("Page Tools") {
+                        menuAction("Reading View", icon: "doc.plaintext") { present(.reader) }
+                            .accessibilityIdentifier("browser.reader")
                         menuAction("Ask Duo", icon: "sparkles") { present(.assistant) }
                             .accessibilityIdentifier("browser.askduo")
+                        menuAction("Find on Page", icon: "doc.text.magnifyingglass", action: model.findInPage)
+                            .disabled(model.showingStartPage || model.navigationError != nil)
                     }
                     Section("Tabs") {
                         menuAction("Forward", icon: "chevron.forward", action: model.goForward)
@@ -112,8 +116,6 @@ struct BrowserToolbar: View {
                         }
                         .buttonStyle(.borderless)
                         .disabled(model.showingStartPage || model.navigationError != nil)
-                        menuAction("Find on Page", icon: "doc.text.magnifyingglass", action: model.findInPage)
-                            .disabled(model.showingStartPage || model.navigationError != nil)
                         menuAction("Share Page", icon: "square.and.arrow.up", action: share)
                             .disabled(model.shareURL == nil)
                         menuAction(

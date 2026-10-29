@@ -3,6 +3,112 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testReadingViewAppearanceAndPDF() {
+        continueAfterFailure = false
+        executionTimeAllowance = 300
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        openReadingDemo(in: app, isPrivate: false)
+        let webpage = app.webViews.firstMatch
+        let next = app.webViews.buttons["Next Record"]
+        for _ in 0..<8 {
+            if next.exists && next.isHittable { break }
+            let frame = next.exists ? next.frame : .zero
+            let down = frame.height > 0 && frame.midY < webpage.frame.minY
+            webpage.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.3 : 0.7))
+                .press(forDuration: 0.05, thenDragTo: webpage.coordinate(
+                    withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.6 : 0.4)
+                ))
+        }
+        XCTAssertTrue(next.isHittable)
+        next.tap()
+        XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
+        openMenu(in: app)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.reader").count, 1)
+        app.buttons["browser.reader"].tap()
+        XCTAssertTrue(app.navigationBars["Reading View"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["reader.title"].waitForExistence(timeout: 15))
+        let theme = app.segmentedControls["reader.theme"]
+        XCTAssertTrue(theme.waitForExistence(timeout: 10))
+        theme.buttons["Sepia"].tap()
+        XCTAssertTrue(theme.buttons["Sepia"].isSelected)
+        let size = app.steppers["reader.font"]
+        XCTAssertTrue(size.exists)
+        size.buttons["Increment"].tap()
+        XCTAssertTrue(app.staticTexts["Text size: 20"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["reader.speak"].exists)
+        XCTAssertFalse(app.buttons["reader.speech.stop"].exists)
+        let export = app.buttons["reader.export"]
+        revealReadingControl(export, in: app)
+        export.tap()
+        let sharing = app.descendants(matching: .any).matching(identifier: "browser.share").firstMatch
+        XCTAssertTrue(sharing.waitForExistence(timeout: 15))
+        app.buttons["Close"].firstMatch.tap()
+        XCTAssertTrue(sharing.waitForNonExistence(timeout: 10))
+        app.navigationBars["Reading View"].buttons["Done"].tap()
+        XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
+        openMenu(in: app)
+        app.buttons["browser.reader"].tap()
+        XCTAssertTrue(app.staticTexts["reader.title"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.segmentedControls["reader.theme"].buttons["Sepia"].isSelected)
+        app.navigationBars["Reading View"].buttons["Done"].tap()
+    }
+
+    @MainActor
+    func testReadingViewPrivateExportRequiresConfirmation() {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        openReadingDemo(in: app, isPrivate: true)
+        openMenu(in: app)
+        app.buttons["browser.reader"].tap()
+        XCTAssertTrue(app.staticTexts["reader.title"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Private Reading"].exists)
+        let export = app.buttons["reader.export"]
+        revealReadingControl(export, in: app)
+        export.tap()
+        let warning = app.alerts["Share this private reading snapshot?"]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10))
+        warning.buttons["Cancel"].firstMatch.tap()
+        XCTAssertTrue(warning.waitForNonExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.share").firstMatch.exists)
+        app.navigationBars["Reading View"].buttons["Done"].tap()
+        openMenu(in: app)
+        app.buttons["browser.askduo"].tap()
+        XCTAssertTrue(app.staticTexts["askduo.page.blocked"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["askduo.capture"].exists)
+    }
+
+    @MainActor
+    private func openReadingDemo(in app: XCUIApplication, isPrivate: Bool) {
+        app.launch()
+        openMenu(in: app)
+        app.buttons[isPrivate ? "New Private Tab" : "New Tab"].tap()
+        let start = app.scrollViews["browser.start-page"]
+        let demo = app.buttons["Explore DuoKit Demo"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        for _ in 0..<6 {
+            if demo.exists && demo.isHittable { break }
+            start.swipeUp()
+        }
+        XCTAssertTrue(demo.isHittable)
+        demo.tap()
+        XCTAssertTrue(app.webViews.buttons["Install Duo Panel"].waitForExistence(timeout: 15))
+    }
+
+    @MainActor
+    private func revealReadingControl(_ element: XCUIElement, in app: XCUIApplication) {
+        let scroll = app.scrollViews["reader.content"]
+        XCTAssertTrue(scroll.waitForExistence(timeout: 10))
+        for _ in 0..<8 {
+            if element.exists && element.isHittable { return }
+            scroll.swipeUp()
+        }
+        XCTAssertTrue(element.isHittable)
+    }
+
+    @MainActor
     func testAskDuoBlocksPrivateTabs() {
         continueAfterFailure = false
         let app = XCUIApplication()

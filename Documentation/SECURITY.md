@@ -46,6 +46,17 @@ confirmed navigation, not an unrestricted autonomous browsing agent.
 
 ## Untrusted website boundary
 
+Reading View is a separate local plain-text presentation, including in private
+tabs. It does not execute copied HTML, fetch article images, or send content to
+AI. Its parser bounds the source envelope, block count and text size and rejects
+arbitrary file URLs. PDF export is an explicit user action; private tabs require
+confirmation. PDFs contain host attribution rather than source query strings,
+but article text itself may contain private information. Recipient apps can
+retain their own copy. Protected, randomly scoped temporary exports are removed
+when the share operation completes/cancels; audio stops on close/inactivity.
+These controls do not promise prevention of a user's screenshots, recording,
+intentional sharing, or complete filesystem cleanup after an OS/process crash.
+
 - WebKit renders websites; no new rendering engine or certificate bypass exists.
 - HTTPS main-frame origin is read from WebKit's frame/security-origin metadata
   and compared with the receiving web view's current origin. A message's claimed

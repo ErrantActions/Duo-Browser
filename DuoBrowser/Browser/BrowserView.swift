@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum BrowserSheet: String, Identifiable {
-    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs, assistant
+    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs, assistant, reader
     var id: String { rawValue }
 }
 
@@ -9,7 +9,7 @@ struct BrowserView: View {
     @StateObject private var library: BrowserLibrary
     @StateObject private var manager: BrowserTabManager
     @State private var sheet: BrowserSheet?
-    @State private var assistantTab: BrowserViewModel?
+    @State private var pageToolTab: BrowserViewModel?
     @State private var pendingAssistantNavigation: AskDuoNavigation?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -62,10 +62,10 @@ struct BrowserView: View {
             }
         }
         .onChange(of: manager.selectedID) { _, _ in
-            if sheet == .assistant, assistantTab?.id != manager.selectedID {
+            if (sheet == .assistant || sheet == .reader), pageToolTab?.id != manager.selectedID {
                 pendingAssistantNavigation = nil
                 sheet = nil
-                manager.notice = "Ask Duo was closed because the selected tab changed."
+                manager.notice = "The page tool was closed because the selected tab changed."
             }
             if sheet != nil { manager.selectedTab?.deactivate() }
         }
@@ -87,12 +87,14 @@ struct BrowserView: View {
         case .settings: BrowserSettingsView(library: library, manager: manager)
         case .permissions: SitePermissionsView(library: library, manager: manager)
         case .assistant:
-            if let assistantTab {
-                AskDuoView(model: assistantTab) { navigation in
+            if let pageToolTab {
+                AskDuoView(model: pageToolTab) { navigation in
                     pendingAssistantNavigation = navigation
                     sheet = nil
                 }
             }
+        case .reader:
+            if let pageToolTab { ReaderView(model: pageToolTab, library: pageToolTab.library) }
         case .bookmark:
             if let tab = manager.selectedTab, let url = tab.shareURL {
                 BookmarkEditor(
@@ -112,21 +114,22 @@ struct BrowserView: View {
     }
 
     private func present(_ selection: BrowserSheet) {
-        if selection == .assistant {
-            assistantTab = manager.selectedTab
-            assistantTab?.beginAssistantPresentation()
+        if selection == .assistant || selection == .reader {
+            pageToolTab = manager.selectedTab
+            if selection == .assistant { pageToolTab?.beginAssistantPresentation() }
+            else { pageToolTab?.beginReaderPresentation() }
         }
         manager.selectedTab?.deactivate()
         sheet = selection
     }
 
     private func finishSheet() {
-        if let assistantTab {
-            assistantTab.endAssistantPresentation(
-                isActive: manager.selectedID == assistantTab.id && scenePhase == .active
+        if let pageToolTab {
+            pageToolTab.endPageToolPresentation(
+                isActive: manager.selectedID == pageToolTab.id && scenePhase == .active
             )
         }
-        assistantTab = nil
+        pageToolTab = nil
         manager.selectedTab?.isActive = scenePhase == .active
         let navigation = pendingAssistantNavigation
         pendingAssistantNavigation = nil

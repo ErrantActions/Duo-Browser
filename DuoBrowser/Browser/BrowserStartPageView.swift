@@ -19,20 +19,7 @@ struct BrowserStartPageView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Image(systemName: isPrivate ? "hand.raised.fill" : "globe")
-                        .font(.largeTitle)
-                        .foregroundStyle(.tint)
-                        .accessibilityHidden(true)
-                    Text(isPrivate ? "Private Browsing" : "Duo Browser")
-                        .font(.largeTitle.bold())
-                        .accessibilityAddTraits(.isHeader)
-                    Text(isPrivate
-                        ? "Private tabs use temporary website storage. Websites and your network provider can still see your activity. Saved favorites remain available in both sessions."
-                        : "Search the web or enter a website address below.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+                hero
 
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
@@ -45,15 +32,16 @@ struct BrowserStartPageView: View {
                             .accessibilityLabel("Edit favorites")
                     }
                     if library.favorites.isEmpty {
-                        Label(
-                            "Save a page as a favorite from Add Bookmark in the browser menu.",
-                            systemImage: "star"
-                        )
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(16)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Label("Your favorites, close at hand.", systemImage: "star.circle")
+                                .font(.headline)
+                            Text("Use Add Bookmark in the browser menu to pin the sites you return to.")
+                                .font(.subheadline).foregroundStyle(.secondary)
+                        }
+                        .padding(20)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+                        .background(Color(uiColor: .secondarySystemGroupedBackground),
+                                    in: RoundedRectangle(cornerRadius: 22))
                     } else {
                         LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
                             ForEach(library.favorites) { bookmark in
@@ -63,17 +51,12 @@ struct BrowserStartPageView: View {
                     }
                 }
 
-                VStack(spacing: 0) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: dynamicTypeSize.isAccessibilitySize ? 250 : 140), spacing: 14)], spacing: 14) {
                     shortcut("Bookmarks", icon: "book", action: showBookmarks)
-                    Divider().padding(.leading, 44)
                     shortcut("History", icon: "clock", action: showHistory)
-                    Divider().padding(.leading, 44)
                     shortcut("Reading List", icon: "eyeglasses", action: showReadingList)
-                    Divider().padding(.leading, 44)
                     shortcut("Browser Settings", icon: "gearshape", action: openSettings)
                 }
-                .background(Color(uiColor: .secondarySystemGroupedBackground),
-                            in: RoundedRectangle(cornerRadius: 16))
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Made for Duo")
@@ -86,6 +69,10 @@ struct BrowserStartPageView: View {
                         .buttonStyle(.borderedProminent)
                         .frame(minHeight: 44)
                 }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(uiColor: .secondarySystemGroupedBackground),
+                            in: RoundedRectangle(cornerRadius: 22))
             }
             .padding(24)
             .frame(maxWidth: 680, alignment: .leading)
@@ -96,14 +83,49 @@ struct BrowserStartPageView: View {
         .tint(isPrivate ? .purple : .accentColor)
     }
 
+    private var hero: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack {
+                Image(systemName: isPrivate ? "hand.raised.fill" : "globe")
+                    .font(.system(size: 28, weight: .medium))
+                    .frame(width: 60, height: 60)
+                    .background(.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 18))
+                    .accessibilityHidden(true)
+                Spacer()
+                Label(isPrivate ? "Private session" : "Made for iPhone", systemImage: isPrivate ? "lock" : "iphone")
+                    .font(.caption.weight(.medium))
+                    .padding(.horizontal, 12).padding(.vertical, 8)
+                    .background(.white.opacity(0.12), in: Capsule())
+            }
+            Text(isPrivate ? "A little more private." : "Your web.\nRoom to explore.")
+                .font(.system(.largeTitle, design: .rounded).bold())
+                .accessibilityAddTraits(.isHeader)
+            Text(isPrivate
+                ? "Temporary website storage. No saved browsing history. Your network and the websites you visit can still see your activity."
+                : "Duo Browser keeps the page in focus, with native controls, thoughtful reading tools, and on-device intelligence.")
+                .font(.subheadline)
+                .foregroundStyle(.white.opacity(0.9))
+        }
+        .padding(24)
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(colors: isPrivate
+                ? [Color(red: 0.19, green: 0.12, blue: 0.34), Color(red: 0.37, green: 0.22, blue: 0.51)]
+                : [Color(red: 0.08, green: 0.18, blue: 0.38), Color(red: 0.19, green: 0.38, blue: 0.69)],
+                startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: RoundedRectangle(cornerRadius: 28)
+        )
+    }
+
     private func favorite(_ bookmark: Bookmark) -> some View {
         Button { open(bookmark.url) } label: {
             VStack(spacing: 8) {
                 Text(String(bookmark.displayTitle.prefix(1)).uppercased())
-                    .font(.title.weight(.semibold))
-                    .foregroundStyle(.tint)
+                    .font(.system(.title, design: .rounded).weight(.semibold))
+                    .foregroundStyle(.white)
                     .frame(width: 64, height: 64)
-                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+                    .background(favoriteColor(bookmark).gradient, in: RoundedRectangle(cornerRadius: 20))
                 Text(bookmark.displayTitle)
                     .font(.caption)
                     .foregroundStyle(.primary)
@@ -131,16 +153,24 @@ struct BrowserStartPageView: View {
 
     private func shortcut(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: icon).frame(width: 24).foregroundStyle(.tint)
-                Text(title).foregroundStyle(.primary)
-                Spacer()
-                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 14) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundStyle(.tint)
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
             }
-            .padding(16)
-            .frame(minHeight: 52)
+            .padding(20)
+            .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 22))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
+    }
+
+    private func favoriteColor(_ bookmark: Bookmark) -> Color {
+        let colors: [Color] = [.blue, .indigo, .teal, .purple, .brown]
+        let index = (bookmark.url.host ?? bookmark.displayTitle).unicodeScalars.reduce(0) { ($0 + Int($1.value)) % colors.count }
+        return colors[index]
     }
 }
