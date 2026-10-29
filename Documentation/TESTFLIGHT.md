@@ -315,6 +315,26 @@ were unavailable while typing. The compact accessibility container preserves
 individual editable controls rather than overriding their identifiers.
 This is focused simulator proof, not a full-suite or phone-installation claim.
 
+### Verified two-stage address delivery: version 1.0, build 1.0.3
+
+[Run 40814804265](https://github.com/ErrantActions/Duo-Browser/actions/runs/40814804265)
+delivered commit `8de3d874e9d9e1db9c5633d6a6a463911e85c8fa`, with the same
+application code as the focused two-stage UI pass above. Preflight selected
+**1.0.3** above existing Apple uploads and validated signing before compilation.
+All **63 native unit tests** passed with zero failures. The release did not
+repeat the focused UI test.
+
+The logs separately confirm `ARCHIVE SUCCEEDED`, `EXPORT SUCCEEDED`, and
+`UPLOAD SUCCEEDED with no errors` on October 29, 2026 at 04:08 UTC.
+Apple subsequently reported **VALID**, not expired, and
+`usesNonExemptEncryption=null`. Both beta states are
+**MISSING_EXPORT_COMPLIANCE**. The owner must answer that prompt truthfully in
+[App Store Connect](https://appstoreconnect.apple.com/apps/6827739657/testflight),
+then confirm assignment of **1.0.3** to the existing owner-only internal group.
+No compliance answer, broader key permission, external testing, public link,
+or automatic group-distribution policy was added. Group assignment and actual
+phone installation remain unverified.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
