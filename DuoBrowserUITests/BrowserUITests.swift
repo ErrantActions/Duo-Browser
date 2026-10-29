@@ -51,6 +51,7 @@ final class BrowserUITests: XCTestCase {
         revealAssistant(summary, in: app)
         summary.tap()
         let approve = app.buttons["askduo.approve"]
+        print("Ask Duo quick prompt: approvedButtonCount=\(app.buttons.matching(identifier: "askduo.approve").count), pageAttached=\(app.buttons["Read Page Again"].exists), usePage=\(app.switches["askduo.usepage"].value as? String ?? "missing"), status=\(app.staticTexts["askduo.request.status"].value as? String ?? "missing"), errorVisible=\(app.staticTexts["askduo.error"].exists)")
         revealAssistant(approve, in: app)
         XCTAssertTrue(approve.exists)
         XCTAssertEqual(question.value as? String, "Summarize this page in a few sentences.")

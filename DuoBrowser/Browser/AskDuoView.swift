@@ -85,15 +85,8 @@ struct AskDuoView: View {
                         } else {
                             Text("Forms, editable fields, hidden content and frames are excluded. Other visible text can contain personal information: review the preview.")
                                 .font(.footnote).foregroundStyle(.secondary)
-                            Button(sendAfterApproval ? "Use This Excerpt and Send" : "Use This Excerpt") {
-                                assistant.approvePage(model)
-                                if sendAfterApproval, assistant.hasApprovedContext {
-                                    sendAfterApproval = false
-                                    assistant.ask(model, usingPage: true)
-                                }
-                            }
-                            .disabled(assistant.isBusy)
-                            .accessibilityIdentifier("askduo.approve")
+                            Text("Review the excerpt, then use the approval button above the chat composer.")
+                                .font(.caption).foregroundStyle(.secondary)
                         }
                         Button(showsExcerpt ? "Hide Page Excerpt" : "Show Page Excerpt") { showsExcerpt.toggle() }
                             .accessibilityIdentifier("askduo.preview.toggle")
@@ -249,6 +242,18 @@ struct AskDuoView: View {
 
     private var composer: some View {
         VStack(spacing: 6) {
+            if assistant.context != nil, !assistant.hasApprovedContext {
+                Button(sendAfterApproval ? "Use This Excerpt and Send" : "Use This Excerpt") {
+                    assistant.approvePage(model)
+                    if sendAfterApproval, assistant.hasApprovedContext {
+                        sendAfterApproval = false
+                        assistant.ask(model, usingPage: true)
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(assistant.isBusy)
+                .accessibilityIdentifier("askduo.approve")
+            }
             HStack(alignment: .bottom, spacing: 10) {
                 TextField("Ask Duo...", text: $assistant.question, axis: .vertical)
                     .lineLimit(1...4)
