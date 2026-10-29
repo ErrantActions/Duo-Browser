@@ -149,7 +149,10 @@ struct AskDuoView: View {
                     }
                 }
                 if let notice = assistant.notice {
-                    Section { Text(notice).font(.caption).foregroundStyle(.secondary) }
+                    Section {
+                        Text(notice).font(.caption).foregroundStyle(.secondary)
+                            .accessibilityIdentifier("askduo.notice")
+                    }
                 }
                 if let context = assistant.context, !context.links.isEmpty {
                     Section {
@@ -299,13 +302,17 @@ struct AskDuoView: View {
     }
 
     private func quickPrompt(_ title: String, question: String, id: String) -> some View {
-        Button(title) {
+        Button {
             usesPage = true
             assistant.question = question
             prepareSend(includingPage: true)
+        } label: {
+            Text(title)
+                .font(.caption)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.bordered).controlSize(.small)
-        .frame(minHeight: 44).font(.caption)
         .disabled(assistant.isBusy)
         .accessibilityIdentifier("askduo.quick.\(id)")
     }

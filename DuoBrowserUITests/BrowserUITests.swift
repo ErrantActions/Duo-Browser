@@ -46,12 +46,18 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(question.exists)
         XCTAssertFalse(app.staticTexts["askduo.context"].exists)
         XCTAssertEqual(app.switches["askduo.usepage"].value as? String, "0")
+        let compactHeight = surface.frame.height
         app.buttons["askduo.expand"].tap()
+        let expanded = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in surface.frame.height > compactHeight + 60 }, object: surface
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [expanded], timeout: 10), .completed)
         let summary = app.buttons["askduo.quick.summary"]
         revealAssistant(summary, in: app)
+        print("Ask Duo summary target: x=\(summary.frame.minX), y=\(summary.frame.minY), width=\(summary.frame.width), height=\(summary.frame.height), expandedHeight=\(surface.frame.height)")
         summary.tap()
         let approve = app.buttons["askduo.approve"]
-        print("Ask Duo quick prompt: approvedButtonCount=\(app.buttons.matching(identifier: "askduo.approve").count), pageAttached=\(app.buttons["Read Page Again"].exists), usePage=\(app.switches["askduo.usepage"].value as? String ?? "missing"), status=\(app.staticTexts["askduo.request.status"].value as? String ?? "missing"), errorVisible=\(app.staticTexts["askduo.error"].exists)")
+        print("Ask Duo quick prompt: approvedButtonCount=\(app.buttons.matching(identifier: "askduo.approve").count), pageAttached=\(app.buttons["Read Page Again"].exists), usePage=\(app.switches["askduo.usepage"].value as? String ?? "missing"), status=\(app.staticTexts["askduo.request.status"].value as? String ?? "missing"), errorVisible=\(app.staticTexts["askduo.error"].exists), notice=\(app.staticTexts["askduo.notice"].exists ? app.staticTexts["askduo.notice"].label : "none")")
         revealAssistant(approve, in: app)
         XCTAssertTrue(approve.exists)
         XCTAssertEqual(question.value as? String, "Summarize this page in a few sentences.")
