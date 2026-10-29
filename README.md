@@ -22,17 +22,18 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   The macOS [CI workflow](.github/workflows/ios.yml) builds and runs simulator
   tests after publication. This repository starts from a cleaned source snapshot
   with one initial commit, not a fork or a copy of prior Git history.
-  Existing native validation passed 61 unit tests and the panel/tab-grid UI cases.
-  Two HTTPS UI cases had an external page-heading assumption; corrected assertions
-  and the newest workflow still require a native run.
+  The first successful release passed all 61 native unit tests on Xcode 27.1.
+  Full UI acceptance remains separate and is not claimed by the upload result.
 - Both workflows are **manual only**, using the documented standard `xcode-27`
   public runner with Xcode 27.1/iOS 27.1 selected explicitly. Standard public
   compute is free; larger runners can be billed and are not selected here.
   Optional artifacts contain sanitized test counts only and expire after one day.
 - The existing App Store Connect listing is **DuoKit**, with **Duo Browser** as
-  the installed app name. TestFlight is disabled in this new repository until
-  signing secrets are configured privately and the owner explicitly resumes
-  uploads. No successful signed upload or phone installation is claimed.
+  the installed app name. Version **1.0 (1)** was signed, exported, and
+  successfully uploaded on October 28, 2026 in
+  [release run 40795353458](https://github.com/ErrantActions/Duo-Browser/actions/runs/40795353458).
+  Apple processing, build assignment, and phone installation remain separate
+  checkpoints; successful delivery is not proof of installation.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 

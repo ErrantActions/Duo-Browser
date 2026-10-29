@@ -165,8 +165,9 @@ on failure. No signing material or raw private diagnostics become artifacts.
 
 ## Owner-approved TestFlight run
 
-TestFlight remains disabled and `ENABLE_TESTFLIGHT=false` until signing setup,
-reviewed source, and explicit owner approval are ready:
+The owner enabled TestFlight after privately configuring the signing secrets.
+Releases still require an explicit manual start with `confirm_upload=true`;
+there are no push/PR uploads. To enable after a future pause:
 
 ```powershell
 gh variable set ENABLE_TESTFLIGHT --body true --repo ErrantActions/Duo-Browser
@@ -187,13 +188,30 @@ unit tests, and archive/export validation. It does not gate owner-only betas on
 UI automation; the full simulator workflow still runs both native suites.
 Do not report a green unit-only upload as a passing full UI validation.
 
+### Verified first delivery: version 1.0, build 1
+
+[Run 40795353458](https://github.com/ErrantActions/Duo-Browser/actions/runs/40795353458)
+completed successfully for commit `3789f28b76aed59b33964ec7ed51bb60be06c7ad`.
+The published logs verify:
+
+- Security contracts and signing/App Store Connect preflight passed.
+- All 61 native unit tests passed with no failures on Xcode 27.1.
+- `ARCHIVE SUCCEEDED` and `EXPORT SUCCEEDED` for the physical-device archive.
+- Apple reported `UPLOAD SUCCEEDED with no errors` at approximately 7:54 PM
+  US Central on October 28, 2026.
+- The temporary signing cleanup completed successfully.
+
+The immediate Apple status query had not yet listed the build. Apple processing,
+assignment to Owner Testing, and actual phone installation/launch are therefore
+not yet verified. Owner Testing was separately confirmed as an internal group
+with one tester and manual build assignment. Do not re-upload merely because
+processing is asynchronous.
+
 Windows checks prove local helper/contracts, not native iOS compilation.
-Native validation requires Xcode. Existing run
-[40766913589](https://github.com/ErrantActions/Duo-Browser/actions/runs/40766913589)
-compiled the source and passed 61 unit tests plus the panel/tab-grid UI cases;
-two HTTPS UI cases failed because they depended on a changed external page
-heading. The corrected assertions and new workflow still need an approved
-native run. No signed upload is claimed.
+Native validation requires Xcode. Earlier full UI runs found failures in the
+demo/favorite flows; those tests remain in the full manual validation workflow.
+This successful unit-only beta does not certify full UI behavior or physical
+scanner/privacy flows.
 
 After an upload:
 
