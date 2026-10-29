@@ -41,10 +41,14 @@ final class BrowserUITests: XCTestCase {
         let export = app.buttons["reader.export"]
         revealReadingControl(export, in: app)
         export.tap()
-        let sharing = app.descendants(matching: .any).matching(identifier: "browser.share").firstMatch
-        XCTAssertTrue(sharing.waitForExistence(timeout: 15))
-        app.buttons["Close"].firstMatch.tap()
-        XCTAssertTrue(sharing.waitForNonExistence(timeout: 10))
+        let closeSharing = app.buttons["Close"].firstMatch
+        let sharePresented = closeSharing.waitForExistence(timeout: 15)
+        let exportError = app.staticTexts["reader.error"]
+        print("Reading PDF presentation: closeButton=\(sharePresented), copyAction=\(app.buttons["Copy"].exists), saveFilesAction=\(app.buttons["Save to Files"].exists), exportError=\(exportError.exists)")
+        XCTAssertFalse(exportError.exists, exportError.exists ? exportError.label : "")
+        XCTAssertTrue(sharePresented)
+        closeSharing.tap()
+        XCTAssertTrue(closeSharing.waitForNonExistence(timeout: 10))
         app.navigationBars["Reading View"].buttons["Done"].tap()
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
         openMenu(in: app)
