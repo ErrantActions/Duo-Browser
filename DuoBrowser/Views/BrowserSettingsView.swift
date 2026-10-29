@@ -7,6 +7,7 @@ struct BrowserSettingsView: View {
     @State private var error: String?
     @State private var confirmsClear = false
     @State private var clearing = false
+    @State private var loadedSettings = false
 
     var body: some View {
         Form {
@@ -54,7 +55,12 @@ struct BrowserSettingsView: View {
             .disabled(manager.isClearingData)
         }
         .navigationTitle("Settings")
-        .onAppear { settings = library.settings }
+        .onAppear {
+            if !loadedSettings {
+                settings = library.settings
+                loadedSettings = true
+            }
+        }
         .confirmationDialog("Clear browsing data and close all tabs?", isPresented: $confirmsClear, titleVisibility: .visible) {
             Button("Clear Browsing Data", role: .destructive) {
                 clearing = true
@@ -97,6 +103,7 @@ struct ScannerSettingsSection: View {
             Toggle("Compact Scanner", isOn: $preferences.compact)
                 .accessibilityIdentifier("scanner.settings.compact")
             Toggle("Vibrate on Scan", isOn: $preferences.feedback)
+                .accessibilityIdentifier("scanner.settings.feedback")
             Picker("Recognize", selection: $preferences.formats) {
                 ForEach(ScannerFormats.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }

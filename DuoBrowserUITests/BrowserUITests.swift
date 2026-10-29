@@ -3,6 +3,40 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testScannerSettingsPersistAfterReturningFromEditor() {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        app.launch()
+        openMenu(in: app)
+        let settings = app.buttons["Settings"]
+        scrollTo(settings, in: app)
+        settings.tap()
+        let editor = app.buttons["Scanner Settings"]
+        revealControl(editor, in: app.collectionViews.firstMatch)
+        editor.tap()
+        let feedback = app.switches["scanner.settings.feedback"]
+        XCTAssertTrue(feedback.waitForExistence(timeout: 10))
+        let expected = feedback.value as? String == "1" ? "0" : "1"
+        feedback.tap()
+        XCTAssertEqual(feedback.value as? String, expected)
+        app.navigationBars["Scanner Settings"].buttons["Settings"].tap()
+        let save = app.buttons["Save Settings"]
+        revealControl(save, in: app.collectionViews.firstMatch)
+        save.tap()
+        app.navigationBars["Settings"].buttons["Done"].tap()
+        openMenu(in: app)
+        scrollTo(settings, in: app)
+        settings.tap()
+        revealControl(editor, in: app.collectionViews.firstMatch)
+        editor.tap()
+        XCTAssertTrue(feedback.waitForExistence(timeout: 10))
+        XCTAssertEqual(feedback.value as? String, expected, "Scanner preferences must survive Back, Save and reopening Settings")
+        app.navigationBars["Scanner Settings"].buttons["Done"].tap()
+    }
+
+    @MainActor
     func testScannerUsesCompactSheetAndRequiresASelectedField() {
         continueAfterFailure = false
         executionTimeAllowance = 180
