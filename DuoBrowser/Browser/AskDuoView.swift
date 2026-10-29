@@ -78,7 +78,7 @@ struct AskDuoView: View {
                     Text(assistant.isBusy ? "Working locally…" : (assistant.answer == nil ? "No answer yet." : "Answer ready below."))
                         .font(.caption)
                         .accessibilityIdentifier("askduo.request.status")
-                        .accessibilityValue(assistant.isBusy ? "busy" : (assistant.answer == nil ? "idle" : "answered"))
+                        .accessibilityValue(assistant.isBusy ? "busy" : (assistant.answer != nil ? "answered" : (assistant.errorMessage != nil ? "failed:\(assistant.failureCode ?? "validation")" : "idle")))
                 }
                 if let answer = assistant.answer {
                     Section("Apple Intelligence answer") {

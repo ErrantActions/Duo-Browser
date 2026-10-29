@@ -185,10 +185,12 @@ final class BrowserUITests: XCTestCase {
             ask.tap()
             print("Ask Duo live generation: requested=true")
             let finished = XCTNSPredicateExpectation(
-                predicate: NSPredicate(format: "value == %@", "answered"),
+                predicate: NSPredicate(format: "value == %@ OR value BEGINSWITH %@", "answered", "failed:"),
                 object: status
             )
             XCTAssertEqual(XCTWaiter.wait(for: [finished], timeout: 75), .completed)
+            print("Ask Duo request result: \(status.value as? String ?? "missing")")
+            XCTAssertEqual(status.value as? String, "answered")
             revealAssistant(app.staticTexts["askduo.answer"], in: app)
             XCTAssertFalse(app.staticTexts["askduo.answer"].label.isEmpty)
             print("Ask Duo live generation: completed=true")

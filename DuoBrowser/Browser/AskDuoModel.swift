@@ -25,10 +25,11 @@ final class AskDuoModel: ObservableObject {
     @Published private(set) var answer: AskDuoAnswer?
     @Published private(set) var isBusy = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var failureCode: String?
     @Published private(set) var notice: String?
     @Published private(set) var availabilityMessage = AskDuoModel.modelUnavailableReason
-    @Published var question = "" { didSet { answer = nil } }
-    @Published var allowsNavigation = false { didSet { answer = nil } }
+    @Published var question = "" { didSet { if question != oldValue { answer = nil } } }
+    @Published var allowsNavigation = false { didSet { if allowsNavigation != oldValue { answer = nil } } }
     private var task: Task<Void, Never>?
     private var deadline: Task<Void, Error>?
     private var operationID = UUID()
@@ -62,6 +63,7 @@ final class AskDuoModel: ObservableObject {
         question = ""
         allowsNavigation = false
         errorMessage = nil
+        failureCode = nil
         self.notice = notice
     }
 
@@ -129,6 +131,7 @@ final class AskDuoModel: ObservableObject {
     ) {
         guard !isBusy else { errorMessage = "Another Ask Duo request is still running."; return }
         errorMessage = nil
+        failureCode = nil
         notice = nil
         isBusy = true
         let id = UUID()
@@ -153,8 +156,9 @@ final class AskDuoModel: ObservableObject {
                     self.notice = "Request canceled. Nothing was opened."
                 } else {
                     self.logger.error("Ask Duo operation failed: code \((error as NSError).code)")
-                    self.errorMessage = (error as? AskDuoError)?.localizedDescription
-                        ?? "Apple Intelligence or the page reader could not complete this request. Try a shorter question or read the page again. Nothing was opened."
+                    let failure = Self.describeFailure(error)
+                    self.failureCode = failure.code
+                    self.errorMessage = failure.message
                 }
             }
         }
@@ -162,8 +166,50 @@ final class AskDuoModel: ObservableObject {
             try await Task.sleep(nanoseconds: seconds * 1_000_000_000)
             guard let self, self.operationID == id else { return }
             self.cancel()
+            self.failureCode = "request.timeout"
             self.errorMessage = AskDuoError.timedOut.localizedDescription
         }
+    }
+
+    static func describeFailure(_ error: Error) -> (code: String, message: String) {
+        if let error = error as? AskDuoError { return ("page.validation", error.localizedDescription) }
+        if #available(iOS 27.0, *), let error = error as? LanguageModelError {
+            switch error {
+            case .contextSizeExceeded:
+                return ("apple.contextSize", "This excerpt exceeds the model's context limit. Try a shorter question or a simpler page.")
+            case .rateLimited:
+                return ("apple.busy", "Apple Intelligence is busy. Wait a moment and try again.")
+            case .refusal, .guardrailViolation:
+                return ("apple.declined", "Apple Intelligence declined this request. Nothing was opened. Try a different question.")
+            case .timeout:
+                return ("apple.timeout", "Apple Intelligence did not respond in time. Nothing was opened.")
+            case .unsupportedLanguageOrLocale:
+                return ("apple.locale", "The model does not support this language or locale. Check Apple Intelligence language settings.")
+            case .unsupportedCapability, .unsupportedTranscriptContent, .unsupportedGenerationGuide:
+                return ("apple.capability", "This Apple Intelligence model does not support the requested response format.")
+            @unknown default:
+                return ("apple.unknown", "Apple Intelligence could not complete this request. Nothing was opened.")
+            }
+        }
+        if #available(iOS 26.0, *), let error = error as? LanguageModelSession.GenerationError {
+            switch error {
+            case .assetsUnavailable:
+                return ("apple.assets", "Apple Intelligence's model assets are not ready. Finish the model download in Settings and try again.")
+            case .exceededContextWindowSize:
+                return ("apple.contextSize", "This excerpt exceeds the model's context limit. Try a shorter question or a simpler page.")
+            case .rateLimited, .concurrentRequests:
+                return ("apple.busy", "Apple Intelligence is busy. Wait a moment and try again.")
+            case .refusal, .guardrailViolation:
+                return ("apple.declined", "Apple Intelligence declined this request. Nothing was opened. Try a different question.")
+            case .unsupportedLanguageOrLocale:
+                return ("apple.locale", "The model does not support this language or locale. Check Apple Intelligence language settings.")
+            case .unsupportedGuide, .decodingFailure:
+                return ("apple.format", "Apple Intelligence could not produce a valid response format. Nothing was opened.")
+            @unknown default:
+                return ("apple.unknown", "Apple Intelligence could not complete this request. Nothing was opened.")
+            }
+        }
+        return ("operation.\((error as NSError).code)", "Apple Intelligence or the page reader could not complete this request. Nothing was opened.")
     }
 
     @available(iOS 26.0, *)

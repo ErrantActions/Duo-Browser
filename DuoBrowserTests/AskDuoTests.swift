@@ -126,6 +126,17 @@ final class AskDuoTests: XCTestCase {
         XCTAssertFalse(assistant.hasApprovedContext)
         XCTAssertNil(assistant.answer)
         XCTAssertFalse(assistant.isBusy)
+        XCTAssertNil(assistant.failureCode)
         print("Ask Duo availability: onDeviceModelAvailable=\(AskDuoModel.modelUnavailableReason == nil)")
+    }
+
+    func testAssistantErrorsAreExplicitWithoutEchoingPrivateDiagnostics() {
+        let failure = AskDuoModel.describeFailure(NSError(
+            domain: "Fixture", code: 123,
+            userInfo: [NSLocalizedDescriptionKey: "PRIVATE_DIAGNOSTIC_MARKER"]
+        ))
+        XCTAssertEqual(failure.code, "operation.123")
+        XCTAssertFalse(failure.message.contains("PRIVATE_DIAGNOSTIC_MARKER"))
+        XCTAssertEqual(AskDuoModel.describeFailure(AskDuoError.staleContext).code, "page.validation")
     }
 }
