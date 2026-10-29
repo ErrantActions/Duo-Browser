@@ -79,11 +79,14 @@ final class BrowserUITests: XCTestCase {
         let link = app.buttons["askduo.link.1"]
         revealAssistant(link, in: app)
         link.tap()
-        XCTAssertTrue(app.buttons["askduo.confirm.open"].waitForExistence(timeout: 10))
-        app.buttons["Cancel"].tap()
+        let confirmation = app.alerts["Open this link?"]
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 10))
+        confirmation.buttons["Cancel"].firstMatch.tap()
+        XCTAssertTrue(confirmation.waitForNonExistence(timeout: 10))
         XCTAssertTrue(app.navigationBars["Ask Duo"].exists)
         link.tap()
-        app.buttons["askduo.confirm.open"].tap()
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 10))
+        confirmation.buttons["Open in This Tab"].firstMatch.tap()
         XCTAssertTrue(app.navigationBars["Ask Duo"].waitForNonExistence(timeout: 15))
         assertLoadedHTTPSPage(in: app, host: "example.com")
     }
