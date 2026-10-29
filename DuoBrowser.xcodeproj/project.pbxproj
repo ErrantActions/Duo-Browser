@@ -42,6 +42,8 @@
         A0000000000000000000011A = {isa = PBXBuildFile; fileRef = B0000000000000000000011A; };
         A0000000000000000000011B = {isa = PBXBuildFile; fileRef = B0000000000000000000011B; };
         A0000000000000000000011C = {isa = PBXBuildFile; fileRef = B0000000000000000000011C; };
+        A0000000000000000000011D = {isa = PBXBuildFile; fileRef = B0000000000000000000011D; };
+        A0000000000000000000011E = {isa = PBXBuildFile; fileRef = B0000000000000000000011E; };
         A00000000000000000000110 = {isa = PBXBuildFile; fileRef = B00000000000000000000110; };
         A00000000000000000000111 = {isa = PBXBuildFile; fileRef = B00000000000000000000111; };
         A00000000000000000000112 = {isa = PBXBuildFile; fileRef = B00000000000000000000112; };
@@ -99,6 +101,8 @@
         B0000000000000000000011A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFeatureTests.swift; sourceTree = "<group>"; };
         B0000000000000000000011B = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentlyClosedTabsView.swift; sourceTree = "<group>"; };
         B0000000000000000000011C = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePreview.swift; sourceTree = "<group>"; };
+        B0000000000000000000011D = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoPanelLayoutTests.swift; sourceTree = "<group>"; };
+        B0000000000000000000011E = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoCapabilityPresentation.swift; sourceTree = "<group>"; };
         B00000000000000000000110 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = duo.js; sourceTree = "<group>"; };
         B00000000000000000000111 = {isa = PBXFileReference; lastKnownFileType = folder; path = Demo; sourceTree = "<group>"; };
         B00000000000000000000112 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -152,6 +156,7 @@
                 B0000000000000000000010C,
                 B00000000000000000000117,
                 B0000000000000000000011B,
+                B0000000000000000000011E,
             );
             path = Browser;
             sourceTree = "<group>";
@@ -170,7 +175,7 @@
         };
         C00000000000000000000007 = {
             isa = PBXGroup;
-            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A);
+            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A, B0000000000000000000011D);
             path = DuoBrowserTests;
             sourceTree = "<group>";
         };
@@ -327,13 +332,14 @@
                 A00000000000000000000119,
                 A0000000000000000000011B,
                 A0000000000000000000011C,
+                A0000000000000000000011E,
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000004 = {
             isa = PBXSourcesBuildPhase;
             buildActionMask = 2147483647;
-            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A);
+            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A, A0000000000000000000011D);
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000101 = {

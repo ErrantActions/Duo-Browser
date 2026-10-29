@@ -221,6 +221,10 @@ final class DuoBridge: ObservableObject {
 
     func deactivate() {
         isActive = false
+        cancelPendingCapabilities()
+    }
+
+    func cancelPendingCapabilities() {
         if let scannerRequest { completeScanner(.cancelled, request: scannerRequest) }
         settlePermission(false)
         gesture = nil

@@ -12,13 +12,22 @@
     <main>
         <h1>DuoKit Demo</h1>
         <p id="availability" role="status">Detecting Duo Browser…</p>
-        <p>Duo Controls appear in the native Duo Panel. Your webpage stays visible.
-            Use <strong>Browser</strong> in the panel to return to standard navigation.</p>
+        <p>On a wide or unfolded screen, the webpage stays on the left and website
+            navigation and actions appear in a dedicated native panel on the right.
+            Browser Back and Refresh are available above the website buttons.
+            On a narrow screen, use <strong>Duo Controls</strong> to open a separate sheet.</p>
         <section aria-labelledby="panel-heading">
             <h2 id="panel-heading">Panel lifecycle</h2>
             <button id="install">Install Duo Panel</button>
             <button id="update">Update Duo Controls</button>
             <button id="clear">Clear Duo Panel</button>
+        </section>
+        <section aria-labelledby="record-heading">
+            <h2 id="record-heading">Website navigation</h2>
+            <p id="record-position">Record 1 of 3</p>
+            <p id="record-title">LP-100: Sample Part</p>
+            <button id="html-previous" disabled>Previous Record</button>
+            <button id="html-next">Next Record</button>
         </section>
         <section id="fallback" aria-labelledby="fallback-heading">
             <h2 id="fallback-heading">HTML fallback controls</h2>

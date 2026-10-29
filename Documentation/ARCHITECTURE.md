@@ -8,10 +8,28 @@ stable identity. Each `BrowserViewModel` retains one `WKWebView`, one navigation
 delegate, and one `DuoBridge`; switching tabs does not reconstruct these objects.
 `WebViewContainer` only embeds the existing view. Its update method never loads
 content. A vertical layout reserves separate space for the webpage and the
-address field/browser toolbar or Duo Panel, so WebKit cannot overlap native
-control hit targets. Switching controls does not remove the web view.
+address field/browser toolbar, so WebKit cannot overlap native control hit
+targets. For approved website controls and at least 700 points of available
+width, the same browser column remains on the left and a dedicated right-hand
+pane uses half the available width after a one-point divider. The browser
+toolbar is never replaced with site buttons. Below that width a native launcher
+opens the vertical site controls in a separate sheet.
+
+The right pane contains trusted browser Back and Refresh/Stop actions plus the
+website-declared navigation and special controls. It appears only for an active
+approved configuration; ordinary sites remain full-width. The page's WebKit
+instance is never recreated when the pane opens, closes, or changes size.
+`DuoPanelLayout` centralizes the exact threshold and half-width calculation.
+No private hinge APIs or physical fold-state claims are used.
 The toolbar's real menu button opens a native sheet; follow-up actions run
 after dismissal to avoid presenting two sheets at once.
+
+`DuoCapabilityPresentation` presents scanner permission and scanner UI from the
+currently active presentation container: the main browser for the side pane, or
+the compact control sheet. Only one host is enabled at a time. Closing compact
+controls cancels pending capability work and activation tokens without erasing
+the site's approved panel. Navigation, tab switching, and revocation retain the
+existing document/origin checks.
 
 WebKit delegates and observable state are main-actor isolated. KVO callbacks
 capture the view model weakly and dispatch state synchronization to the main

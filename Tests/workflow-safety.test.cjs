@@ -50,7 +50,8 @@ test("signing requires manual confirmation, main, successful tests, and an envir
     assert.match(release, /environment:\s*app-store/);
     assert.equal((release.match(/run: bash \.github\/scripts\/test-ios\.sh/g) || []).length, 1);
     assert.match(release, /run: bash \.github\/scripts\/test-ios\.sh unit/);
-    assert.match(ios, /run: bash \.github\/scripts\/test-ios\.sh\s*$/m);
+    assert.match(ios, /run: bash \.github\/scripts\/test-ios\.sh "\$NATIVE_TEST_SUITE"/);
+    assert.match(ios, /NATIVE_TEST_SUITE: \$\{\{ inputs\.test_scope \}\}/);
     assert.ok(release.indexOf("testflight.sh preflight") < release.indexOf("test-ios.sh"));
     assert.ok(release.indexOf("test-ios.sh") < release.indexOf("testflight.sh upload"));
     assert.match(release, /steps\.preflight\.outputs\.build_number/);
@@ -75,7 +76,7 @@ mkdir() { :; }
 export -f xcodebuild xcrun mkdir
 exec bash .github/scripts/test-ios.sh "$SUITE"
 `;
-    for (const suite of ["unit", "all", "invalid"]) {
+    for (const suite of ["unit", "all", "duo-panel", "invalid"]) {
         const result = cp.spawnSync(bash, ["-c", fixture], {
             cwd: root, encoding: "utf8",
             env: { ...process.env, SUITE: suite, EXPECTED_IOS_SDK: "27.1" }
@@ -89,7 +90,10 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
             assert.match(result.stdout, /XCODE_ARG<CODE_SIGNING_ALLOWED=NO>/);
             assert.match(result.stdout, /XCODE_ARG<test>/);
             if (suite === "unit") assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
-            else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
+            else if (suite === "duo-panel") {
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoRightPaneKeepsWebsiteVisibleAndDeliversNavigation>/);
+                assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
+            } else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
         }
     }
 });

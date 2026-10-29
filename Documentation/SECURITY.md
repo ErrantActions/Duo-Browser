@@ -49,11 +49,15 @@ must be changed in iOS Settings.
 
 ## Native interface
 
-Native controls always appear below immutable browser address UI with explicit
-website attribution and a Browser escape button. Labels remain visible;
-overflow scrolls rather than disappearing. Configuration cannot hide native
-browser escape UI or customize system permission prompts. Page messages are
-presented in explicitly website-labeled sheets, not disguised as iOS alerts.
+Native site controls appear in a dedicated right-hand pane on wider windows or
+an explicitly opened sheet on narrow windows. They retain website attribution,
+trusted browser Back/Refresh controls, and a Hide escape action. They do not
+replace or configure the browser's address/navigation UI. Labels remain visible;
+overflow scrolls vertically rather than disappearing. Configuration cannot hide
+native escape UI or customize system permission prompts. Scanner permission/UI
+is presented from the visible native container and cancelled when it closes;
+origin, tab, and document authorization are unchanged. Page messages remain
+explicitly website-labeled sheets, not disguised as iOS alerts.
 
 Optional confirmations identify the website. Appearance/accent choices are a
 small catalog, not arbitrary native styling or images. VoiceOver labels and

@@ -28,10 +28,12 @@ final class BrowserUITests: XCTestCase {
         let allow = app.buttons["Allow for This Site"]
         XCTAssertTrue(allow.waitForExistence(timeout: 10))
         allow.tap()
+        revealDuoControlsIfNeeded(in: app)
         let reserve = app.buttons["duo.control.reserve"]
         XCTAssertTrue(reserve.waitForExistence(timeout: 10))
         captureScreenshot(app, name: "Native Duo Panel")
         reserve.tap()
+        dismissCompactDuoControlsIfNeeded(in: app)
         let eventLog = app.webViews.staticTexts.matching(
             NSPredicate(format: "label CONTAINS %@", "duo.controlActivated")
         ).firstMatch
@@ -48,6 +50,80 @@ final class BrowserUITests: XCTestCase {
         start.tap()
         app.buttons["Done"].tap()
         XCTAssertTrue(app.buttons["Tabs, 1 open"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    func testDuoRightPaneKeepsWebsiteVisibleAndDeliversNavigation() {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        app.launch()
+        openMenu(in: app)
+        app.buttons["New Private Tab"].tap()
+        let demo = app.buttons["Explore DuoKit Demo"]
+        let start = app.scrollViews["browser.start-page"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        for _ in 0..<4 {
+            if demo.exists && demo.isHittable { break }
+            start.swipeUp()
+        }
+        XCTAssertTrue(demo.isHittable)
+        demo.tap()
+        let install = app.webViews.buttons["Install Duo Panel"]
+        XCTAssertTrue(install.waitForExistence(timeout: 10))
+        install.tap()
+        let allow = app.buttons["Allow for This Site"]
+        XCTAssertTrue(allow.waitForExistence(timeout: 10))
+        allow.tap()
+
+        let rightPane = app.otherElements["duo.panel.right"]
+        XCTAssertTrue(rightPane.waitForExistence(timeout: 10))
+        let webpage = app.webViews.firstMatch
+        XCTAssertGreaterThan(webpage.frame.width, 0)
+        XCTAssertGreaterThanOrEqual(rightPane.frame.width, 320)
+        XCTAssertGreaterThanOrEqual(rightPane.frame.minX, webpage.frame.maxX - 1)
+        XCTAssertGreaterThan(rightPane.frame.height, webpage.frame.height * 0.8)
+        XCTAssertTrue(app.buttons["Browser menu"].exists)
+        XCTAssertTrue(app.buttons["duo.browser.back"].exists)
+        XCTAssertTrue(app.buttons["duo.browser.refresh"].exists)
+        XCTAssertFalse(app.buttons["duo.controls.open"].exists)
+        captureScreenshot(app, name: "Dedicated Right Website Controls")
+
+        let next = app.buttons["duo.control.next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 10))
+        next.tap()
+        XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["duo.control.previous"].isEnabled)
+        let previous = app.buttons["duo.control.previous"]
+        previous.tap()
+        XCTAssertTrue(app.webViews.staticTexts["Record 1 of 3"].waitForExistence(timeout: 10))
+
+        app.buttons["duo.browser.refresh"].tap()
+        XCTAssertTrue(rightPane.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(install.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Browser menu"].exists)
+        install.tap()
+        XCTAssertTrue(rightPane.waitForExistence(timeout: 10))
+        app.webViews.buttons["Clear Duo Panel"].tap()
+        XCTAssertTrue(rightPane.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(webpage.exists)
+    }
+
+    @MainActor
+    private func revealDuoControlsIfNeeded(in app: XCUIApplication) {
+        let open = app.buttons["duo.controls.open"]
+        if open.waitForExistence(timeout: 2) {
+            open.tap()
+            XCTAssertTrue(app.navigationBars["Website Controls"].waitForExistence(timeout: 10))
+        }
+    }
+
+    @MainActor
+    private func dismissCompactDuoControlsIfNeeded(in app: XCUIApplication) {
+        let title = app.navigationBars["Website Controls"]
+        if title.exists { title.buttons["Done"].tap() }
     }
 
     @MainActor

@@ -13,6 +13,14 @@ on:
         required: true
         type: boolean
         default: false
+      test_scope:
+        description: Full validation or the focused right-hand Duo Panel UI regression
+        required: true
+        type: choice
+        options:
+          - all
+          - duo-panel
+        default: all
 
 permissions:
   contents: read
@@ -29,6 +37,7 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
       EXPECTED_IOS_SDK: "27.1"
+      NATIVE_TEST_SUITE: ${{ inputs.test_scope }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -40,7 +49,7 @@ jobs:
           node Tests/validate-project.cjs
       - name: Build and test the unsigned iPhone app
         timeout-minutes: 20
-        run: bash .github/scripts/test-ios.sh
+        run: bash .github/scripts/test-ios.sh "$NATIVE_TEST_SUITE"
       - name: Produce sanitized test counts
         if: always() && inputs.save_summary
         run: node .github/scripts/test-summary.cjs

@@ -91,6 +91,7 @@ struct BrowserStartPageView: View {
             .frame(maxWidth: 680, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
+        .accessibilityIdentifier("browser.start-page")
         .background(Color(uiColor: .systemGroupedBackground))
         .tint(isPrivate ? .purple : .accentColor)
     }

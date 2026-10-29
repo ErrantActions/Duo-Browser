@@ -135,76 +135,55 @@ private struct BrowserTabView: View {
     @ObservedObject var manager: BrowserTabManager
     let present: (BrowserSheet) -> Void
     @State private var sharedPage: SharedPage?
+    @State private var showsCompactControls = false
+
+    private var showsSiteControls: Bool {
+        model.bridge.panel != nil && !model.bridge.browserControlsVisible
+    }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                WebViewContainer(webView: model.webView)
-                    .accessibilityHidden(model.showingStartPage || model.navigationError != nil)
-                    .allowsHitTesting(!model.showingStartPage && model.navigationError == nil)
-                if model.showingStartPage {
-                    startPage
-                } else if let error = model.navigationError {
-                    BrowserErrorView(error: error, retry: model.reload, goHome: model.goToStartPage)
+        GeometryReader { geometry in
+            let layout = DuoPanelLayout(availableWidth: geometry.size.width)
+            HStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    pageContent
+                    browserChrome(showControlsButton: showsSiteControls && !layout.usesSidePane)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                if showsSiteControls, let width = layout.panelWidth {
+                    Divider().frame(width: 1)
+                    siteControls
+                        .frame(width: width)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("duo.panel.right")
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            VStack(spacing: 4) {
-                if model.isPrivate {
-                    Label("Private Browsing", systemImage: "hand.raised.fill")
-                        .font(.caption.bold())
-                }
-                if model.isLoading && !model.showingStartPage {
-                    ProgressView(value: model.estimatedProgress)
-                        .accessibilityLabel("Page loading progress")
-                }
-                BrowserAddressBar(model: model)
-                if model.bridge.panel != nil, !model.bridge.browserControlsVisible {
-                    DuoPanelView(bridge: model.bridge)
-                } else {
-                    BrowserToolbar(
-                        model: model,
-                        manager: manager,
-                        share: {
-                            if let url = model.shareURL {
-                                model.deactivate()
-                                sharedPage = SharedPage(url: url)
-                            }
-                        },
-                        present: present
-                    )
-                }
+            .onChange(of: layout.usesSidePane) { _, wide in
+                if wide { showsCompactControls = false }
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 8)
-            .background(.bar)
+            .onChange(of: showsSiteControls) { _, available in
+                if !available { showsCompactControls = false }
+            }
         }
+        .sheet(isPresented: $showsCompactControls, onDismiss: model.bridge.cancelPendingCapabilities) {
+            NavigationStack {
+                siteControls
+                    .navigationTitle("Website Controls")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { showsCompactControls = false }
+                        }
+                    }
+            }
+            .accessibilityIdentifier("duo.panel.sheet")
+            .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: showsCompactControls))
+        }
+        .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: !showsCompactControls))
         .sheet(item: $sharedPage, onDismiss: { model.isActive = true }) { ShareSheet(url: $0.url) }
         .sheet(item: $model.pageDialog, onDismiss: model.cancelPageDialog) { dialog in
             PageDialogView(dialog: dialog, complete: model.completePageDialog)
                 .interactiveDismissDisabled()
-        }
-        .fullScreenCover(item: Binding(
-            get: { model.bridge.scannerRequest },
-            set: { model.bridge.scannerRequest = $0 }
-        )) { request in
-            ScannerView { model.bridge.completeScanner($0, request: request) }
-                .interactiveDismissDisabled()
-        }
-        .confirmationDialog(
-            "Website Permission",
-            isPresented: Binding(
-                get: { model.bridge.permissionRequest != nil },
-                set: { if !$0 { model.bridge.decidePermission(false) } }
-            ),
-            titleVisibility: .visible
-        ) {
-            Button("Allow for This Site") { model.bridge.decidePermission(true) }
-            Button("Deny for This Site", role: .destructive) { model.bridge.decidePermission(false) }
-        } message: {
-            if let request = model.bridge.permissionRequest {
-                Text("\(request.origin) requests \(request.capability.rawValue). \(request.capability == .scanner ? "Scanning opens the camera only after you activate a native control." : "This site can display native controls in the Duo Panel.") You can revoke access in Duo Site Permissions.")
-            }
         }
         .alert(item: $model.alert) { alert in
             switch alert.content {
@@ -225,6 +204,69 @@ private struct BrowserTabView: View {
                 model.bridge.errorMessage = nil
             }
         }
+    }
+
+    private var pageContent: some View {
+        ZStack {
+            WebViewContainer(webView: model.webView)
+                .accessibilityIdentifier("browser.webpage")
+                .accessibilityHidden(model.showingStartPage || model.navigationError != nil)
+                .allowsHitTesting(!model.showingStartPage && model.navigationError == nil)
+            if model.showingStartPage {
+                startPage
+            } else if let error = model.navigationError {
+                BrowserErrorView(error: error, retry: model.reload, goHome: model.goToStartPage)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func browserChrome(showControlsButton: Bool) -> some View {
+        VStack(spacing: 4) {
+            if model.isPrivate {
+                Label("Private Browsing", systemImage: "hand.raised.fill")
+                    .font(.caption.bold())
+            }
+            if model.isLoading && !model.showingStartPage {
+                ProgressView(value: model.estimatedProgress)
+                    .accessibilityLabel("Page loading progress")
+            }
+            if showControlsButton {
+                Button {
+                    showsCompactControls = true
+                } label: {
+                    Label("Duo Controls", systemImage: "slider.horizontal.3")
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityHint("Open this website's navigation and actions in a separate panel")
+                .accessibilityIdentifier("duo.controls.open")
+            }
+            BrowserAddressBar(model: model)
+            BrowserToolbar(
+                model: model, manager: manager,
+                share: {
+                    if let url = model.shareURL {
+                        model.deactivate()
+                        sharedPage = SharedPage(url: url)
+                    }
+                },
+                present: present
+            )
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .background(.bar)
+    }
+
+    private var siteControls: some View {
+        DuoPanelView(
+            bridge: model.bridge, canGoBack: model.canGoBack, isLoading: model.isLoading,
+            goBack: model.goBack,
+            refreshOrStop: {
+                if model.isLoading { model.stop() } else { model.reload() }
+            }
+        )
     }
 
     private var startPage: some View {

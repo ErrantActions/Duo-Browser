@@ -9,7 +9,7 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
 | Website SDK | **DuoKit** |
 | JavaScript SDK | `duo.js` |
 | Web API | `window.duo` |
-| Dynamic native toolbar | **Duo Panel** |
+| Native website control pane | **Duo Panel** |
 | Site integrations | **Duo Controls** |
 | Developer documentation | **Duo Web API** |
 
@@ -188,12 +188,24 @@ The in-memory recently closed tab list is cleared.
 
 On the built-in start screen tap **Explore DuoKit Demo**, or select **DuoKit
 Demo** from the browser menu. Tap **Install Duo Panel**, then grant the site's
-Duo Controls permission. Try buttons, toggle, segments, menu, and the confirmed
-primary action. The webpage logs events. **Update Duo Controls** replaces the
-complete panel; **Clear Duo Panel** restores the browser toolbar.
+Duo Controls permission. At an available width of at least 700 points, the
+webpage stays on the left and a dedicated, roughly half-width **Duo Panel**
+appears on the right. It is not appended to the address bar. The standard
+browser toolbar remains below the webpage.
 
-The panel's **Browser** button returns to ordinary controls without navigating.
-The browser menu's **Show Duo Panel** brings the panel back.
+The right pane has browser **Back** and **Refresh/Stop** at the top, then the
+website's own navigation and special actions. Try **Previous Record** and
+**Next Record** to change the demo's content without navigating away; also try
+the scan/action buttons, toggle, segments, menu, and confirmed primary action.
+The webpage logs events. **Update Duo Controls** replaces the site's complete
+configuration; **Clear Duo Panel** removes the right pane and expands the page.
+
+On a folded/narrow window, **Duo Controls** opens the same vertical controls in
+a separate sheet; the browser's address/navigation bar is not replaced.
+This is an available-width layout using public SwiftUI APIs, not a claim that
+Duo detects a physical hinge. **Hide Duo Controls** dismisses the pane without
+navigating; **Show Duo Panel** in the browser menu restores it. Ordinary sites
+without an approved configuration remain full-width and get no empty side pane.
 
 Tap the native **Scan** control to request scanner permission. On supported
 physical iPhones, iOS then requests camera access and displays a live scanner.

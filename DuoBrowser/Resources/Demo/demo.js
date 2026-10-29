@@ -12,6 +12,8 @@ const panel = {
     title: "Part Actions",
     accent: "blue",
     controls: [
+        { id: "previous", type: "button", label: "Previous Record", icon: "chevron.left", enabled: false },
+        { id: "next", type: "button", label: "Next Record", icon: "chevron.right" },
         { id: "scan", type: "button", label: "Scan", icon: "barcode.viewfinder" },
         { id: "reserve", type: "button", label: "Reserve", icon: "person.crop.circle.badge.plus", payload: { part: "LP-100" } },
         { id: "urgent", type: "toggle", label: "Urgent", value: false },
@@ -24,6 +26,18 @@ const panel = {
         { id: "consume", type: "primary", label: "Consume", icon: "checkmark.circle", requiresConfirmation: true }
     ]
 };
+const records = ["LP-100: Sample Part", "LP-200: Second Part", "LP-300: Final Part"];
+let recordIndex = 0;
+function moveRecord(offset) {
+    recordIndex = Math.max(0, Math.min(records.length - 1, recordIndex + offset));
+    document.querySelector("#record-position").textContent = `Record ${recordIndex + 1} of ${records.length}`;
+    document.querySelector("#record-title").textContent = records[recordIndex];
+    document.querySelector("#html-previous").disabled = recordIndex === 0;
+    document.querySelector("#html-next").disabled = recordIndex === records.length - 1;
+    panel.controls.find(control => control.id === "previous").enabled = recordIndex > 0;
+    panel.controls.find(control => control.id === "next").enabled = recordIndex < records.length - 1;
+    panel.controls.find(control => control.id === "reserve").payload = { part: records[recordIndex].split(":")[0] };
+}
 const available = Boolean(window.duo?.isAvailable);
 document.querySelector("#availability").textContent = available
     ? `DuoKit ${window.duo.version} is available. Install a panel to request site permission.`
@@ -38,7 +52,7 @@ document.querySelector("#install").onclick = () => {
 };
 document.querySelector("#update").onclick = () => {
     panel.title = "Updated Part Actions";
-    panel.controls[1].badge = "1";
+    panel.controls.find(control => control.id === "reserve").badge = "1";
     if (available) perform(() => window.duo.controls.update(panel));
     else log("HTML controls updated: reserved count 1.");
 };
@@ -53,6 +67,10 @@ if (available) {
         if (event.type !== "duo.controlActivated") return;
         const control = panel.controls.find(item => item.id === event.controlId);
         if (control && event.payload.value !== undefined) control.value = event.payload.value;
+        if (event.controlId === "previous" || event.controlId === "next") {
+            moveRecord(event.controlId === "next" ? 1 : -1);
+            perform(() => window.duo.controls.update(panel));
+        }
         if (event.controlId === "scan") {
             perform(() => window.duo.scanner.request({
                 requestId: `scan_${Date.now()}`, gestureToken: event.gestureToken
@@ -60,6 +78,8 @@ if (available) {
         }
     });
 }
+document.querySelector("#html-previous").onclick = () => moveRecord(-1);
+document.querySelector("#html-next").onclick = () => moveRecord(1);
 document.querySelector("#html-reserve").onclick = () => log("HTML action: Reserve");
 document.querySelector("#html-toggle").onchange = event => log({ urgent: event.target.checked });
 document.querySelector("#html-quantity").onchange = event => log({ quantity: event.target.value });

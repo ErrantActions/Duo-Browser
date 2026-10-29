@@ -40,7 +40,7 @@ limits are not success responses.
 | --- | --- |
 | `duo.controls.set(configuration)` | `{ok: true}` after validation/permission |
 | `duo.controls.update(configuration)` | Full replacement with same active panel ID |
-| `duo.controls.clear()` | `{ok: true}`, restores browser toolbar |
+| `duo.controls.clear()` | `{ok: true}`, removes the website control pane/sheet |
 | `duo.events.subscribe(callback)` | Synchronous unsubscribe function |
 | `duo.device.capabilities()` | version, controls, scanner hardware support, gesture requirement, control limit |
 | `duo.scanner.request({requestId, gestureToken})` | `{ok: true}` when scanner presentation is accepted; outcome arrives as an event |
@@ -114,8 +114,12 @@ value in `event.payload.value`, overriding any payload field named `value`.
 
 These are trusted native symbol identifiers, not arbitrary image URLs.
 Accent requests never override browser attribution, system appearance, or
-permission UI. Controls stay visible, labeled, and scroll horizontally rather
-than hiding overflow.
+permission UI. Controls are large labeled native rows in a vertically scrollable
+pane rather than a row appended to the address bar. At least 700 points of
+available window width gives a dedicated right-hand pane beside the webpage;
+narrower windows use a **Duo Controls** launcher and separate sheet.
+Browser Back and Refresh/Stop remain available above site-supplied actions.
+The normal browser toolbar stays available and websites cannot configure it.
 
 ## Events
 
@@ -201,7 +205,10 @@ not install a new SDK.
 
 Private choices live only in the requesting tab's memory. Users can revoke site
 access through **Browser menu → Duo Site Permissions**. Native panel rendering
-always identifies the website and provides a **Browser** escape action.
+always identifies the website and provides a **Hide Duo Controls** escape
+action. The browser menu can restore the panel without navigation. The same
+configuration/event API works in both layouts; sites do not supply frame sizes
+or request access to a physical display.
 
 ## Transport envelope
 
