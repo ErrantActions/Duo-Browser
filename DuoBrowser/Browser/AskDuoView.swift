@@ -117,6 +117,7 @@ struct AskDuoView: View {
                         Text("Link suggestions never open anything automatically. Each destination requires confirmation.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
+                    .id("pageContext")
                 }
                 ForEach(assistant.conversation.turns) { turn in
                     Section {
@@ -174,6 +175,11 @@ struct AskDuoView: View {
             .accessibilityIdentifier("askduo.content")
             .onChange(of: assistant.conversation.turns.last?.id) { _, _ in
                 withAnimation { scroll.scrollTo("latest", anchor: .bottom) }
+            }
+            .onChange(of: assistant.context?.documentID) { _, documentID in
+                if documentID != nil {
+                    withAnimation { scroll.scrollTo("pageContext", anchor: .top) }
+                }
             }
         }
         }

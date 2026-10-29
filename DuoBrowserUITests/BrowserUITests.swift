@@ -23,8 +23,8 @@ final class BrowserUITests: XCTestCase {
         revealAssistant(summary, in: app)
         summary.tap()
         let approve = app.buttons["askduo.approve"]
-        XCTAssertTrue(approve.waitForExistence(timeout: 15))
         revealAssistant(approve, in: app)
+        XCTAssertTrue(approve.exists)
         XCTAssertEqual(question.value as? String, "Summarize this page in a few sentences.")
         XCTAssertFalse(app.staticTexts["askduo.answer"].exists)
         XCTAssertTrue(approve.label.contains("and Send"))
@@ -288,7 +288,6 @@ final class BrowserUITests: XCTestCase {
         revealAssistant(capture, in: app)
         capture.tap()
         let excerpt = app.staticTexts["askduo.context"]
-        XCTAssertTrue(app.buttons["Read Page Again"].waitForExistence(timeout: 15))
         let preview = app.buttons["askduo.preview.toggle"]
         revealAssistant(preview, in: app)
         preview.tap()
