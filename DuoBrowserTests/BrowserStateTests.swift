@@ -71,17 +71,46 @@ final class BrowserStateTests: XCTestCase {
         let tab = try XCTUnwrap(manager.selectedTab)
         let webView = tab.webView
         XCTAssertTrue(tab.browserBackgroundColor.isEqual(UIColor.systemGroupedBackground))
-        for color in [UIColor.red, UIColor.blue] {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousKeyWindow = scene.windows.first(where: \.isKeyWindow)
+        let window = UIWindow(windowScene: scene)
+        let controller = UIViewController()
+        controller.view = webView
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+            previousKeyWindow?.makeKey()
+        }
+        for (index, rgb) in [[224, 245, 236], [20, 42, 61]].enumerated() {
+            let matches: (UIColor) -> Bool = { color in
+                var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+                return color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+                    && abs(red - CGFloat(rgb[0]) / 255) < 0.01
+                    && abs(green - CGFloat(rgb[1]) / 255) < 0.01
+                    && abs(blue - CGFloat(rgb[2]) / 255) < 0.01
+                    && alpha > 0.99
+            }
             let changed = expectation(description: "WebKit background color updated")
             let observation = tab.$pageBackgroundColor
-                .first(where: { $0.isEqual(color) })
+                .first(where: matches)
                 .sink { _ in changed.fulfill() }
-            tab.webView.underPageBackgroundColor = color
-            await fulfillment(of: [changed], timeout: 5)
+            let css = "rgb(\(rgb[0]), \(rgb[1]), \(rgb[2]))"
+            if index == 0 {
+                webView.loadHTMLString(
+                    "<!doctype html><html><body style='background:\(css);min-height:100vh'>Background check</body></html>",
+                    baseURL: nil
+                )
+            } else {
+                _ = try await webView.evaluateJavaScript("document.body.style.backgroundColor = '\(css)'")
+            }
+            await fulfillment(of: [changed], timeout: 15)
             observation.cancel()
-            XCTAssertTrue(tab.pageBackgroundColor.isEqual(color))
+            XCTAssertTrue(matches(tab.pageBackgroundColor))
             XCTAssertTrue(tab.webView === webView)
         }
+        tab.goToStartPage()
         XCTAssertTrue(tab.browserBackgroundColor.isEqual(UIColor.systemGroupedBackground))
     }
 
