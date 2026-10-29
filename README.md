@@ -46,9 +46,16 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   phone installation are not independently verified here.
   The corrected native Duo toolbar is in **build 1.0.1**, successfully uploaded in
   [release run 40803693515](https://github.com/ErrantActions/Duo-Browser/actions/runs/40803693515)
-  after 62 passing native unit tests and the focused toolbar UI test. Apple had
-  not yet listed that new build at the immediate post-upload check; processing
-  and installation of 1.0.1 remain unverified. Build 1 has the older layout.
+  after 62 passing native unit tests and the focused toolbar UI test. A subsequent
+  Apple lookup verified 1.0.1 as **VALID**, not expired, with its compliance
+  answer recorded; phone installation remains unverified. It still has the
+  duplicate bottom chrome removed by the current edge-only source update.
+  That edge-only update was successfully signed, exported, and uploaded as
+  **build 1.0.2** in [release run 40808360983](https://github.com/ErrantActions/Duo-Browser/actions/runs/40808360983)
+  after **63 passing native unit tests**. Apple processing is verified **VALID**.
+  Its beta state is **MISSING_EXPORT_COMPLIANCE**: the owner must answer that
+  Apple prompt truthfully before distribution. No answer was invented or copied
+  automatically. Assignment and phone installation remain unverified.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 
@@ -261,7 +268,8 @@ record exclusions.
 Further tests cover old saved-data decoding, favorites/folder filtering, write
 rollback, Reading List state, calendar-day grouping across daylight-saving
 changes, recently closed/private exclusions, bulk tab closing, page zoom, and
-Quick Look data-source wiring. The existing native run passed all 61 unit tests.
+Quick Look data-source wiring, and address-editor capability isolation during
+scene reactivation. The latest release passed all 63 native unit tests.
 The UI tests cover demo permission, event delivery, panel clearing,
 tab creation/closing, regular/private grid switching, selection preservation,
 an ordinary HTTPS address, and back/forward navigation.

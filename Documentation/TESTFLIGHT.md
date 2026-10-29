@@ -213,17 +213,15 @@ The published logs verify:
 - The temporary signing cleanup completed successfully.
 
 Apple processing subsequently completed with **VALID** for build 1, ID
-`79ca0ac0-fc8f-435d-bcab-e881c447a631`. Apple's beta detail currently reports
-**MISSING_EXPORT_COMPLIANCE**. The owner was unavailable to confirm that answer;
-no encryption exemption or legal declaration was submitted automatically.
-In a subsequent lookup, Apple reported `usesNonExemptEncryption=false` for
-build 1; the agent did not submit that answer.
+`79ca0ac0-fc8f-435d-bcab-e881c447a631`. Apple's initial beta detail reported
+**MISSING_EXPORT_COMPLIANCE**. No encryption exemption or legal declaration was
+submitted automatically. Subsequent Apple lookups reported
+`usesNonExemptEncryption=false` for build 1; the agent did not submit that answer.
 
-Next, the owner must resolve export compliance in App Store Connect. Then assign
-the processed build to Owner Testing and verify actual phone installation and
-launch. Owner Testing was separately confirmed as an internal group with one
-tester and manual build assignment. Those assignment/install/launch steps are
-not yet verified. Do not upload another copy to resolve a compliance question.
+Owner Testing was separately confirmed as an internal group with one tester
+and manual build assignment. Assignment, actual phone installation, and launch
+are separate checkpoints and are not independently verified here. Do not
+upload another copy to resolve a compliance or assignment question.
 
 Windows checks prove local helper/contracts, not native iOS compilation.
 Native validation requires Xcode. Earlier full UI runs found failures in the
@@ -246,11 +244,12 @@ Apple upload at approximately 9:15 PM US Central on October 28, 2026.
 The focused toolbar UI regression was run separately on the same application
 code; it was not duplicated in the upload job.
 
-The immediate Apple API lookup had not yet listed build 1.0.1. Processing,
-compliance, assignment, and actual installation of this update remain separate
-unverified checkpoints. Do not upload another copy just because processing is
-asynchronous. Test the native strip using build **1.0.1**, not the earlier build
-1 with bottom-only controls.
+The immediate Apple API lookup had not yet listed build 1.0.1. A subsequent
+lookup verified **VALID**, not expired, and `usesNonExemptEncryption=false`.
+Assignment and actual installation remain separate unverified checkpoints.
+Do not upload another copy just because processing is asynchronous. Build
+**1.0.1** contains the native strip but still retains the duplicate bottom
+chrome addressed by the edge-only update below.
 
 ### Verified edge-only layout and address editor
 
@@ -267,6 +266,32 @@ configuration, no overlap with core edge buttons, full-URL editing, Cancel
 preserving Record 2, Go loading HTTPS, and website Previous/Next, Refresh,
 and Clear. This proves that focused simulator flow, not physical-device
 installation, the full UI suite, or delivery of this newer code.
+
+### Verified edge-only delivery: version 1.0, build 1.0.2
+
+[Run 40808360983](https://github.com/ErrantActions/Duo-Browser/actions/runs/40808360983)
+delivered commit `e311a9516248fa6d421681f72bcc627f660c905c`, with the same
+application code as the focused UI pass above. Signing preflight selected
+build **1.0.2** above all existing App Store Connect uploads, then removed its
+temporary signing material before tests. All **63 native unit tests** passed,
+including the address-editor scene-reactivation/capability regression.
+
+The logs separately confirm `ARCHIVE SUCCEEDED`, `EXPORT SUCCEEDED`, and
+`UPLOAD SUCCEEDED with no errors` on October 29, 2026 at 03:02 UTC.
+The focused UI test was not duplicated in this release job.
+The initial Apple API lookup had not yet listed 1.0.2. A subsequent lookup
+verified **VALID**, not expired, with `usesNonExemptEncryption=null`. Apple's
+internal and external beta states are **MISSING_EXPORT_COMPLIANCE**.
+The owner must answer the export-compliance prompt truthfully in
+[App Store Connect](https://appstoreconnect.apple.com/apps/6827739657/testflight).
+No compliance answer was invented or submitted automatically.
+
+The upload key's beta-group read returned HTTP 403, so Owner Testing assignment
+could not be independently verified. No broader key permissions, public links,
+external testers, or automatic group-distribution policy were enabled.
+After resolving compliance, the owner should confirm this build's assignment
+to the existing owner-only internal group. Actual phone installation remains
+unverified.
 
 After an upload:
 
