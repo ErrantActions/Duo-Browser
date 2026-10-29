@@ -17,7 +17,7 @@ commits may follow. The original repository remains privately preserved.
 | Marketing version | `1.0`, from `MARKETING_VERSION` |
 | Deployment target | iOS 17 |
 | Distribution profile | `Duo Browser App Store`, matching this bundle/team |
-| Intended testers | Owner-only internal testing, manual build assignment |
+| Intended testers | Owner-only internal testing, automatic distribution through Owner Testing Auto |
 
 Team/bundle/app IDs are configuration metadata, not passwords. Do not copy
 another app's IDs or recreate valid Apple resources because a repository changed.
@@ -87,6 +87,33 @@ The full UI suite is intentionally separate from the faster TestFlight upload
 path. Run it when checking UI changes or a release candidate, not automatically
 as a duplicate deployment job. A successful upload does not imply the UI suite
 passed.
+
+## Automatic internal distribution
+
+**Owner Testing Auto** is the active automatic-distribution group. It is an
+internal group with `hasAccessToAllBuilds=true`, exactly the same single tester
+as the original **Owner Testing** group, and no public link. No new person,
+external group, or external review submission was added.
+
+The original manual group remains unchanged. Apple's documented creation
+request supports `hasAccessToAllBuilds`, but its update request does not, so
+the automatic group was created separately rather than deleting the old one.
+Group settings and membership were read back through the documented direct
+group API. Build **1.0.4** was verified in the automatic group's build list,
+with Apple reporting **IN_BETA_TESTING**.
+
+Continue starting the existing confirmed GitHub TestFlight workflow manually.
+After a future eligible upload completes processing and compliance, Apple
+automatically distributes it to the internal automatic group; do not repeat
+the old Add Builds step. This changes neither GitHub workflow triggers nor
+signing permissions. Anyone subsequently added to this group would receive
+future builds, so keep its membership owner-only.
+
+This is the standard internal-group behavior described in Apple's
+[internal tester instructions](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers/).
+Their Xcode Cloud exception does not apply to this GitHub-hosted Xcode workflow.
+No new app build or upload was needed for the group configuration. Actual
+phone download and launch still require device verification.
 
 ## Private signing setup
 
@@ -387,18 +414,22 @@ was accepted automatically. No France-distribution answer, store-territory
 change, export-compliance code, public testing link, or external review
 submission was added.
 
-Owner Testing assignment and actual phone installation remain unverified.
-The upload key's earlier restricted group visibility was not bypassed or
-broadened. Earlier builds' compliance states are historical and are not changed
-retroactively by this new plist.
+At the initial delivery check, group assignment and actual phone installation
+were unverified. The automatic-distribution setup above subsequently verified
+build 1.0.4 in **Owner Testing Auto** as **IN_BETA_TESTING**, with exactly the
+same existing owner. The earlier HTTP 403 concerned a build-to-group endpoint;
+the documented direct group resources worked without changing key permissions.
+Actual phone installation remains unverified. Earlier builds' compliance states
+are historical and are not changed retroactively by this new plist.
 
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
 2. Wait for [Apple processing](https://appstoreconnect.apple.com/apps/6827739657/testflight).
 3. Let the owner resolve compliance/legal prompts.
-4. Assign the processed build to **Owner Testing**, with manual distribution and
-   only the owner included. No public links or external testers without approval.
+4. Confirm automatic delivery to **Owner Testing Auto**, with only the owner
+   included. No per-build manual assignment is required for future eligible
+   uploads. No public links or external testers without approval.
 5. Install through Apple's TestFlight app and confirm actual launch, browsing,
    native panel permissions, and scanning on a supported physical phone.
 

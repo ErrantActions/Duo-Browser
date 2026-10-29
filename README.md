@@ -77,8 +77,12 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   All **64 native unit tests** passed. The owner-confirmed exempt-encryption
   declaration survived the signed archive; Apple reports **VALID**,
   `usesNonExemptEncryption=false`, and **READY_FOR_BETA_TESTING** without a
-  compliance questionnaire. Owner Testing assignment and phone installation
-  remain unverified. No France/store-territory setting was changed.
+  compliance questionnaire. The new **Owner Testing Auto** internal group now
+  has automatic distribution enabled, exactly the same single owner, and no
+  public link. Build 1.0.4 is verified in that group as **IN_BETA_TESTING**.
+  Future eligible uploads no longer require manual group assignment.
+  Actual phone installation remains unverified. The original manual group was
+  preserved; no France/store-territory setting was changed.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 
