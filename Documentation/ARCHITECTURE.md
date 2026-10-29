@@ -21,13 +21,24 @@ core browser navigation, collapsed address, tabs, and the shared browser menu as
 native edge items even on sites without DuoKit. Nonvertical/older layouts retain
 the normal bottom chrome.
 
-`BrowserAddressEditor` edits a local draft in a sheet. The shared URL normalizer
-validates it; submission is applied only after dismissal so external-app
+`BrowserAddressEditor` shares its input/validation between a compact floating
+bubble and the full sheet. The first native address-icon tap expands the bubble
+and focuses the keyboard; the second tap on that same icon promotes the shared
+draft to the full editor. The toolbar button reports its global frame so the
+bubble is aligned beside it inside the webpage's safe viewport, not under
+the native rail. No second launcher or permanent bottom chrome is created.
+The shared URL normalizer validates the draft; submission is applied only after dismissal so external-app
 confirmation or navigation errors do not compete with the editor presentation.
 Cancel leaves the page intact. Address editing suspends website capability UI
 even if scene activation attempts to reactivate the tab; dismissal resumes only
 the selected, active tab. The existing WebKit instance and form/scroll state are
-preserved. The webpage relies on native container safe areas, not
+preserved. Bubble-to-sheet promotion keeps capability suspension continuous.
+While the bubble is open, a webpage tap dismisses it without delivering a site
+click; other native actions are temporarily disabled, but the same address icon
+remains available to open the full editor. Backgrounding or leaving vertical
+layout cancels the bubble. No browser Back/Refresh controls are repeated in the
+horizontal website toolbar because the regular browser chrome already owns them.
+The webpage relies on native container safe areas, not
 `ignoresSafeArea` behind toolbar buttons.
 
 The native toolbar contains trusted browser Back and Refresh/Stop plus the

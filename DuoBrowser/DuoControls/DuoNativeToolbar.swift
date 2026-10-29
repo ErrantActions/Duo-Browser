@@ -5,22 +5,25 @@ struct DuoNativeToolbar<Content: View>: View {
     let model: BrowserViewModel
     let manager: BrowserTabManager
     let openAllControls: () -> Void
+    let addressExpanded: Bool
     let openAddress: () -> Void
     let share: () -> Void
     let present: (BrowserSheet) -> Void
-    let content: (Bool) -> Content
+    let content: (Bool, CGRect) -> Content
 
     init(
         model: BrowserViewModel, manager: BrowserTabManager,
         openAllControls: @escaping () -> Void,
+        addressExpanded: Bool,
         openAddress: @escaping () -> Void,
         share: @escaping () -> Void,
         present: @escaping (BrowserSheet) -> Void,
-        @ViewBuilder content: @escaping (Bool) -> Content
+        @ViewBuilder content: @escaping (Bool, CGRect) -> Content
     ) {
         self.model = model
         self.manager = manager
         self.openAllControls = openAllControls
+        self.addressExpanded = addressExpanded
         self.openAddress = openAddress
         self.share = share
         self.present = present
@@ -31,6 +34,7 @@ struct DuoNativeToolbar<Content: View>: View {
         NavigationStack {
             DuoNativeToolbarContent(
                 model: model, manager: manager, openAllControls: openAllControls,
+                addressExpanded: addressExpanded,
                 openAddress: openAddress, share: share, present: present, content: content
             )
         }
@@ -42,11 +46,13 @@ private struct DuoNativeToolbarContent<Content: View>: View {
     @ObservedObject var model: BrowserViewModel
     @ObservedObject var manager: BrowserTabManager
     @Environment(\.toolbarVerticalEdge) private var verticalEdge
+    @State private var addressFrame = CGRect.zero
     let openAllControls: () -> Void
+    let addressExpanded: Bool
     let openAddress: () -> Void
     let share: () -> Void
     let present: (BrowserSheet) -> Void
-    let content: (Bool) -> Content
+    let content: (Bool, CGRect) -> Content
 
     private var activePanel: DuoPanel? {
         model.bridge.browserControlsVisible ? nil : model.bridge.panel
@@ -66,7 +72,7 @@ private struct DuoNativeToolbarContent<Content: View>: View {
     }
 
     var body: some View {
-        content(usesVerticalBar)
+        content(usesVerticalBar, addressFrame)
             .navigationBarTitleDisplayMode(.inline)
             .toolbarVisibility(usesVerticalBar || activePanel != nil ? .visible : .hidden,
                                for: .navigationBar, .bottomBar)
@@ -76,7 +82,7 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         Button(action: model.goBack) {
                             Label("Back", systemImage: "chevron.backward")
                         }
-                        .disabled(!model.canGoBack && !(model.showingStartPage && model.currentURL != nil))
+                        .disabled(addressExpanded || (!model.canGoBack && !(model.showingStartPage && model.currentURL != nil)))
                         .accessibilityIdentifier("duo.browser.back")
                     }
                     .axisBehavior(.verticalPreferred)
@@ -96,8 +102,13 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         }
                         .accessibilityLabel("Address and search")
                         .accessibilityValue(addressValue)
-                        .accessibilityHint("Expand the full website address or enter a search")
+                        .accessibilityHint(addressExpanded
+                            ? "Open the full address editor with your current draft"
+                            : "Expand an address and search bubble")
                         .accessibilityIdentifier("browser.address.open")
+                        .onGeometryChange(for: CGRect.self) { geometry in
+                            geometry.frame(in: .global)
+                        } action: { addressFrame = $0 }
                     }
                     .axisBehavior(.verticalPreferred)
                     ToolbarItemGroup(placement: .topBarTrailing) {
@@ -107,10 +118,12 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                             Label(model.isLoading ? "Stop" : "Refresh",
                                   systemImage: model.isLoading ? "xmark" : "arrow.clockwise")
                         }
+                        .disabled(addressExpanded)
                         .accessibilityIdentifier("duo.browser.refresh")
                         Button { present(.tabs) } label: {
                             Label("Tabs", systemImage: "square.on.square")
                         }
+                        .disabled(addressExpanded)
                         .accessibilityLabel("Tabs, \(manager.tabs.count) open")
                         .accessibilityValue("\(manager.tabs.count)")
                         .accessibilityIdentifier("browser.tabs")
@@ -118,6 +131,7 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                             model: model, manager: manager, share: share,
                             present: present, menuOnly: true
                         )
+                        .disabled(addressExpanded)
                     }
                     .axisBehavior(.verticalPreferred)
                 }
@@ -131,26 +145,14 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         .axisBehavior(.horizontalOnly)
                     }
                     ToolbarItemGroup(placement: .bottomBar) {
-                        if !usesVerticalBar {
-                            Button(action: model.goBack) {
-                                Label("Back", systemImage: "chevron.backward")
-                            }
-                            .disabled(!model.canGoBack)
-                            .accessibilityIdentifier("duo.browser.back")
-                            Button {
-                                if model.isLoading { model.stop() } else { model.reload() }
-                            } label: {
-                                Label(model.isLoading ? "Stop" : "Refresh",
-                                      systemImage: model.isLoading ? "xmark" : "arrow.clockwise")
-                            }
-                            .accessibilityIdentifier("duo.browser.refresh")
-                        }
                         ForEach(panel.toolbarControls) { control in
                             DuoNativeToolbarControl(bridge: model.bridge, control: control)
+                                .disabled(addressExpanded)
                         }
                         Button(action: openAllControls) {
                             Label("All Website Controls", systemImage: "slider.horizontal.3")
                         }
+                        .disabled(addressExpanded)
                         .accessibilityIdentifier("duo.controls.all")
                     }
                     .axisBehavior(.verticalPreferred)

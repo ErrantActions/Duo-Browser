@@ -109,10 +109,15 @@ An uploaded owner-only beta is not proof of a passing UI suite.
 ## Using the browser
 
 In native Duo vertical-toolbar layouts, the address is a compact **Address and
-search** button in the edge strip. Tap it to edit the full URL or search, then
-choose Go; Cancel leaves the webpage untouched. There is no duplicate bottom
+search** button in the edge strip. The first tap expands a focused, editable
+bubble beside that same icon; enter an address/search and press Go.
+Tap the icon a second time to open the full editor with your draft preserved.
+Tapping the webpage outside the bubble dismisses it without navigation; the
+full editor's Cancel also leaves the webpage untouched. There is no duplicate bottom
 address/navigation bar in this mode. Browser Back, Refresh/Stop, Tabs, and Menu
 remain in the edge controls; Forward and Share are available through the menu.
+There is one address icon, not a second full-editor launcher. Browser navigation
+is not repeated in the website toolbar in horizontal layouts either.
 The host caption and accessibility value identify the page and private/connection
 state. Website-specific controls appear only for approved DuoKit sites.
 

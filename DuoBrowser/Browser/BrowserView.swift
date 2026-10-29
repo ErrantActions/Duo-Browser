@@ -136,7 +136,10 @@ private struct BrowserTabView: View {
     let present: (BrowserSheet) -> Void
     @State private var sharedPage: SharedPage?
     @State private var showsCompactControls = false
+    @State private var showsAddressBubble = false
     @State private var showsAddressEditor = false
+    @State private var addressDraft = ""
+    @State private var addressBubbleHeight: CGFloat = 60
     @State private var pendingAddress: String?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -144,20 +147,20 @@ private struct BrowserTabView: View {
         model.bridge.panel != nil && !model.bridge.browserControlsVisible
     }
 
+    private var isEditingAddress: Bool { showsAddressBubble || showsAddressEditor }
+
     var body: some View {
         Group {
             if #available(iOS 27.1, *) {
                 DuoNativeToolbar(
                     model: model, manager: manager,
                     openAllControls: { showsCompactControls = true },
-                    openAddress: {
-                        model.beginAddressEditing()
-                        showsAddressEditor = true
-                    },
+                    addressExpanded: showsAddressBubble,
+                    openAddress: openAddress,
                     share: sharePage,
                     present: present
-                ) { usesVerticalBar in
-                    browserContent(showControlsButton: false, usesVerticalBar: usesVerticalBar)
+                ) { usesVerticalBar, addressFrame in
+                    browserContent(showControlsButton: false, usesVerticalBar: usesVerticalBar, addressFrame: addressFrame)
                 }
             } else {
                 browserContent(showControlsButton: showsSiteControls)
@@ -168,7 +171,7 @@ private struct BrowserTabView: View {
         }
         .sheet(isPresented: $showsAddressEditor, onDismiss: completeAddressEditing) {
             BrowserAddressEditor(
-                address: model.addressText, searchProvider: model.library.settings.searchProvider,
+                address: $addressDraft, searchProvider: model.library.settings.searchProvider,
                 submit: {
                     pendingAddress = $0
                     showsAddressEditor = false
@@ -190,7 +193,7 @@ private struct BrowserTabView: View {
             .accessibilityIdentifier("duo.panel.sheet")
             .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: showsCompactControls))
         }
-        .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: !showsCompactControls && !showsAddressEditor))
+        .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: !showsCompactControls && !isEditingAddress))
         .sheet(item: $sharedPage, onDismiss: { model.isActive = true }) { ShareSheet(url: $0.url) }
         .sheet(item: $model.pageDialog, onDismiss: model.cancelPageDialog) { dialog in
             PageDialogView(dialog: dialog, complete: model.completePageDialog)
@@ -216,16 +219,59 @@ private struct BrowserTabView: View {
             }
         }
         .onDisappear {
-            if showsAddressEditor { model.endAddressEditing(isActive: false) }
+            if isEditingAddress {
+                showsAddressBubble = false
+                showsAddressEditor = false
+                pendingAddress = nil
+                addressDraft = ""
+                model.endAddressEditing(isActive: false)
+            }
+        }
+        .onChange(of: showsAddressBubble) { _, visible in
+            if !visible && !showsAddressEditor { completeAddressEditing() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { showsAddressBubble = false }
         }
     }
 
-    private func browserContent(showControlsButton: Bool, usesVerticalBar: Bool = false) -> some View {
+    private func browserContent(
+        showControlsButton: Bool, usesVerticalBar: Bool = false, addressFrame: CGRect = .zero
+    ) -> some View {
         VStack(spacing: 0) {
             pageContent
             if !usesVerticalBar {
                 browserChrome(showControlsButton: showControlsButton)
             }
+        }
+        .overlay {
+            if showsAddressBubble && usesVerticalBar {
+                GeometryReader { geometry in
+                    BrowserAddressEditor(
+                        address: $addressDraft, searchProvider: model.library.settings.searchProvider,
+                        compact: true,
+                        submit: {
+                            pendingAddress = $0
+                            showsAddressBubble = false
+                        },
+                        cancel: { showsAddressBubble = false }
+                    )
+                    .frame(width: max(0, min(360, geometry.size.width - 16)))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                        addressBubbleHeight = $0
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, 8)
+                    .offset(y: max(8, min(
+                        geometry.size.height - addressBubbleHeight - 8,
+                        addressFrame.midY - geometry.frame(in: .global).minY - 30
+                    )))
+                }
+            }
+        }
+        .onChange(of: usesVerticalBar) { _, vertical in
+            if !vertical { showsAddressBubble = false }
         }
     }
 
@@ -242,6 +288,13 @@ private struct BrowserTabView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay {
+            if showsAddressBubble {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { showsAddressBubble = false }
+            }
+        }
     }
 
     private func browserChrome(showControlsButton: Bool) -> some View {
@@ -288,10 +341,23 @@ private struct BrowserTabView: View {
     private func completeAddressEditing() {
         let address = pendingAddress
         pendingAddress = nil
+        addressDraft = ""
         let selected = manager.selectedID == model.id && !model.isClosed
         model.endAddressEditing(isActive: selected && scenePhase == .active)
         guard selected else { return }
         if let address { model.navigate(address) }
+    }
+
+    private func openAddress() {
+        if showsAddressBubble {
+            showsAddressBubble = false
+            showsAddressEditor = true
+        } else {
+            model.beginAddressEditing()
+            addressDraft = model.addressText
+            addressBubbleHeight = 60
+            showsAddressBubble = true
+        }
     }
 
     private var siteControls: some View {

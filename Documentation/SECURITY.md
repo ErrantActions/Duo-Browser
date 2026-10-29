@@ -66,7 +66,10 @@ The native edge bar's collapsed address is browser-owned and displays a host
 derived from WebKit/navigation state. Sites cannot replace it. Expanded editing
 uses a local draft and the same URL scheme/search policy as the standard
 address field; opening it cancels pending capability work and blocks new
-website prompts until it is dismissed. No webpage is drawn underneath the
+website prompts until it is dismissed, including during promotion from the
+inline bubble to the full editor. The draft is tab-local and is not navigated
+or persisted merely by expanding either editor. An outside tap dismisses the
+bubble instead of activating the webpage underneath it. No webpage is drawn underneath the
 edge controls by disabling native safe areas.
 
 Optional confirmations identify the website. Appearance/accent choices are a

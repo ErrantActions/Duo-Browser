@@ -74,7 +74,11 @@ xcrun() {
   fi
 }
 mkdir() { :; }
-export -f xcodebuild xcrun mkdir
+defaults() {
+  [[ "$*" == "write com.apple.iphonesimulator ConnectHardwareKeyboard -bool NO" ]] || return 99
+  echo ONSCREEN_KEYBOARD
+}
+export -f xcodebuild xcrun mkdir defaults
 exec bash .github/scripts/test-ios.sh "$SUITE"
 `;
     for (const suite of ["unit", "all", "duo-panel", "invalid"]) {
@@ -93,6 +97,11 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
             assert.match(result.stdout, /XCODE_ARG<test-without-building>/);
             assert.ok(result.stdout.indexOf("XCODE_ARG<build-for-testing>") < result.stdout.indexOf("BOOT_SIMULATOR"));
             assert.ok(result.stdout.indexOf("BOOT_SIMULATOR") < result.stdout.indexOf("XCODE_ARG<test-without-building>"));
+            if (suite === "unit") assert.doesNotMatch(result.stdout, /ONSCREEN_KEYBOARD/);
+            else {
+                assert.match(result.stdout, /ONSCREEN_KEYBOARD/);
+                assert.ok(result.stdout.indexOf("ONSCREEN_KEYBOARD") < result.stdout.indexOf("BOOT_SIMULATOR"));
+            }
             if (suite === "unit") assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             else if (suite === "duo-panel") {
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation>/);

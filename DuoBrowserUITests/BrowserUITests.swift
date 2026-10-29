@@ -101,16 +101,51 @@ final class BrowserUITests: XCTestCase {
             XCTAssertTrue(button.exists)
             XCTAssertFalse(webpage.frame.intersects(button.frame))
         }
+        for identifier in ["browser.address.open", "duo.browser.back", "duo.browser.refresh", "browser.tabs"] {
+            XCTAssertEqual(app.buttons.matching(identifier: identifier).count, 1)
+        }
+        XCTAssertEqual(app.buttons.matching(identifier: "Browser menu").count, 1)
         captureScreenshot(app, name: "Full Safe Viewport With Native Duo Edge Controls")
 
         next.tap()
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
         addressButton.tap()
+        let bubble = app.textFields["browser.address.bubble.field"]
+        XCTAssertTrue(bubble.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.navigationBars["Address and Search"].exists)
+        XCTAssertEqual(app.textFields.matching(identifier: "Address and search").count, 1)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.address.open").count, 1)
+        XCTAssertEqual(app.buttons.matching(identifier: "Clear address").count, 1)
+        XCTAssertTrue(addressButton.isEnabled)
+        XCTAssertTrue(addressButton.isHittable)
+        XCTAssertFalse(next.isEnabled)
+        print("Duo address bubble: addressX=\(addressButton.frame.minX), addressY=\(addressButton.frame.minY), addressHeight=\(addressButton.frame.height), fieldX=\(bubble.frame.minX), fieldY=\(bubble.frame.minY), fieldWidth=\(bubble.frame.width), fieldHeight=\(bubble.frame.height)")
+        XCTAssertFalse(bubble.frame.intersects(addressButton.frame))
+        XCTAssertLessThan(abs(bubble.frame.midY - addressButton.frame.midY), 44)
+        app.buttons["Clear address"].tap()
+        bubble.typeText("javascript:alert(1)")
+        app.buttons["browser.address.bubble.go"].tap()
+        XCTAssertTrue(app.staticTexts["browser.address.validation"].waitForExistence(timeout: 5))
+        XCTAssertTrue(bubble.exists)
+        app.buttons["Clear address"].tap()
+        let draft = "https://example.com/draft"
+        bubble.typeText(draft)
+        addressButton.tap()
         let editor = app.textFields["browser.address.editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 10))
-        XCTAssertTrue((editor.value as? String)?.contains("index.html") == true)
+        XCTAssertEqual(editor.value as? String, draft)
+        XCTAssertFalse(bubble.exists)
+        XCTAssertEqual(app.buttons.matching(identifier: "Clear address").count, 1)
         app.navigationBars["Address and Search"].buttons["Cancel"].tap()
         XCTAssertTrue(next.waitForExistence(timeout: 10))
+        XCTAssertTrue(next.isEnabled)
+        XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].exists)
+        addressButton.tap()
+        XCTAssertTrue(bubble.waitForExistence(timeout: 10))
+        XCTAssertTrue((bubble.value as? String)?.contains("index.html") == true)
+        webpage.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5)).tap()
+        XCTAssertTrue(bubble.waitForNonExistence(timeout: 10))
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].exists)
         XCTAssertTrue(app.buttons["duo.control.previous"].isEnabled)
         let previous = app.buttons["duo.control.previous"]
@@ -130,6 +165,8 @@ final class BrowserUITests: XCTestCase {
         assertLoadedHTTPSPage(in: app, host: "example.com")
         XCTAssertFalse(app.textFields["Address and search"].exists)
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.address.open").count, 1)
+        XCTAssertEqual(app.buttons.matching(identifier: "duo.browser.refresh").count, 1)
     }
 
     @MainActor

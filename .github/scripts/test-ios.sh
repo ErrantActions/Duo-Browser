@@ -26,6 +26,9 @@ xcodebuild -project DuoBrowser.xcodeproj -scheme DuoBrowser \
   -destination "platform=iOS Simulator,id=$device_id" \
   -derivedDataPath build/DerivedData \
   CODE_SIGNING_ALLOWED=NO build-for-testing
+if [[ "$suite" != unit ]]; then
+  defaults write com.apple.iphonesimulator ConnectHardwareKeyboard -bool NO
+fi
 xcrun simctl bootstatus "$device_id" -b
 xcodebuild -project DuoBrowser.xcodeproj -scheme DuoBrowser \
   -destination "platform=iOS Simulator,id=$device_id" \

@@ -62,7 +62,10 @@ For an edge-control change, `test_scope=duo-panel` selects only the focused
 native-strip geometry/navigation UI regression. It checks the collapsed
 address on ordinary pages, absence of duplicate bottom chrome, a webpage
 height above 85% of the window, no overlap with core edge buttons, address
-editing/cancellation/submission, and website navigation/refresh/clear.
+two-stage bubble/full editing with draft preservation, keyboard focus,
+invalid-input reporting, outside-tap cancellation, unique browser controls,
+submission, and website navigation/refresh/clear. UI runs disable the simulator's
+hardware-keyboard connection so the on-screen keyboard is actually exercised.
 It does not duplicate the unit suite that TestFlight will run and does not
 claim full UI acceptance.
 
