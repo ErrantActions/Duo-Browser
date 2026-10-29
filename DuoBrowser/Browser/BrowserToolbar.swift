@@ -5,11 +5,13 @@ struct BrowserToolbar: View {
     @ObservedObject var manager: BrowserTabManager
     let share: () -> Void
     let present: (BrowserSheet) -> Void
+    var menuOnly = false
     @State private var showsMenu = false
     @State private var pendingAction: (() -> Void)?
 
     var body: some View {
         HStack {
+            if !menuOnly {
             toolbarButton("Back", icon: "chevron.backward", action: model.goBack)
                 .disabled(!model.canGoBack && !(model.showingStartPage && model.currentURL != nil))
             Spacer(minLength: 0)
@@ -30,6 +32,7 @@ struct BrowserToolbar: View {
             .accessibilityValue("\(manager.tabs.count)")
             .accessibilityIdentifier("browser.tabs")
             Spacer(minLength: 0)
+            }
             toolbarButton("Browser menu", icon: "ellipsis.circle") {
                 model.deactivate()
                 showsMenu = true
@@ -39,6 +42,8 @@ struct BrowserToolbar: View {
             NavigationStack {
                 List {
                     Section("Tabs") {
+                        menuAction("Forward", icon: "chevron.forward", action: model.goForward)
+                            .disabled(!model.canGoForward || model.showingStartPage)
                         menuAction("New Tab", icon: "plus") { manager.addTab() }
                         menuAction("New Private Tab", icon: "hand.raised") { manager.addTab(isPrivate: true) }
                         menuAction("Reopen Last Closed Tab", icon: "arrow.uturn.backward") {

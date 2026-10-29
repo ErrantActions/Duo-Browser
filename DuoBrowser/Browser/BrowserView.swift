@@ -136,6 +136,9 @@ private struct BrowserTabView: View {
     let present: (BrowserSheet) -> Void
     @State private var sharedPage: SharedPage?
     @State private var showsCompactControls = false
+    @State private var showsAddressEditor = false
+    @State private var pendingAddress: String?
+    @Environment(\.scenePhase) private var scenePhase
 
     private var showsSiteControls: Bool {
         model.bridge.panel != nil && !model.bridge.browserControlsVisible
@@ -144,8 +147,17 @@ private struct BrowserTabView: View {
     var body: some View {
         Group {
             if #available(iOS 27.1, *) {
-                DuoNativeToolbar(model: model, openAllControls: { showsCompactControls = true }) {
-                    browserContent(showControlsButton: false)
+                DuoNativeToolbar(
+                    model: model, manager: manager,
+                    openAllControls: { showsCompactControls = true },
+                    openAddress: {
+                        model.beginAddressEditing()
+                        showsAddressEditor = true
+                    },
+                    share: sharePage,
+                    present: present
+                ) { usesVerticalBar in
+                    browserContent(showControlsButton: false, usesVerticalBar: usesVerticalBar)
                 }
             } else {
                 browserContent(showControlsButton: showsSiteControls)
@@ -153,6 +165,16 @@ private struct BrowserTabView: View {
         }
         .onChange(of: showsSiteControls) { _, available in
             if !available { showsCompactControls = false }
+        }
+        .sheet(isPresented: $showsAddressEditor, onDismiss: completeAddressEditing) {
+            BrowserAddressEditor(
+                address: model.addressText, searchProvider: model.library.settings.searchProvider,
+                submit: {
+                    pendingAddress = $0
+                    showsAddressEditor = false
+                },
+                cancel: { showsAddressEditor = false }
+            )
         }
         .sheet(isPresented: $showsCompactControls, onDismiss: model.bridge.cancelPendingCapabilities) {
             NavigationStack {
@@ -168,7 +190,7 @@ private struct BrowserTabView: View {
             .accessibilityIdentifier("duo.panel.sheet")
             .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: showsCompactControls))
         }
-        .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: !showsCompactControls))
+        .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: !showsCompactControls && !showsAddressEditor))
         .sheet(item: $sharedPage, onDismiss: { model.isActive = true }) { ShareSheet(url: $0.url) }
         .sheet(item: $model.pageDialog, onDismiss: model.cancelPageDialog) { dialog in
             PageDialogView(dialog: dialog, complete: model.completePageDialog)
@@ -193,12 +215,17 @@ private struct BrowserTabView: View {
                 model.bridge.errorMessage = nil
             }
         }
+        .onDisappear {
+            if showsAddressEditor { model.endAddressEditing(isActive: false) }
+        }
     }
 
-    private func browserContent(showControlsButton: Bool) -> some View {
+    private func browserContent(showControlsButton: Bool, usesVerticalBar: Bool = false) -> some View {
         VStack(spacing: 0) {
             pageContent
-            browserChrome(showControlsButton: showControlsButton)
+            if !usesVerticalBar {
+                browserChrome(showControlsButton: showControlsButton)
+            }
         }
     }
 
@@ -241,18 +268,30 @@ private struct BrowserTabView: View {
             BrowserAddressBar(model: model)
             BrowserToolbar(
                 model: model, manager: manager,
-                share: {
-                    if let url = model.shareURL {
-                        model.deactivate()
-                        sharedPage = SharedPage(url: url)
-                    }
-                },
+                share: sharePage,
                 present: present
             )
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
         .background(.bar)
+        .accessibilityIdentifier("browser.bottom.chrome")
+    }
+
+    private func sharePage() {
+        if let url = model.shareURL {
+            model.deactivate()
+            sharedPage = SharedPage(url: url)
+        }
+    }
+
+    private func completeAddressEditing() {
+        let address = pendingAddress
+        pendingAddress = nil
+        let selected = manager.selectedID == model.id && !model.isClosed
+        model.endAddressEditing(isActive: selected && scenePhase == .active)
+        guard selected else { return }
+        if let address { model.navigate(address) }
     }
 
     private var siteControls: some View {

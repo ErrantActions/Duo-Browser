@@ -55,11 +55,14 @@ final class BrowserUITests: XCTestCase {
     @MainActor
     func testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation() {
         continueAfterFailure = false
+        executionTimeAllowance = 180
         XCUIDevice.shared.orientation = .portrait
         defer { XCUIDevice.shared.orientation = .portrait }
         let app = XCUIApplication()
         captureFinalState(of: app)
         app.launch()
+        XCTAssertTrue(app.buttons["browser.address.open"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)
         openMenu(in: app)
         app.buttons["New Private Tab"].tap()
         let demo = app.buttons["Explore DuoKit Demo"]
@@ -81,18 +84,34 @@ final class BrowserUITests: XCTestCase {
         let next = app.buttons["duo.control.next"]
         XCTAssertTrue(next.waitForExistence(timeout: 10))
         let webpage = app.webViews.firstMatch
-        print("Duo native toolbar: windowWidth=\(app.frame.width), webWidth=\(webpage.frame.width), actionX=\(next.frame.minX), actionWidth=\(next.frame.width)")
+        print("Duo native viewport: windowWidth=\(app.frame.width), windowHeight=\(app.frame.height), webX=\(webpage.frame.minX), webY=\(webpage.frame.minY), webWidth=\(webpage.frame.width), webHeight=\(webpage.frame.height), actionX=\(next.frame.minX), actionWidth=\(next.frame.width)")
         XCTAssertGreaterThan(webpage.frame.width, app.frame.width * 0.6)
+        XCTAssertGreaterThan(webpage.frame.height, app.frame.height * 0.85)
         XCTAssertGreaterThanOrEqual(next.frame.minX, webpage.frame.maxX - 2)
         XCTAssertLessThan(next.frame.width, app.frame.width * 0.25)
         XCTAssertTrue(app.buttons["Browser menu"].exists)
         XCTAssertTrue(app.buttons["duo.browser.back"].exists)
         XCTAssertTrue(app.buttons["duo.browser.refresh"].exists)
         XCTAssertFalse(app.buttons["duo.controls.open"].exists)
-        captureScreenshot(app, name: "Native Duo Right-Edge Website Toolbar")
+        let addressButton = app.buttons["browser.address.open"]
+        XCTAssertTrue(addressButton.exists)
+        XCTAssertFalse(app.textFields["Address and search"].exists)
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)
+        for button in [addressButton, app.buttons["duo.browser.back"], app.buttons["duo.browser.refresh"], app.buttons["browser.tabs"], app.buttons["Browser menu"]] {
+            XCTAssertTrue(button.exists)
+            XCTAssertFalse(webpage.frame.intersects(button.frame))
+        }
+        captureScreenshot(app, name: "Full Safe Viewport With Native Duo Edge Controls")
 
         next.tap()
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
+        addressButton.tap()
+        let editor = app.textFields["browser.address.editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        XCTAssertTrue((editor.value as? String)?.contains("index.html") == true)
+        app.navigationBars["Address and Search"].buttons["Cancel"].tap()
+        XCTAssertTrue(next.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].exists)
         XCTAssertTrue(app.buttons["duo.control.previous"].isEnabled)
         let previous = app.buttons["duo.control.previous"]
         previous.tap()
@@ -107,6 +126,10 @@ final class BrowserUITests: XCTestCase {
         app.webViews.buttons["Clear Duo Panel"].tap()
         XCTAssertTrue(next.waitForNonExistence(timeout: 10))
         XCTAssertTrue(webpage.exists)
+        navigate("https://example.com", in: app)
+        assertLoadedHTTPSPage(in: app, host: "example.com")
+        XCTAssertFalse(app.textFields["Address and search"].exists)
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)
     }
 
     @MainActor
@@ -114,6 +137,9 @@ final class BrowserUITests: XCTestCase {
         let open = app.buttons["duo.controls.open"]
         if open.waitForExistence(timeout: 2) {
             open.tap()
+            XCTAssertTrue(app.navigationBars["Website Controls"].waitForExistence(timeout: 10))
+        } else if app.buttons["duo.controls.all"].exists {
+            app.buttons["duo.controls.all"].tap()
             XCTAssertTrue(app.navigationBars["Website Controls"].waitForExistence(timeout: 10))
         }
     }
@@ -178,6 +204,7 @@ final class BrowserUITests: XCTestCase {
         waitUntilEnabled(back)
         back.tap()
         let forward = app.buttons["Forward"]
+        if app.buttons["browser.address.open"].exists { openMenu(in: app) }
         waitUntilEnabled(forward)
         forward.tap()
         assertLoadedHTTPSPage(in: app, host: "example.com")
@@ -242,9 +269,22 @@ final class BrowserUITests: XCTestCase {
         let content = app.webViews.staticTexts.firstMatch
         XCTAssertTrue(content.waitForExistence(timeout: 30))
         XCTAssertFalse(content.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        XCTAssertTrue(app.buttons["HTTPS connection information"].waitForExistence(timeout: 10))
-        XCTAssertEqual(app.textFields["Address and search"].value as? String, host)
-        waitUntilEnabled(app.buttons["Share page"])
+        if app.buttons["browser.address.open"].exists {
+            let secureHost = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "value BEGINSWITH %@", host + ", HTTPS"),
+                object: app.buttons["browser.address.open"]
+            )
+            XCTAssertEqual(XCTWaiter.wait(for: [secureHost], timeout: 30), .completed)
+            let finished = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "label == %@", "Refresh"),
+                object: app.buttons["duo.browser.refresh"]
+            )
+            XCTAssertEqual(XCTWaiter.wait(for: [finished], timeout: 30), .completed)
+        } else {
+            XCTAssertTrue(app.buttons["HTTPS connection information"].waitForExistence(timeout: 10))
+            XCTAssertEqual(app.textFields["Address and search"].value as? String, host)
+            waitUntilEnabled(app.buttons["Share page"])
+        }
         XCTAssertFalse(app.staticTexts["Unable to Open Page"].exists)
     }
 
@@ -275,11 +315,18 @@ final class BrowserUITests: XCTestCase {
 
     @MainActor
     private func navigate(_ input: String, in app: XCUIApplication) {
+        let collapsed = app.buttons["browser.address.open"]
+        if collapsed.exists { collapsed.tap() }
         let address = app.textFields["Address and search"]
         XCTAssertTrue(address.waitForExistence(timeout: 10))
         address.tap()
         app.buttons["Clear address"].tap()
-        address.typeText(input + "\n")
+        address.typeText(input)
+        if app.navigationBars["Address and Search"].exists {
+            app.navigationBars["Address and Search"].buttons["Go"].tap()
+        } else {
+            address.typeText("\n")
+        }
     }
 
     @MainActor

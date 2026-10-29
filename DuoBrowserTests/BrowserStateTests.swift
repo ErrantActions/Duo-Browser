@@ -40,6 +40,29 @@ final class BrowserStateTests: XCTestCase {
         for tab in manager.tabs { tab.tearDown() }
     }
 
+    func testAddressEditingBlocksWebsiteCapabilitiesWithoutReplacingTheWebView() throws {
+        let manager = BrowserTabManager(library: library())
+        defer { for tab in manager.tabs { tab.tearDown() } }
+        let tab = try XCTUnwrap(manager.selectedTab)
+        let webView = tab.webView
+        tab.beginAddressEditing()
+        tab.isActive = true
+        XCTAssertTrue(tab.isEditingAddress)
+        XCTAssertFalse(tab.isActive)
+        XCTAssertFalse(tab.bridge.isActive)
+        XCTAssertFalse(tab.bridge.canPresentNativeUI?() ?? true)
+        XCTAssertTrue(tab.webView === webView)
+        tab.endAddressEditing(isActive: true)
+        XCTAssertFalse(tab.isEditingAddress)
+        XCTAssertTrue(tab.isActive)
+        XCTAssertTrue(tab.webView === webView)
+        tab.beginAddressEditing()
+        tab.endAddressEditing(isActive: false)
+        XCTAssertFalse(tab.isActive)
+        tab.isActive = true
+        XCTAssertTrue(tab.isActive)
+    }
+
     func testRestoredURLsSurviveSavingBeforeWebKitLoads() throws {
         let library = library()
         let first = try XCTUnwrap(URL(string: "https://first.invalid/article"))

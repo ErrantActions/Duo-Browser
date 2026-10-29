@@ -62,6 +62,12 @@ Scanner permission/UI
 is presented from the visible native container and cancelled when it closes;
 origin, tab, and document authorization are unchanged. Page messages remain
 explicitly website-labeled sheets, not disguised as iOS alerts.
+The native edge bar's collapsed address is browser-owned and displays a host
+derived from WebKit/navigation state. Sites cannot replace it. Expanded editing
+uses a local draft and the same URL scheme/search policy as the standard
+address field; opening it cancels pending capability work and blocks new
+website prompts until it is dismissed. No webpage is drawn underneath the
+edge controls by disabling native safe areas.
 
 Optional confirmations identify the website. Appearance/accent choices are a
 small catalog, not arbitrary native styling or images. VoiceOver labels and

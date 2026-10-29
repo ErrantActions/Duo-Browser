@@ -97,10 +97,22 @@ An uploaded owner-only beta is not proof of a passing UI suite.
 
 ## Using the browser
 
-Enter an address or search phrase in the bottom address bar. Focus it to edit
-the full URL. The toolbar provides back, forward, share, tabs, and a menu for
+In native Duo vertical-toolbar layouts, the address is a compact **Address and
+search** button in the edge strip. Tap it to edit the full URL or search, then
+choose Go; Cancel leaves the webpage untouched. There is no duplicate bottom
+address/navigation bar in this mode. Browser Back, Refresh/Stop, Tabs, and Menu
+remain in the edge controls; Forward and Share are available through the menu.
+The host caption and accessibility value identify the page and private/connection
+state. Website-specific controls appear only for approved DuoKit sites.
+
+Elsewhere, enter an address or search phrase in the normal bottom address bar.
+Focus it to edit the full URL. The toolbar provides back, forward, share, tabs, and a menu for
 bookmarks, history, downloads, find, desktop/mobile preference, page information,
 settings, and permissions. Pull down a webpage to refresh.
+
+The browser follows the system's actual `toolbarVerticalEdge` inside its native
+navigation container, not a guessed screen width. The webpage fills the remaining
+safe viewport; it is not extended behind the native controls with ignored safe areas.
 
 Settings include search engine, custom startup page, session restore, maximum
 tabs (default 20, range 1–100), history retention (default 30 days), appearance,
@@ -215,6 +227,8 @@ controls use native menus in the slim toolbar. On older iOS versions,
 **Duo Controls** launches that sheet directly. **Hide Duo Controls** dismisses
 site controls without navigating; **Show Duo Panel** in the browser menu
 restores them. Ordinary sites receive no empty side pane or site toolbar.
+The core browser edge controls and collapsed address remain available on
+ordinary sites when the system uses a vertical bar.
 
 Tap the native **Scan** control to request scanner permission. On supported
 physical iPhones, iOS then requests camera access and displays a live scanner.

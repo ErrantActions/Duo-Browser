@@ -13,8 +13,8 @@ final class BrowserViewModel: ObservableObject {
     var onNewWindow: ((URLRequest) -> Void)?
     var onStateChanged: (() -> Void)?
     var isActive: Bool {
-        get { !isClosed && bridge.isActive }
-        set { bridge.isActive = newValue && !isClosed }
+        get { !isClosed && !isEditingAddress && bridge.isActive }
+        set { bridge.isActive = newValue && !isClosed && !isEditingAddress }
     }
     @Published private(set) var currentURL: URL?
     @Published private(set) var pageTitle = ""
@@ -30,6 +30,7 @@ final class BrowserViewModel: ObservableObject {
     @Published var alert: BrowserAlert?
     @Published var pageDialog: PageDialog?
     private(set) var isClosed = false
+    private(set) var isEditingAddress = false
 
     let webView: WKWebView
     private let webDelegate: BrowserWebDelegate
@@ -87,7 +88,7 @@ final class BrowserViewModel: ObservableObject {
         webDelegate.owner = self
         bridge.canPresentNativeUI = { [weak self] in
             guard let self else { return false }
-            return self.pageDialog == nil && self.alert == nil
+            return !self.isEditingAddress && self.pageDialog == nil && self.alert == nil
         }
         webView.navigationDelegate = webDelegate
         webView.uiDelegate = webDelegate
@@ -112,6 +113,17 @@ final class BrowserViewModel: ObservableObject {
         observeWebView()
         if let initialURL { load(initialURL) }
         else if opensStartPage { goToStartPage() }
+    }
+
+    func beginAddressEditing() {
+        guard !isClosed else { return }
+        isEditingAddress = true
+        deactivate()
+    }
+
+    func endAddressEditing(isActive: Bool) {
+        isEditingAddress = false
+        self.isActive = isActive
     }
 
     func navigate(_ input: String) {

@@ -44,6 +44,7 @@
         A0000000000000000000011C = {isa = PBXBuildFile; fileRef = B0000000000000000000011C; };
         A0000000000000000000011D = {isa = PBXBuildFile; fileRef = B0000000000000000000011D; };
         A0000000000000000000011E = {isa = PBXBuildFile; fileRef = B0000000000000000000011E; };
+        A0000000000000000000011F = {isa = PBXBuildFile; fileRef = B0000000000000000000011F; };
         A00000000000000000000110 = {isa = PBXBuildFile; fileRef = B00000000000000000000110; };
         A00000000000000000000111 = {isa = PBXBuildFile; fileRef = B00000000000000000000111; };
         A00000000000000000000112 = {isa = PBXBuildFile; fileRef = B00000000000000000000112; };
@@ -103,6 +104,7 @@
         B0000000000000000000011C = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePreview.swift; sourceTree = "<group>"; };
         B0000000000000000000011D = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoNativeToolbar.swift; sourceTree = "<group>"; };
         B0000000000000000000011E = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoCapabilityPresentation.swift; sourceTree = "<group>"; };
+        B0000000000000000000011F = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserAddressEditor.swift; sourceTree = "<group>"; };
         B00000000000000000000110 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = duo.js; sourceTree = "<group>"; };
         B00000000000000000000111 = {isa = PBXFileReference; lastKnownFileType = folder; path = Demo; sourceTree = "<group>"; };
         B00000000000000000000112 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
                 B00000000000000000000117,
                 B0000000000000000000011B,
                 B0000000000000000000011E,
+                B0000000000000000000011F,
             );
             path = Browser;
             sourceTree = "<group>";
@@ -333,6 +336,7 @@
                 A0000000000000000000011B,
                 A0000000000000000000011C,
                 A0000000000000000000011E,
+                A0000000000000000000011F,
                 A0000000000000000000011D,
             );
             runOnlyForDeploymentPostprocessing = 0;

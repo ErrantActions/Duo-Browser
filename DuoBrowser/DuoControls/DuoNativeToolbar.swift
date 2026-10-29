@@ -2,39 +2,136 @@ import SwiftUI
 
 @available(iOS 27.1, *)
 struct DuoNativeToolbar<Content: View>: View {
-    @ObservedObject var model: BrowserViewModel
+    let model: BrowserViewModel
+    let manager: BrowserTabManager
     let openAllControls: () -> Void
-    let content: Content
+    let openAddress: () -> Void
+    let share: () -> Void
+    let present: (BrowserSheet) -> Void
+    let content: (Bool) -> Content
 
     init(
-        model: BrowserViewModel,
+        model: BrowserViewModel, manager: BrowserTabManager,
         openAllControls: @escaping () -> Void,
-        @ViewBuilder content: () -> Content
+        openAddress: @escaping () -> Void,
+        share: @escaping () -> Void,
+        present: @escaping (BrowserSheet) -> Void,
+        @ViewBuilder content: @escaping (Bool) -> Content
     ) {
         self.model = model
+        self.manager = manager
         self.openAllControls = openAllControls
-        self.content = content()
+        self.openAddress = openAddress
+        self.share = share
+        self.present = present
+        self.content = content
     }
+
+    var body: some View {
+        NavigationStack {
+            DuoNativeToolbarContent(
+                model: model, manager: manager, openAllControls: openAllControls,
+                openAddress: openAddress, share: share, present: present, content: content
+            )
+        }
+    }
+}
+
+@available(iOS 27.1, *)
+private struct DuoNativeToolbarContent<Content: View>: View {
+    @ObservedObject var model: BrowserViewModel
+    @ObservedObject var manager: BrowserTabManager
+    @Environment(\.toolbarVerticalEdge) private var verticalEdge
+    let openAllControls: () -> Void
+    let openAddress: () -> Void
+    let share: () -> Void
+    let present: (BrowserSheet) -> Void
+    let content: (Bool) -> Content
 
     private var activePanel: DuoPanel? {
         model.bridge.browserControlsVisible ? nil : model.bridge.panel
     }
 
+    private var usesVerticalBar: Bool { verticalEdge != nil }
+
+    private var addressTitle: String {
+        if model.showingStartPage { return "Search" }
+        return model.navigationError?.url?.host() ?? model.currentURL?.host()
+            ?? URL(string: model.addressText)?.host() ?? model.bridge.origin ?? "Address"
+    }
+
+    private var addressValue: String {
+        let connection = model.showingStartPage ? "" : (model.isSecure ? ", HTTPS" : ", Connection not verified")
+        return addressTitle + connection + (model.isPrivate ? ", Private Browsing" : "")
+    }
+
     var body: some View {
-        NavigationStack {
-            content
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbarVisibility(activePanel == nil ? .hidden : .visible, for: .navigationBar, .bottomBar)
-                .toolbar {
-                    if let panel = activePanel {
+        content(usesVerticalBar)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarVisibility(usesVerticalBar || activePanel != nil ? .visible : .hidden,
+                               for: .navigationBar, .bottomBar)
+            .toolbar {
+                if usesVerticalBar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: model.goBack) {
+                            Label("Back", systemImage: "chevron.backward")
+                        }
+                        .disabled(!model.canGoBack && !(model.showingStartPage && model.currentURL != nil))
+                        .accessibilityIdentifier("duo.browser.back")
+                    }
+                    .axisBehavior(.verticalPreferred)
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: openAddress) {
+                            VStack(spacing: 2) {
+                                if model.isLoading {
+                                    ProgressView().controlSize(.mini)
+                                } else {
+                                    Image(systemName: model.isPrivate ? "hand.raised" : (model.isSecure ? "lock" : "globe"))
+                                }
+                                Text(addressTitle)
+                                    .font(.caption2)
+                                    .lineLimit(1)
+                            }
+                            .frame(maxWidth: 64)
+                        }
+                        .accessibilityLabel("Address and search")
+                        .accessibilityValue(addressValue)
+                        .accessibilityHint("Expand the full website address or enter a search")
+                        .accessibilityIdentifier("browser.address.open")
+                    }
+                    .axisBehavior(.verticalPreferred)
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        Button {
+                            if model.isLoading { model.stop() } else { model.reload() }
+                        } label: {
+                            Label(model.isLoading ? "Stop" : "Refresh",
+                                  systemImage: model.isLoading ? "xmark" : "arrow.clockwise")
+                        }
+                        .accessibilityIdentifier("duo.browser.refresh")
+                        Button { present(.tabs) } label: {
+                            Label("Tabs", systemImage: "square.on.square")
+                        }
+                        .accessibilityLabel("Tabs, \(manager.tabs.count) open")
+                        .accessibilityValue("\(manager.tabs.count)")
+                        .accessibilityIdentifier("browser.tabs")
+                        BrowserToolbar(
+                            model: model, manager: manager, share: share,
+                            present: present, menuOnly: true
+                        )
+                    }
+                    .axisBehavior(.verticalPreferred)
+                }
+                if let panel = activePanel {
+                    if !usesVerticalBar {
                         ToolbarItem(placement: .principal) {
                             Text("Controls from \(model.bridge.origin ?? "website")")
                                 .font(.caption)
                                 .lineLimit(1)
                         }
                         .axisBehavior(.horizontalOnly)
-
-                        ToolbarItemGroup(placement: .bottomBar) {
+                    }
+                    ToolbarItemGroup(placement: .bottomBar) {
+                        if !usesVerticalBar {
                             Button(action: model.goBack) {
                                 Label("Back", systemImage: "chevron.backward")
                             }
@@ -47,19 +144,18 @@ struct DuoNativeToolbar<Content: View>: View {
                                       systemImage: model.isLoading ? "xmark" : "arrow.clockwise")
                             }
                             .accessibilityIdentifier("duo.browser.refresh")
-
-                            ForEach(panel.toolbarControls) { control in
-                                DuoNativeToolbarControl(bridge: model.bridge, control: control)
-                            }
-                            Button(action: openAllControls) {
-                                Label("All Website Controls", systemImage: "slider.horizontal.3")
-                            }
-                            .accessibilityIdentifier("duo.controls.all")
                         }
-                        .axisBehavior(.verticalPreferred)
+                        ForEach(panel.toolbarControls) { control in
+                            DuoNativeToolbarControl(bridge: model.bridge, control: control)
+                        }
+                        Button(action: openAllControls) {
+                            Label("All Website Controls", systemImage: "slider.horizontal.3")
+                        }
+                        .accessibilityIdentifier("duo.controls.all")
                     }
+                    .axisBehavior(.verticalPreferred)
                 }
-        }
+            }
     }
 }
 

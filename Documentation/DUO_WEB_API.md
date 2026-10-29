@@ -122,6 +122,10 @@ Segmented/menu options use native menus and toggles use native toggle buttons.
 **All Website Controls** opens a full labeled, vertically scrollable sheet,
 including badges. Older iOS versions use the **Duo Controls** sheet launcher.
 Websites cannot configure the browser's address/navigation UI.
+In vertical-toolbar contexts the URL is a trusted collapsed browser button,
+not part of the website's configuration. The browser does not reserve a second
+bottom address/toolbar area. Opening its address editor temporarily suspends
+website capability prompts; it does not transfer a site's authorization.
 
 ## Events
 

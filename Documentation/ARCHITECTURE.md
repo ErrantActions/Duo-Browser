@@ -14,6 +14,21 @@ targets. On iOS 27.1, `DuoNativeToolbar` wraps that stable browser content in a
 `.axisBehavior(.verticalPreferred)`. These are native system toolbar items, not
 a custom width-triggered half-screen split or an HStack appended to the URL bar.
 SwiftUI chooses vertical or horizontal presentation and its locale/device edge.
+The content view reads `toolbarVerticalEdge` from **inside** that native
+navigation container and passes the resulting layout mode to the browser column.
+Vertical mode does not construct the custom bottom chrome at all. It declares
+core browser navigation, collapsed address, tabs, and the shared browser menu as
+native edge items even on sites without DuoKit. Nonvertical/older layouts retain
+the normal bottom chrome.
+
+`BrowserAddressEditor` edits a local draft in a sheet. The shared URL normalizer
+validates it; submission is applied only after dismissal so external-app
+confirmation or navigation errors do not compete with the editor presentation.
+Cancel leaves the page intact. Address editing suspends website capability UI
+even if scene activation attempts to reactivate the tab; dismissal resumes only
+the selected, active tab. The existing WebKit instance and form/scroll state are
+preserved. The webpage relies on native container safe areas, not
+`ignoresSafeArea` behind toolbar buttons.
 
 The native toolbar contains trusted browser Back and Refresh/Stop plus the
 website-declared navigation and special actions. It appears only for an approved
