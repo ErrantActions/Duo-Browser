@@ -77,10 +77,11 @@ gh workflow run ios.yml --repo ErrantActions/Duo-Browser --ref main \
   -f confirm_run=true -f save_summary=false
 ```
 
-For a release candidate, use the protected TestFlight workflow instead of
-duplicating a separate native validation run. Its signing preflight checks
+TestFlight uploads run the security checks and all native unit tests; the slower
+UI suite remains in the separate full validation workflow. Its signing preflight checks
 credentials/profile/entitlements and selects a build number above Apple's
 existing uploads before compilation. See [secure TestFlight steps](Documentation/TESTFLIGHT.md).
+An uploaded owner-only beta is not proof of a passing UI suite.
 
 ## Using the browser
 

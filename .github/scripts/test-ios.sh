@@ -1,6 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+suite="${1:-all}"
+if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit ) ]]; then
+  echo "::error::Choose all or unit for the native test suite."
+  exit 1
+fi
+set --
+if [[ "$suite" == unit ]]; then
+  set -- -only-testing:DuoBrowserTests
+fi
+
 xcodebuild -version
 expected="${EXPECTED_IOS_SDK:?An explicit iOS SDK must be selected}"
 sdk="$(xcrun --sdk iphoneos --show-sdk-version)"
@@ -18,4 +28,5 @@ xcodebuild -project DuoBrowser.xcodeproj -scheme DuoBrowser \
   -default-test-execution-time-allowance 120 \
   -maximum-test-execution-time-allowance 180 \
   -resultBundlePath build/Tests.xcresult \
+  "$@" \
   CODE_SIGNING_ALLOWED=NO test

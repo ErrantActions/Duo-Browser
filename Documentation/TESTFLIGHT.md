@@ -60,8 +60,10 @@ with one-day retention. It does not publish an app, IPA, screenshot, result
 bundle, profile, keychain, API key, or raw diagnostic logs. A missing result
 bundle is reported as unavailable, never as passing tests.
 
-Do not run this separate native validation again for the same release candidate
-when the TestFlight workflow is about to run those same tests.
+The full UI suite is intentionally separate from the faster TestFlight upload
+path. Run it when checking UI changes or a release candidate, not automatically
+as a duplicate deployment job. A successful upload does not imply the UI suite
+passed.
 
 ## Private signing setup
 
@@ -139,7 +141,8 @@ The release is one owner-approved macOS job:
    its existing uploaded build versions. No token/private key is printed.
 5. Select a numeric `CFBundleVersion` strictly greater than all enumerated builds.
    A new repository's workflow run counter is **not** used as the build number.
-6. Remove all temporary preflight signing material, then run native tests once.
+6. Remove all temporary preflight signing material, then run all native unit
+   tests once. UI automation remains in the separate full validation workflow.
 7. Revalidate signing and the selected number, archive for `generic/platform=iOS`,
    verify the archive's embedded bundle/build values, export an App Store Connect
    IPA, and upload with Xcode's `altool`.
@@ -178,6 +181,11 @@ main-branch job. Forks and public PRs do not get them. To pause, disable the
 workflow and set the activation variable to false.
 
 ## What is and is not verified
+
+The TestFlight path keeps security/contracts, signing preflight, all native
+unit tests, and archive/export validation. It does not gate owner-only betas on
+UI automation; the full simulator workflow still runs both native suites.
+Do not report a green unit-only upload as a passing full UI validation.
 
 Windows checks prove local helper/contracts, not native iOS compilation.
 Native validation requires Xcode. Existing run

@@ -144,8 +144,9 @@ There is no analytics or synchronization service.
   cleaned up even after failures. Both workflows are manual only on a documented
   standard public runner, with the Xcode release/SDK explicitly selected.
 - Profile/certificate/app/entitlement validation and Apple build-history checks
-  happen before native compilation. TestFlight runs native tests once in its
-  approved job rather than automatically duplicating unsigned validation.
+  happen before native compilation. TestFlight runs all native unit tests once;
+  slower UI automation remains in the separate full validation workflow.
+  A successful owner-only beta upload is not a full UI acceptance claim.
 - Optional artifacts contain whitelisted numeric test counts only, with one-day
   retention. No screenshots, raw result bundles/logs, app/IPA exports, or signing
   material are uploaded. Build numbers are checked against App Store Connect,

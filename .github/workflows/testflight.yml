@@ -59,9 +59,9 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
         run: bash .github/scripts/testflight.sh preflight
-      - name: Test native browser once before signing
+      - name: Test native unit suite before signing
         timeout-minutes: 20
-        run: bash .github/scripts/test-ios.sh
+        run: bash .github/scripts/test-ios.sh unit
       - name: Archive, sign, and upload the approved beta
         timeout-minutes: 20
         env:
