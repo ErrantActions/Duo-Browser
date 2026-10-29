@@ -216,6 +216,9 @@ The release is one owner-approved macOS job:
    its existing uploaded build versions. No token/private key is printed.
 5. Select a numeric `CFBundleVersion` strictly greater than all enumerated builds.
    A new repository's workflow run counter is **not** used as the build number.
+   Read-only Apple metadata requests use at most three bounded attempts for
+   transient transport/timeouts or HTTP 5xx failures. Authorization failures,
+   invalid app identities, signing failures and uploads are not blindly retried.
 6. Remove all temporary preflight signing material, then run all native unit
    tests once. UI automation remains in the separate full validation workflow.
 7. Revalidate signing and the selected number, archive for `generic/platform=iOS`,

@@ -178,6 +178,38 @@ test("metadata lookup fails closed for wrong apps, denied keys, and untrusted pa
     assert.equal(requests.length, 2);
 });
 
+test("metadata lookup retries transient transport and server errors without retrying writes", async () => {
+    let attempts = 0;
+    const config = apiConfig();
+    const result = await storeBuildNumber(config, async (url, options) => {
+        attempts++;
+        assert.equal(options.method, undefined);
+        assert.equal(options.redirect, "error");
+        assert.equal(url.origin, "https://api.appstoreconnect.apple.com");
+        if (attempts === 1) throw new DOMException("Fixture timeout", "TimeoutError");
+        if (attempts === 2) return { ok: false, status: 503 };
+        if (url.pathname.startsWith("/v1/apps/")) return response({ attributes: { bundleId } });
+        return response([{ attributes: { version: "1.0.5" } }]);
+    });
+    assert.equal(result, "1.0.6");
+    assert.equal(attempts, 4);
+});
+
+test("metadata retries are bounded and denied credentials are never retried", async () => {
+    let transientAttempts = 0;
+    await assert.rejects(storeBuildNumber(apiConfig(), async () => {
+        transientAttempts++;
+        throw new TypeError("Fixture transport failure");
+    }));
+    assert.equal(transientAttempts, 3);
+    let deniedAttempts = 0;
+    await assert.rejects(storeBuildNumber(apiConfig(), async () => {
+        deniedAttempts++;
+        return { ok: false, status: 403 };
+    }));
+    assert.equal(deniedAttempts, 1);
+});
+
 test("entitlement paths cannot escape the reviewed checkout", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "duo-entitlements-"));
     try {

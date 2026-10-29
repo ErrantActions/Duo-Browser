@@ -134,12 +134,27 @@ async function storeBuildNumber(config, fetchImpl = fetch) {
         if (target.origin !== APPLE_API || target.username || target.password) {
             throw new ReleaseError("Refusing an unexpected App Store Connect pagination origin.");
         }
-        const response = await fetchImpl(target, {
+        const request = () => fetchImpl(target, {
             headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
             redirect: "error", signal: AbortSignal.timeout(20000)
         });
-        if (!response.ok) throw new ReleaseError(`App Store Connect metadata lookup failed (HTTP ${response.status}). Verify a team upload key, issuer, and app access.`);
-        return response.json();
+        for (let attempt = 0; attempt < 3; attempt++) {
+            let response;
+            try {
+                response = await request();
+            } catch (error) {
+                const transient = error instanceof TypeError || ["AbortError", "TimeoutError"].includes(error?.name);
+                if (!transient || attempt === 2) throw error;
+            }
+            if (response?.ok) return response.json();
+            if (response && (response.status < 500 || response.status > 599 || attempt === 2)) {
+                throw new ReleaseError(`App Store Connect metadata lookup failed (HTTP ${response.status}). Verify a team upload key, issuer, and app access.`);
+            }
+            if (attempt === 2) throw new ReleaseError("App Store Connect metadata did not return a valid response.");
+            console.warn(`App Store Connect metadata is temporarily unavailable; retrying (${attempt + 2}/3).`);
+            await new Promise(resolve => setTimeout(resolve, 250 * (2 ** attempt)));
+        }
+        throw new ReleaseError("App Store Connect metadata could not be verified after bounded retries.");
     }
     const app = await read(`/v1/apps/${config.appId}?fields[apps]=bundleId`);
     if (app.data?.attributes?.bundleId !== config.bundleId) throw new ReleaseError("The App Store Connect app is not Duo's bundle.");
