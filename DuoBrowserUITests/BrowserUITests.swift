@@ -112,9 +112,15 @@ final class BrowserUITests: XCTestCase {
 
         let background = app.webViews.buttons["Toggle Page Background"]
         for (name, rgb) in [("Teal", [224, 245, 236]), ("Navy", [20, 42, 61])] {
-            for _ in 0..<4 {
+            for _ in 0..<6 {
                 if background.exists && background.isHittable { break }
-                webpage.swipeUp()
+                let target = background.frame
+                let down = target.height > 0 && target.midY < webpage.frame.minY
+                print("Duo background target: x=\(target.minX), y=\(target.minY), height=\(target.height), webY=\(webpage.frame.minY), webHeight=\(webpage.frame.height), scrollDown=\(down)")
+                webpage.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.3 : 0.7))
+                    .press(forDuration: 0.05, thenDragTo: webpage.coordinate(
+                        withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.6 : 0.4)
+                    ))
             }
             XCTAssertTrue(background.isHittable)
             background.tap()

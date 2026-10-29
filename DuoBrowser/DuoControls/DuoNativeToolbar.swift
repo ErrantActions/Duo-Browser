@@ -73,7 +73,11 @@ private struct DuoNativeToolbarContent<Content: View>: View {
 
     var body: some View {
         content(usesVerticalBar, addressFrame)
-            .background(Color(uiColor: model.browserBackgroundColor).ignoresSafeArea(.container))
+            .background {
+                Color(uiColor: model.browserBackgroundColor)
+                    .ignoresSafeArea(.container)
+                    .allowsHitTesting(false)
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackgroundVisibility(usesVerticalBar ? .hidden : .automatic,
                                         for: .navigationBar, .bottomBar)
