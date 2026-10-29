@@ -26,6 +26,9 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   with one initial commit, not a fork or a copy of prior Git history.
   The first successful release passed all 61 native unit tests on Xcode 27.1.
   Full UI acceptance remains separate and is not claimed by the upload result.
+  The native Duo toolbar correction passed its focused simulator UI test:
+  the webpage retained 382 of 466 points of width and site actions appeared
+  in the slim native strip to its right. This is not a half-screen split.
 - Both workflows are **manual only**, using the documented standard `xcode-27`
   public runner with Xcode 27.1/iOS 27.1 selected explicitly. Standard public
   compute is free; larger runners can be billed and are not selected here.

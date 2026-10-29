@@ -23,6 +23,11 @@ pose changes. Older iOS versions use an explicit control-sheet launcher.
 Complex option controls become native menus in the slim strip; an All Website
 Controls item opens the full labeled presentation with badges and options.
 All display-adaptation APIs are public and availability-gated to iOS 27.1.
+The implementation follows Apple's
+[toolbar axis behavior](https://developer.apple.com/documentation/swiftui/toolbarcontent/axisbehavior(_:))
+and [system-selected vertical edge](https://developer.apple.com/documentation/swiftui/environmentvalues/toolbarverticaledge).
+The edge is read-only; the app does not force an edge by overriding system
+environment values or guessing the physical fold state.
 The toolbar's real menu button opens a native sheet; follow-up actions run
 after dismissal to avoid presenting two sheets at once.
 

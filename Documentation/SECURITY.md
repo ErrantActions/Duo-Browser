@@ -54,7 +54,11 @@ iOS 27.1, or an explicitly opened sheet on older versions. They retain website a
 trusted browser Back/Refresh controls, and a Hide escape action. They do not
 replace or configure the browser's address/navigation UI. Labels remain visible;
 overflow scrolls vertically rather than disappearing. Configuration cannot hide
-native escape UI or customize system permission prompts. Scanner permission/UI
+native escape UI or customize system permission prompts. Native symbols have
+website-supplied accessible labels; the system may place toolbar items in its
+normal overflow menu. The All Website Controls sheet keeps every non-spacer
+control, its full label, and its badge available in a vertical scrolling layout.
+Scanner permission/UI
 is presented from the visible native container and cancelled when it closes;
 origin, tab, and document authorization are unchanged. Page messages remain
 explicitly website-labeled sheets, not disguised as iOS alerts.

@@ -225,6 +225,13 @@ demo/favorite flows; those tests remain in the full manual validation workflow.
 This successful unit-only beta does not certify full UI behavior or physical
 scanner/privacy flows.
 
+The subsequent native Duo toolbar correction was independently verified in
+[focused UI run 40802771417](https://github.com/ErrantActions/Duo-Browser/actions/runs/40802771417):
+one test passed, zero failed. It measured a 466-point window, 382-point webpage,
+and a 38-point native action beginning at x=399, then verified website
+Previous/Next events, browser Refresh, and site clearing. The newer toolbar
+has not yet been claimed as delivered by the first-build checkpoint above.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
