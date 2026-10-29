@@ -511,6 +511,18 @@ or physical-device layout. Native PDF unit tests separately inspect generated
 pages and searchable text. The focused run is not a claim that the full UI
 suite passed.
 
+The page-tool refactor was separately checked in
+[Ask Duo run 40851770098](https://github.com/ErrantActions/Duo-Browser/actions/runs/40851770098),
+which passed two UI tests with zero failures for commit
+`fd21c43b7d25cbd7cdbd99283e7ac9845834759f`.
+It reported the model unavailable and did not generate an answer; consent,
+field filtering, private exclusion and confirmed HTTPS navigation passed.
+An earlier simulator run reported ready but generation returned an untyped
+NSError (-1). Safe error-domain/underlying-code diagnostics and explicit
+failure UI were added; no successful live-model result is claimed.
+Eligible physical-device generation remains an acceptance check, not a
+green result inferred from the unavailable-model regression.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.

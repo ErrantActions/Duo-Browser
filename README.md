@@ -107,6 +107,13 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   and font persistence, real PDF sharing/dismissal, original Record 2 retention,
   private-export cancellation, and continued private-tab AI exclusion.
   Audible speech output remains a device acceptance check.
+- The shared page tools also passed
+  [Ask Duo regression run 40851770098](https://github.com/ErrantActions/Duo-Browser/actions/runs/40851770098):
+  private-tab protection, excerpt approval/filtering, unavailable-model handling
+  and confirmed navigation remained intact. Live generation is still not
+  certified: another simulator run reported ready but returned an untyped
+  model-service error. The app now surfaces safe failure categories rather
+  than hiding this condition or substituting a response.
 
 ## Build, run, and test
 
