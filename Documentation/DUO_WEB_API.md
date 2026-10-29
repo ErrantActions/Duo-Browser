@@ -114,12 +114,14 @@ value in `event.payload.value`, overriding any payload field named `value`.
 
 These are trusted native symbol identifiers, not arbitrary image URLs.
 Accent requests never override browser attribution, system appearance, or
-permission UI. Controls are large labeled native rows in a vertically scrollable
-pane rather than a row appended to the address bar. At least 700 points of
-available window width gives a dedicated right-hand pane beside the webpage;
-narrower windows use a **Duo Controls** launcher and separate sheet.
-Browser Back and Refresh/Stop remain available above site-supplied actions.
-The normal browser toolbar stays available and websites cannot configure it.
+permission UI. On iOS 27.1, site controls are real system toolbar items that
+prefer native vertical presentation on iPhone Duo. There is no custom half-screen
+split or fixed 700-point threshold; SwiftUI chooses presentation for the current
+pose/locale. Back and Refresh/Stop remain trusted browser actions.
+Segmented/menu options use native menus and toggles use native toggle buttons.
+**All Website Controls** opens a full labeled, vertically scrollable sheet,
+including badges. Older iOS versions use the **Duo Controls** sheet launcher.
+Websites cannot configure the browser's address/navigation UI.
 
 ## Events
 

@@ -49,8 +49,8 @@ must be changed in iOS Settings.
 
 ## Native interface
 
-Native site controls appear in a dedicated right-hand pane on wider windows or
-an explicitly opened sheet on narrow windows. They retain website attribution,
+Native site controls use iPhone Duo's native system toolbar presentation on
+iOS 27.1, or an explicitly opened sheet on older versions. They retain website attribution,
 trusted browser Back/Refresh controls, and a Hide escape action. They do not
 replace or configure the browser's address/navigation UI. Labels remain visible;
 overflow scrolls vertically rather than disappearing. Configuration cannot hide

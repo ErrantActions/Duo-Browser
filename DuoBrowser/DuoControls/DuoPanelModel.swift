@@ -1,17 +1,5 @@
 import Foundation
 
-struct DuoPanelLayout {
-    static let minimumSplitWidth: CGFloat = 700
-    let panelWidth: CGFloat?
-
-    init(availableWidth: CGFloat) {
-        panelWidth = availableWidth >= Self.minimumSplitWidth
-            ? (availableWidth - 1) / 2 : nil
-    }
-
-    var usesSidePane: Bool { panelWidth != nil }
-}
-
 enum JSONValue: Codable, Equatable {
     case string(String)
     case number(Double)
@@ -76,6 +64,8 @@ struct DuoPanel: Codable, Identifiable, Equatable {
     var title: String?
     var accent: String?
     var controls: [DuoControl]
+
+    var toolbarControls: [DuoControl] { controls.filter { $0.type != .spacer } }
 }
 
 struct DuoMessage: Decodable {

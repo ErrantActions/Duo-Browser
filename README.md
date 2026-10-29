@@ -15,7 +15,9 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
 
 ## Requirements and status
 
-- iOS 17+, iPhone, Xcode 16+ on macOS; no third-party app dependencies.
+- iOS 17+, iPhone, Xcode 27.1+ on macOS; no third-party app dependencies.
+  The native Duo toolbar is availability-gated to iOS 27.1; older iOS versions
+  retain ordinary browsing and a separate website-control sheet.
 - Source implements browser navigation, regular/private tabs, bookmarks, history,
   downloads, settings, DuoKit 1.0, native panels, and permission-gated scanning.
 - Created on Windows, where Xcode and Apple simulators are unavailable.
@@ -188,24 +190,23 @@ The in-memory recently closed tab list is cleared.
 
 On the built-in start screen tap **Explore DuoKit Demo**, or select **DuoKit
 Demo** from the browser menu. Tap **Install Duo Panel**, then grant the site's
-Duo Controls permission. At an available width of at least 700 points, the
-webpage stays on the left and a dedicated, roughly half-width **Duo Panel**
-appears on the right. It is not appended to the address bar. The standard
-browser toolbar remains below the webpage.
+Duo Controls permission. On iOS 27.1, real SwiftUI toolbar items request the
+native vertical presentation used by iPhone Duo. They form a slim display-edge
+strip rather than a half-screen panel or extra buttons inside the URL bar.
+SwiftUI chooses the edge and presentation for the current device pose/locale;
+other contexts can use native horizontal toolbar presentation.
 
-The right pane has browser **Back** and **Refresh/Stop** at the top, then the
-website's own navigation and special actions. Try **Previous Record** and
+The native strip has browser **Back** and **Refresh/Stop**, then the website's
+own navigation and special actions. Try **Previous Record** and
 **Next Record** to change the demo's content without navigating away; also try
 the scan/action buttons, toggle, segments, menu, and confirmed primary action.
 The webpage logs events. **Update Duo Controls** replaces the site's complete
-configuration; **Clear Duo Panel** removes the right pane and expands the page.
-
-On a folded/narrow window, **Duo Controls** opens the same vertical controls in
-a separate sheet; the browser's address/navigation bar is not replaced.
-This is an available-width layout using public SwiftUI APIs, not a claim that
-Duo detects a physical hinge. **Hide Duo Controls** dismisses the pane without
-navigating; **Show Duo Panel** in the browser menu restores it. Ordinary sites
-without an approved configuration remain full-width and get no empty side pane.
+configuration; **Clear Duo Panel** removes its toolbar items. **All Website
+Controls** opens a labeled sheet with the full controls and badges; option
+controls use native menus in the slim toolbar. On older iOS versions,
+**Duo Controls** launches that sheet directly. **Hide Duo Controls** dismisses
+site controls without navigating; **Show Duo Panel** in the browser menu
+restores them. Ordinary sites receive no empty side pane or site toolbar.
 
 Tap the native **Scan** control to request scanner permission. On supported
 physical iPhones, iOS then requests camera access and displays a live scanner.

@@ -95,7 +95,7 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
             assert.ok(result.stdout.indexOf("BOOT_SIMULATOR") < result.stdout.indexOf("XCODE_ARG<test-without-building>"));
             if (suite === "unit") assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             else if (suite === "duo-panel") {
-                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoRightPaneKeepsWebsiteVisibleAndDeliversNavigation>/);
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             } else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
         }

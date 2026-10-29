@@ -10,7 +10,7 @@ set --
 if [[ "$suite" == unit ]]; then
   set -- -only-testing:DuoBrowserTests
 elif [[ "$suite" == duo-panel ]]; then
-  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testDuoRightPaneKeepsWebsiteVisibleAndDeliversNavigation
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation
 fi
 
 xcodebuild -version

@@ -9,23 +9,25 @@ delegate, and one `DuoBridge`; switching tabs does not reconstruct these objects
 `WebViewContainer` only embeds the existing view. Its update method never loads
 content. A vertical layout reserves separate space for the webpage and the
 address field/browser toolbar, so WebKit cannot overlap native control hit
-targets. For approved website controls and at least 700 points of available
-width, the same browser column remains on the left and a dedicated right-hand
-pane uses half the available width after a one-point divider. The browser
-toolbar is never replaced with site buttons. Below that width a native launcher
-opens the vertical site controls in a separate sheet.
+targets. On iOS 27.1, `DuoNativeToolbar` wraps that stable browser content in a
+`NavigationStack` and declares actual `ToolbarItemGroup` content with
+`.axisBehavior(.verticalPreferred)`. These are native system toolbar items, not
+a custom width-triggered half-screen split or an HStack appended to the URL bar.
+SwiftUI chooses vertical or horizontal presentation and its locale/device edge.
 
-The right pane contains trusted browser Back and Refresh/Stop actions plus the
-website-declared navigation and special controls. It appears only for an active
-approved configuration; ordinary sites remain full-width. The page's WebKit
-instance is never recreated when the pane opens, closes, or changes size.
-`DuoPanelLayout` centralizes the exact threshold and half-width calculation.
-No private hinge APIs or physical fold-state claims are used.
+The native toolbar contains trusted browser Back and Refresh/Stop plus the
+website-declared navigation and special actions. It appears only for an approved
+configuration; ordinary sites have no empty side pane. The existing WebKit
+instance remains owned by the tab across toolbar installation, clearing, and
+pose changes. Older iOS versions use an explicit control-sheet launcher.
+Complex option controls become native menus in the slim strip; an All Website
+Controls item opens the full labeled presentation with badges and options.
+All display-adaptation APIs are public and availability-gated to iOS 27.1.
 The toolbar's real menu button opens a native sheet; follow-up actions run
 after dismissal to avoid presenting two sheets at once.
 
 `DuoCapabilityPresentation` presents scanner permission and scanner UI from the
-currently active presentation container: the main browser for the side pane, or
+currently active presentation container: the main browser for the native toolbar, or
 the compact control sheet. Only one host is enabled at a time. Closing compact
 controls cancels pending capability work and activation tokens without erasing
 the site's approved panel. Navigation, tab switching, and revocation retain the

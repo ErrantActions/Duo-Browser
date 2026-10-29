@@ -86,4 +86,12 @@ final class DuoMessageValidatorTests: XCTestCase {
         ])
         XCTAssertThrowsError(try DuoMessageValidator.decode(incomplete))
     }
+
+    func testNativeToolbarKeepsEveryActionAndExcludesOnlyLayoutSpacers() {
+        let previous = DuoControl(id: "previous", type: .button, label: "Previous")
+        let spacer = DuoControl(id: "space", type: .spacer, label: "Space")
+        let toggle = DuoControl(id: "toggle", type: .toggle, label: "Flag")
+        let panel = DuoPanel(id: "navigation", controls: [previous, spacer, toggle])
+        XCTAssertEqual(panel.toolbarControls, [previous, toggle])
+    }
 }

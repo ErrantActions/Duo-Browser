@@ -142,28 +142,17 @@ private struct BrowserTabView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            let layout = DuoPanelLayout(availableWidth: geometry.size.width)
-            HStack(spacing: 0) {
-                VStack(spacing: 0) {
-                    pageContent
-                    browserChrome(showControlsButton: showsSiteControls && !layout.usesSidePane)
+        Group {
+            if #available(iOS 27.1, *) {
+                DuoNativeToolbar(model: model, openAllControls: { showsCompactControls = true }) {
+                    browserContent(showControlsButton: false)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                if showsSiteControls, let width = layout.panelWidth {
-                    Divider().frame(width: 1)
-                    siteControls
-                        .frame(width: width)
-                        .accessibilityElement(children: .contain)
-                        .accessibilityIdentifier("duo.panel.right")
-                }
+            } else {
+                browserContent(showControlsButton: showsSiteControls)
             }
-            .onChange(of: layout.usesSidePane) { _, wide in
-                if wide { showsCompactControls = false }
-            }
-            .onChange(of: showsSiteControls) { _, available in
-                if !available { showsCompactControls = false }
-            }
+        }
+        .onChange(of: showsSiteControls) { _, available in
+            if !available { showsCompactControls = false }
         }
         .sheet(isPresented: $showsCompactControls, onDismiss: model.bridge.cancelPendingCapabilities) {
             NavigationStack {
@@ -203,6 +192,13 @@ private struct BrowserTabView: View {
                 model.showNotice(message)
                 model.bridge.errorMessage = nil
             }
+        }
+    }
+
+    private func browserContent(showControlsButton: Bool) -> some View {
+        VStack(spacing: 0) {
+            pageContent
+            browserChrome(showControlsButton: showControlsButton)
         }
     }
 

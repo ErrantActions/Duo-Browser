@@ -53,9 +53,9 @@ final class BrowserUITests: XCTestCase {
     }
 
     @MainActor
-    func testDuoRightPaneKeepsWebsiteVisibleAndDeliversNavigation() {
+    func testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation() {
         continueAfterFailure = false
-        XCUIDevice.shared.orientation = .landscapeLeft
+        XCUIDevice.shared.orientation = .portrait
         defer { XCUIDevice.shared.orientation = .portrait }
         let app = XCUIApplication()
         captureFinalState(of: app)
@@ -78,23 +78,19 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(allow.waitForExistence(timeout: 10))
         allow.tap()
 
-        let rightPane = app.descendants(matching: .any).matching(identifier: "duo.panel.right").firstMatch
-        let paneExists = rightPane.waitForExistence(timeout: 10)
+        let next = app.buttons["duo.control.next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 10))
         let webpage = app.webViews.firstMatch
-        print("Duo layout: windowWidth=\(app.frame.width), webWidth=\(webpage.frame.width), pane=\(paneExists), launcher=\(app.buttons["duo.controls.open"].exists), next=\(app.buttons["duo.control.next"].exists), back=\(app.buttons["duo.browser.back"].exists)")
-        XCTAssertTrue(paneExists)
-        XCTAssertGreaterThan(webpage.frame.width, 0)
-        XCTAssertGreaterThanOrEqual(rightPane.frame.width, 320)
-        XCTAssertGreaterThanOrEqual(rightPane.frame.minX, webpage.frame.maxX - 1)
-        XCTAssertGreaterThan(rightPane.frame.height, webpage.frame.height * 0.8)
+        print("Duo native toolbar: windowWidth=\(app.frame.width), webWidth=\(webpage.frame.width), actionX=\(next.frame.minX), actionWidth=\(next.frame.width)")
+        XCTAssertGreaterThan(webpage.frame.width, app.frame.width * 0.6)
+        XCTAssertGreaterThanOrEqual(next.frame.minX, webpage.frame.maxX - 2)
+        XCTAssertLessThan(next.frame.width, app.frame.width * 0.25)
         XCTAssertTrue(app.buttons["Browser menu"].exists)
         XCTAssertTrue(app.buttons["duo.browser.back"].exists)
         XCTAssertTrue(app.buttons["duo.browser.refresh"].exists)
         XCTAssertFalse(app.buttons["duo.controls.open"].exists)
-        captureScreenshot(app, name: "Dedicated Right Website Controls")
+        captureScreenshot(app, name: "Native Duo Right-Edge Website Toolbar")
 
-        let next = app.buttons["duo.control.next"]
-        XCTAssertTrue(next.waitForExistence(timeout: 10))
         next.tap()
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["duo.control.previous"].isEnabled)
@@ -103,13 +99,13 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(app.webViews.staticTexts["Record 1 of 3"].waitForExistence(timeout: 10))
 
         app.buttons["duo.browser.refresh"].tap()
-        XCTAssertTrue(rightPane.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(next.waitForNonExistence(timeout: 10))
         XCTAssertTrue(install.waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Browser menu"].exists)
         install.tap()
-        XCTAssertTrue(rightPane.waitForExistence(timeout: 10))
+        XCTAssertTrue(next.waitForExistence(timeout: 10))
         app.webViews.buttons["Clear Duo Panel"].tap()
-        XCTAssertTrue(rightPane.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(next.waitForNonExistence(timeout: 10))
         XCTAssertTrue(webpage.exists)
     }
 
