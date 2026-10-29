@@ -37,6 +37,11 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   [focused UI run 40813672395](https://github.com/ErrantActions/Duo-Browser/actions/runs/40813672395):
   one address field and on-screen keyboard on the first tap, then the same
   icon opening the full editor with the typed draft preserved.
+  The connected **URL** toggle and live rail colors passed
+  [focused UI run 40820895631](https://github.com/ErrantActions/Duo-Browser/actions/runs/40820895631).
+  Screenshot samples exactly matched both light and dark CSS backgrounds on
+  the page, across the seam, and behind the outer controls. A second URL tap
+  closed the bubble without opening a larger window.
 - Both workflows are **manual only**, using the documented standard `xcode-27`
   public runner with Xcode 27.1/iOS 27.1 selected explicitly. Standard public
   compute is free; larger runners can be billed and are not selected here.
@@ -294,7 +299,7 @@ still need an approved native rerun. No all-green native suite is claimed.
 CI boots one simulator explicitly and runs the native suites sequentially.
 Optional artifacts contain whitelisted test counts only; raw result bundles,
 screenshots, and signing files are not uploaded. The local checks have
-23 passing Node tests and 3 passing Python tests. Actual profile/API/
+25 passing Node tests and 4 passing Python tests. Actual profile/API/
 archive validation still requires privately configured secrets and an approved job.
 Do not equate project syntax checks or SDK tests with
 successful iOS compilation or runtime acceptance.

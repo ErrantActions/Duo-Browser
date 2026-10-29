@@ -344,6 +344,25 @@ No compliance answer, broader key permission, external testing, public link,
 or automatic group-distribution policy was added. Group assignment and actual
 phone installation remain unverified.
 
+### Verified connected URL and matching rail backgrounds
+
+[Focused UI run 40820895631](https://github.com/ErrantActions/Duo-Browser/actions/runs/40820895631)
+passed one test with zero failures for commit
+`9fff39405d4bbea7db43910bb25f9fa15e49fbc0`.
+Actual screenshot samples at x=2, x=384, and x=464 matched CSS exactly:
+RGB (224,245,236) for Teal and (20,42,61) for Navy. These span the webpage,
+the seam, and the outer rail behind controls. Web content still occupied
+x=0, y=24, width=382, height=620 in a 466-by-678-point window and did not
+overlap the buttons.
+
+The connected material in the page-to-URL gap measured RGB (197,205,212)
+over the Navy page, proving that the bubble decoration continued into the
+rail. The single **URL** button retained its bounded caption, remained
+hittable, and closed the bubble on a second tap without opening a larger
+editor. Cancellation preserved Record 2; input validation, keyboard Go,
+unique browser controls, website navigation, refresh, and clear also passed.
+This is focused simulator proof, not full UI acceptance or phone installation.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.

@@ -50,8 +50,9 @@ Start/error pages use their own system background colors rather than an old
 website's color. Neither the webpage nor its hit targets ignore safe areas.
 
 The native toolbar contains trusted browser Back and Refresh/Stop plus the
-website-declared navigation and special actions. It appears only for an approved
-configuration; ordinary sites have no empty side pane. The existing WebKit
+website-declared navigation and special actions. Website-specific items require
+an approved configuration; ordinary sites retain core browser controls without
+an empty site-control pane. The existing WebKit
 instance remains owned by the tab across toolbar installation, clearing, and
 pose changes. Older iOS versions use an explicit control-sheet launcher.
 Complex option controls become native menus in the slim strip; an All Website
