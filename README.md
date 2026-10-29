@@ -101,6 +101,12 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   enabled device.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
+- The Reading View/start-page upgrade passed
+  [focused native run 40845914100](https://github.com/ErrantActions/Duo-Browser/actions/runs/40845914100):
+  three tests with zero failures for favorite saving/opening, reading theme
+  and font persistence, real PDF sharing/dismissal, original Record 2 retention,
+  private-export cancellation, and continued private-tab AI exclusion.
+  Audible speech output remains a device acceptance check.
 
 ## Build, run, and test
 
@@ -393,7 +399,7 @@ still need an approved native rerun. No all-green native suite is claimed.
 CI boots one simulator explicitly and runs the native suites sequentially.
 Optional artifacts contain whitelisted test counts only; raw result bundles,
 screenshots, and signing files are not uploaded. The local checks have
-29 passing Node tests and 4 passing Python tests. Actual profile/API/
+31 passing Node tests and 4 passing Python tests. Actual profile/API/
 archive validation still requires privately configured secrets and an approved job.
 Do not equate project syntax checks or SDK tests with
 successful iOS compilation or runtime acceptance.

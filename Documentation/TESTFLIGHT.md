@@ -494,6 +494,23 @@ model handling and confirmed navigation, but did not generate a live model
 answer. Phone installation and live-model acceptance remain owner checks;
 there is no alternate provider or fake-answer fallback.
 
+### Verified reading and start-page acceptance
+
+[Run 40845914100](https://github.com/ErrantActions/Duo-Browser/actions/runs/40845914100)
+passed **three focused UI tests with zero failures** for commit
+`205fd3deb10967a41aeffc71d82e2cec43863e23`.
+The existing favorite-save/open flow passed on the redesigned home screen.
+Reading tests verified actual article extraction, Sepia selection, text-size
+increase, persistence after reopening, native PDF share presentation without
+an export error, share dismissal, and preservation of the original Record 2
+page state. Private reading/export confirmation could be canceled without
+sharing; Ask Duo remained disabled in the private tab.
+
+The simulator did not certify audible speech output, every share destination,
+or physical-device layout. Native PDF unit tests separately inspect generated
+pages and searchable text. The focused run is not a claim that the full UI
+suite passed.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
