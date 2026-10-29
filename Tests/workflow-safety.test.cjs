@@ -55,6 +55,15 @@ test("signing requires manual confirmation, main, successful tests, and an envir
     assert.doesNotMatch(release, /github\.run_number/);
 });
 
+test("local signing setup preserves main-only access without requiring a second deployment review", () => {
+    const helper = fs.readFileSync(path.join(root, "Tools", "Set-TestFlightSecrets.ps1"), "utf8");
+    assert.match(helper, /\$environment\.can_admins_bypass -ne \$false/);
+    assert.match(helper, /\$policies\.total_count -ne 1/);
+    assert.match(helper, /\$policies\.branch_policies\[0\]\.name -ne 'main'/);
+    assert.match(helper, /\$policies\.branch_policies\[0\]\.type -ne 'branch'/);
+    assert.doesNotMatch(helper, /required_reviewers|reviewer\.id|api --method PUT/);
+});
+
 test("signing material is removed from child-process environments before native tools run", () => {
     const bash = process.platform === "win32"
         ? path.join(process.env.ProgramFiles || "C:\\Program Files", "Git", "bin", "bash.exe")

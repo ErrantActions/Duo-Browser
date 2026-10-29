@@ -17,10 +17,11 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(deny.waitForExistence(timeout: 10))
         deny.tap()
         captureScreenshot(app, name: "Duo Controls Permission Denied")
-        let browserMenu = menuButton(in: app)
-        waitUntilHittable(browserMenu)
-        browserMenu.tap()
-        app.buttons["Duo Site Permissions"].tap()
+        XCTAssertTrue(deny.waitForNonExistence(timeout: 10))
+        openMenu(in: app)
+        let permissions = app.buttons["Duo Site Permissions"]
+        scrollTo(permissions, in: app)
+        permissions.tap()
         app.buttons["Ask Again Next Time"].tap()
         app.buttons["Done"].tap()
         install.tap()
@@ -37,9 +38,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(eventLog.waitForExistence(timeout: 10))
         let clear = app.webViews.buttons["Clear Duo Panel"]
         clear.tap()
-        let menu = menuButton(in: app)
-        XCTAssertTrue(menu.waitForExistence(timeout: 10))
-        menu.tap()
+        openMenu(in: app)
         app.buttons["New Tab"].tap()
         let tabs = app.buttons["Tabs, 2 open"]
         XCTAssertTrue(tabs.waitForExistence(timeout: 10))
@@ -57,14 +56,12 @@ final class BrowserUITests: XCTestCase {
         let app = XCUIApplication()
         captureFinalState(of: app)
         app.launch()
-        let menu = menuButton(in: app)
-        XCTAssertTrue(menu.waitForExistence(timeout: 10))
-        menu.tap()
+        openMenu(in: app)
         app.buttons["New Tab"].tap()
         navigate("https://example.com", in: app)
         assertLoadedHTTPSPage(in: app, host: "example.com")
 
-        menu.tap()
+        openMenu(in: app)
         let addBookmark = app.buttons["Add Bookmark"]
         scrollTo(addBookmark, in: app)
         addBookmark.tap()
@@ -73,11 +70,13 @@ final class BrowserUITests: XCTestCase {
         title.tap()
         title.typeText(" UI-\(UUID().uuidString.prefix(6))")
         let savedTitle = try XCTUnwrap(title.value as? String)
-        app.switches["bookmark.favorite"].tap()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let favoriteSwitch = app.switches["bookmark.favorite"]
+        if favoriteSwitch.value as? String != "1" { favoriteSwitch.tap() }
+        XCTAssertEqual(favoriteSwitch.value as? String, "1")
         app.buttons["Save"].tap()
 
-        XCTAssertTrue(menu.waitForExistence(timeout: 10))
-        menu.tap()
+        openMenu(in: app)
         app.buttons["Start Page"].tap()
         let favorite = app.buttons["Open favorite \(savedTitle)"]
         XCTAssertTrue(favorite.waitForExistence(timeout: 10))
@@ -92,10 +91,7 @@ final class BrowserUITests: XCTestCase {
         let app = XCUIApplication()
         captureFinalState(of: app)
         app.launch()
-        let menu = menuButton(in: app)
-        XCTAssertTrue(menu.waitForExistence(timeout: 10))
-        waitUntilHittable(menu)
-        menu.tap()
+        openMenu(in: app)
         app.buttons["New Tab"].tap()
 
         navigate("example.com", in: app)
@@ -184,10 +180,21 @@ final class BrowserUITests: XCTestCase {
     }
 
     @MainActor
+    private func openMenu(in app: XCUIApplication) {
+        let button = menuButton(in: app)
+        XCTAssertTrue(button.waitForExistence(timeout: 10))
+        waitUntilHittable(button)
+        button.tap()
+        XCTAssertTrue(app.navigationBars["Browser Menu"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
     private func scrollTo(_ element: XCUIElement, in app: XCUIApplication) {
+        let list = app.collectionViews["browser.menu.actions"]
+        XCTAssertTrue(list.waitForExistence(timeout: 10))
         for _ in 0..<6 {
             if element.exists && element.isHittable { return }
-            app.swipeUp()
+            list.swipeUp()
         }
         XCTAssertTrue(element.isHittable)
     }

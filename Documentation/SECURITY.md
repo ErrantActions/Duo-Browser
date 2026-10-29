@@ -134,9 +134,11 @@ There is no analytics or synchronization service.
   receive no Apple signing environment or signing secrets.
 - Repository Actions permissions allow GitHub-owned actions only. Public
   repository secret scanning and push protection are enabled.
-- Signing requires manual confirmation on `main`, successful verification, and
-  explicit owner approval of the `app-store` environment. Administrator bypass
-  is disabled.
+- Signing requires manual workflow confirmation on `main` and successful
+  verification. The `app-store` environment retains its main-only restriction
+  and disabled administrator bypass, but no second reviewer click is required
+  by owner choice. Anyone granted repository write access must be trusted to
+  start releases and control the code that receives signing secrets.
 - Private signing values are removed from child-process environments before
   native archive tools execute. Temporary keychain/profile/API-key files are
   cleaned up even after failures. Both workflows are manual only on a documented

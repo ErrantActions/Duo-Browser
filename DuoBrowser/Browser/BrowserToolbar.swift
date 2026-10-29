@@ -123,6 +123,7 @@ struct BrowserToolbar: View {
                         }
                     }
                 }
+                .accessibilityIdentifier("browser.menu.actions")
                 .navigationTitle("Browser Menu")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {

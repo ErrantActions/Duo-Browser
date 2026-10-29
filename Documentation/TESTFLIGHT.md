@@ -69,9 +69,10 @@ The new repository's signing environment must be populated privately; encrypted
 secret values cannot be read back and copied through GitHub's API. Reuse valid
 existing resources only after verifying them.
 
-The `app-store` environment requires the owner as its sole reviewer, disables
-administrator bypass, and allows only the `main` branch. The local helper
-checks those protections without changing them.
+The `app-store` environment disables administrator bypass and allows only the
+`main` branch. At the owner's request, it has no separate deployment-review
+click: manually starting the confirmed TestFlight workflow authorizes the run.
+The local helper checks the remaining protections without changing them.
 
 Nonsecret environment variables:
 
@@ -117,10 +118,11 @@ It sends secret values over stdin to GitHub without printing them or putting
 passwords in process arguments. It does not generate keys, move files, replace
 environment protections, enable a workflow, or upload an app.
 
-Repository admins, the owner account, and the exact code approved for release
-must remain trusted. Protect GitHub and Apple accounts with MFA and review the
-release commit; encrypted secrets cannot protect against deliberately approving
-malicious workflow code.
+Repository admins, anyone with write access, the owner account, and the exact
+release code must remain trusted. A writer can start the confirmed release
+without a second reviewer. Protect GitHub and Apple accounts with MFA, keep
+write access restricted, and review release commits; encrypted secrets cannot
+protect against running malicious workflow code.
 
 ## Release preflight and build numbers
 
@@ -170,10 +172,10 @@ gh workflow run testflight.yml --repo ErrantActions/Duo-Browser --ref main `
   -f confirm_upload=true -f save_summary=false
 ```
 
-Approve the pending `app-store` deployment in GitHub only after reviewing the
-exact commit. The preflight gets secrets only inside that approved main-branch
-job; forks and public PRs do not get them. To pause, disable the workflow and set
-the activation variable to false.
+There is no second `Review deployments` step. Review the exact commit before
+starting the workflow; its preflight gets secrets only in that confirmed
+main-branch job. Forks and public PRs do not get them. To pause, disable the
+workflow and set the activation variable to false.
 
 ## What is and is not verified
 

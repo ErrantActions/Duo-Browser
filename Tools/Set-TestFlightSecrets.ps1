@@ -83,13 +83,8 @@ try {
     if (-not $environment.deployment_branch_policy.custom_branch_policies) {
         throw 'Configure the app-store environment with a selected main-branch deployment policy first.'
     }
-    $reviewRules = @($environment.protection_rules | Where-Object { $_.type -eq 'required_reviewers' })
-    if ($reviewRules.Count -ne 1 -or $environment.can_admins_bypass -ne $false -or
-        @($reviewRules[0].reviewers).Count -ne 1 -or
-        @($reviewRules[0].reviewers | Where-Object {
-            $_.type -eq 'User' -and $_.reviewer.id -eq 11909244
-        }).Count -ne 1) {
-        throw 'The signing environment must require owner approval with administrator bypass disabled.'
+    if ($environment.can_admins_bypass -ne $false) {
+        throw 'The signing environment must keep administrator bypass disabled.'
     }
     $policies = Invoke-PrivateProcess $gh "api repos/$repository/environments/app-store/deployment-branch-policies" $null |
         ConvertFrom-Json
