@@ -32,9 +32,9 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(theme.waitForExistence(timeout: 10))
         theme.buttons["Sepia"].tap()
         XCTAssertTrue(theme.buttons["Sepia"].isSelected)
-        let size = app.steppers["reader.font"]
-        XCTAssertTrue(size.exists)
-        size.buttons["Increment"].tap()
+        let increase = app.buttons["reader.font.increase"]
+        revealReadingControl(increase, in: app)
+        increase.tap()
         XCTAssertTrue(app.staticTexts["Text size: 20"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["reader.speak"].exists)
         XCTAssertFalse(app.buttons["reader.speech.stop"].exists)
@@ -99,13 +99,7 @@ final class BrowserUITests: XCTestCase {
 
     @MainActor
     private func revealReadingControl(_ element: XCUIElement, in app: XCUIApplication) {
-        let scroll = app.scrollViews["reader.content"]
-        XCTAssertTrue(scroll.waitForExistence(timeout: 10))
-        for _ in 0..<8 {
-            if element.exists && element.isHittable { return }
-            scroll.swipeUp()
-        }
-        XCTAssertTrue(element.isHittable)
+        revealControl(element, in: app.scrollViews["reader.content"])
     }
 
     @MainActor
@@ -215,14 +209,18 @@ final class BrowserUITests: XCTestCase {
 
     @MainActor
     private func revealAssistant(_ element: XCUIElement, in app: XCUIApplication) {
-        let list = app.collectionViews["askduo.content"]
-        XCTAssertTrue(list.waitForExistence(timeout: 10))
+        revealControl(element, in: app.collectionViews["askduo.content"])
+    }
+
+    @MainActor
+    private func revealControl(_ element: XCUIElement, in scroll: XCUIElement) {
+        XCTAssertTrue(scroll.waitForExistence(timeout: 10))
         for _ in 0..<16 {
             if element.exists && element.isHittable { return }
             let frame = element.exists ? element.frame : .zero
-            let down = frame.height > 0 && frame.midY < list.frame.minY
-            list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.3 : 0.7))
-                .press(forDuration: 0.05, thenDragTo: list.coordinate(
+            let down = frame.height > 0 && frame.midY < scroll.frame.minY
+            scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.3 : 0.7))
+                .press(forDuration: 0.05, thenDragTo: scroll.coordinate(
                     withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.6 : 0.4)
                 ))
         }
@@ -467,8 +465,16 @@ final class BrowserUITests: XCTestCase {
         let savedTitle = try XCTUnwrap(title.value as? String)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let favoriteSwitch = app.switches["bookmark.favorite"]
-        if favoriteSwitch.value as? String != "1" { favoriteSwitch.tap() }
-        XCTAssertEqual(favoriteSwitch.value as? String, "1")
+        let doneTyping = app.buttons["bookmark.keyboard.done"]
+        XCTAssertTrue(doneTyping.waitForExistence(timeout: 10))
+        doneTyping.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 10))
+        waitUntilHittable(favoriteSwitch)
+        if favoriteSwitch.value as? String != "1" {
+            favoriteSwitch.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        }
+        let favorited = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "1"), object: favoriteSwitch)
+        XCTAssertEqual(XCTWaiter.wait(for: [favorited], timeout: 10), .completed)
         app.buttons["Save"].tap()
 
         openMenu(in: app)

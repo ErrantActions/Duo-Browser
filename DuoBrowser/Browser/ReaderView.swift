@@ -111,11 +111,26 @@ struct ReaderView: View {
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("reader.theme")
-            Stepper("Text size: \(preferences.fontSize)", value: Binding(
-                get: { preferences.fontSize },
-                set: { value in updatePreferences { $0.fontSize = value } }
-            ), in: 15...28)
-            .accessibilityIdentifier("reader.font")
+            HStack {
+                Text("Text size: \(preferences.fontSize)")
+                Spacer()
+                Button {
+                    updatePreferences { $0.fontSize = max(15, $0.fontSize - 1) }
+                } label: {
+                    Image(systemName: "textformat.size.smaller").frame(minWidth: 44, minHeight: 44)
+                }
+                .disabled(preferences.fontSize <= 15)
+                .accessibilityLabel("Decrease reading text size")
+                .accessibilityIdentifier("reader.font.decrease")
+                Button {
+                    updatePreferences { $0.fontSize = min(28, $0.fontSize + 1) }
+                } label: {
+                    Image(systemName: "textformat.size.larger").frame(minWidth: 44, minHeight: 44)
+                }
+                .disabled(preferences.fontSize >= 28)
+                .accessibilityLabel("Increase reading text size")
+                .accessibilityIdentifier("reader.font.increase")
+            }
             HStack(spacing: 16) {
                 Button {
                     reader.toggleSpeech()

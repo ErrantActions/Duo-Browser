@@ -79,18 +79,23 @@ struct BookmarkEditor: View {
     let done: () -> Void
     @State private var address = ""
     @State private var error: String?
+    private enum Field: Hashable { case title, address, folder }
+    @FocusState private var focusedField: Field?
 
     var body: some View {
         Form {
             Section("Page") {
                 TextField("Title", text: $bookmark.title)
+                    .focused($focusedField, equals: .title)
                     .accessibilityLabel("Bookmark title")
                 TextField("Address", text: $address)
+                    .focused($focusedField, equals: .address)
                     .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
                     .accessibilityLabel("Bookmark address")
             }
             Section("Location") {
                 TextField("Folder (optional)", text: $bookmark.folder)
+                    .focused($focusedField, equals: .folder)
                 if !library.bookmarkFolders.isEmpty {
                     Menu("Choose Existing Folder") {
                         Button("Unfiled") { bookmark.folder = "" }
@@ -110,6 +115,7 @@ struct BookmarkEditor: View {
                 Section { Text(error).foregroundStyle(.red) }
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Bookmark")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -119,11 +125,17 @@ struct BookmarkEditor: View {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save", action: save)
             }
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done Typing") { focusedField = nil }
+                    .accessibilityIdentifier("bookmark.keyboard.done")
+            }
         }
         .onAppear { address = bookmark.url.absoluteString }
     }
 
     private func save() {
+        focusedField = nil
         guard let url = URLNormalizer.webURL(from: address) else {
             error = "Enter a valid HTTP or HTTPS address."
             return
