@@ -125,6 +125,12 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   certified: another simulator run reported ready but returned an untyped
   model-service error. The app now surfaces safe failure categories rather
   than hiding this condition or substituting a response.
+- Direct Ask Duo access passed
+  [native control run 40905306756](https://github.com/ErrantActions/Duo-Browser/actions/runs/40905306756):
+  two tests, zero failures. The sparkle control remained directly hittable at
+  x=399 in a 466-point window with all eight site controls, appeared only once,
+  and did not overlap the 382-point webpage. Opening it did not capture content
+  or change Record 2, and the menu contained no duplicate Ask Duo action.
 
 ## Build, run, and test
 

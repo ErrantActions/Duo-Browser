@@ -559,6 +559,25 @@ the app is perfect, all Safari features exist, speech was heard, every sharing
 destination succeeded, or Apple Intelligence produced a live answer. Those
 remaining physical-device checks are explicitly retained.
 
+### Verified direct Ask Duo control
+
+[Run 40905306756, attempt 2](https://github.com/ErrantActions/Duo-Browser/actions/runs/40905306756/attempts/2)
+passed **two focused native UI tests with zero failures** for commit
+`ff97d7a77ac993af1b32a969b16520b7cbd288d4`.
+The Ask Duo sparkle icon measured x=399, y=231, width=38, height=38 in a
+466-point window, remained hittable with all eight website controls installed,
+and existed exactly once. The menu collection contained no Ask Duo duplicate.
+It opened the existing assistant without implicit capture, returned to the
+unchanged Record 2 page, and retained private-tab blocking.
+
+The full native toolbar regression also passed: safe viewport 382-by-620 in a
+466-by-678 window, no overlapping native buttons, page-matching light/dark
+backgrounds, connected URL bubble open/close/validation, website navigation,
+refresh/clear, and ordinary HTTPS navigation. An earlier attempt's external
+page loading wait timed out; the unchanged job was rerun without loosening
+assertions or changing browser network behavior. No live model inference
+was required or claimed for this entry-point-only change.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
