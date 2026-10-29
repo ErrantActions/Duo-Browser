@@ -22,11 +22,13 @@ final class BrowserUITests: XCTestCase {
         feedback.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", expected), object: feedback)
         XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
-        app.navigationBars["Scanner Settings"].buttons["Settings"].tap()
+        let back = app.buttons["Settings"].firstMatch
+        XCTAssertTrue(back.waitForExistence(timeout: 10))
+        back.tap()
         let save = app.buttons["Save Settings"]
         revealControl(save, in: app.collectionViews.firstMatch)
         save.tap()
-        app.navigationBars["Settings"].buttons["Done"].tap()
+        app.buttons["Done"].firstMatch.tap()
         openMenu(in: app)
         scrollTo(settings, in: app)
         settings.tap()
@@ -34,7 +36,9 @@ final class BrowserUITests: XCTestCase {
         editor.tap()
         XCTAssertTrue(feedback.waitForExistence(timeout: 10))
         XCTAssertEqual(feedback.value as? String, expected, "Scanner preferences must survive Back, Save and reopening Settings")
-        app.navigationBars["Scanner Settings"].buttons["Done"].tap()
+        XCTAssertTrue(back.waitForExistence(timeout: 10))
+        back.tap()
+        app.buttons["Done"].firstMatch.tap()
     }
 
     @MainActor
