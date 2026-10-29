@@ -24,7 +24,13 @@
     }
     const state = globalThis[key];
     if (typeof mode === "undefined") return null;
-    if (mode === "clear") { state.ticket = null; state.last = null; return true; }
+    if (mode === "clear") {
+        if (state.ticket && state.ticket.token === token) {
+            if (state.last === state.ticket.field) state.last = null;
+            state.ticket = null;
+        }
+        return true;
+    }
     if (mode === "capture") {
         state.ticket = null;
         const active = document.activeElement;
@@ -41,12 +47,14 @@
     const ticket = state.ticket;
     state.ticket = null;
     if (!ticket || ticket.token !== token || ticket.url !== sourceURL || location.href !== sourceURL
-        || performance.now() - ticket.time > 75000 || document.visibilityState !== "visible") {
+        || performance.now() - ticket.time > 75000 || document.visibilityState !== "visible"
+        || !Number.isFinite(expiresAt) || Date.now() > expiresAt) {
         throw new Error("The scan target expired or the page changed. Select the field and scan again.");
     }
     const field = ticket.field;
     function unchanged() {
-        return location.href === sourceURL && eligible(field) && field.value === ticket.value && field.form === ticket.form;
+        return Date.now() <= expiresAt && document.visibilityState === "visible"
+            && location.href === sourceURL && eligible(field) && field.value === ticket.value && field.form === ticket.form;
     }
     if (!unchanged()) throw new Error("The selected field changed. No scanned text was entered.");
     if (typeof value !== "string" || !value.length || value.length > 4096
@@ -54,11 +62,19 @@
         throw new Error("The scanned input or scanner settings are invalid.");
     }
     const form = field.form;
-    const action = form ? new URL(form.action, location.href) : null;
-    if (suffix === "submit" && (!form || action.origin !== location.origin
-        || !["https:", "file:"].includes(action.protocol) || !["get", "post"].includes(form.method.toLowerCase())
-        || (action.protocol === "file:" && action.href !== sourceURL)
-        || (form.target && form.target !== "_self"))) {
+    // Named form controls can shadow action, method and target properties.
+    function formInfo() {
+        return {
+            action: new URL(form.getAttribute("action") || sourceURL, document.baseURI),
+            method: (form.getAttribute("method") || "get").toLowerCase(),
+            target: (form.getAttribute("target") || document.querySelector("base[target]")?.getAttribute("target") || "_self").toLowerCase()
+        };
+    }
+    const info = form ? formInfo() : null;
+    if (suffix === "submit" && (!info || info.action.origin !== location.origin
+        || !["https:", "file:"].includes(info.action.protocol) || !["get", "post"].includes(info.method)
+        || (info.action.protocol === "file:" && info.action.href !== sourceURL)
+        || info.target !== "_self")) {
         throw new Error("Enter and Submit requires a same-site form in this tab. Choose Enter Events for custom website handlers.");
     }
     const start = insertion === "replace" ? 0
@@ -78,7 +94,8 @@
     field.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
     field.dispatchEvent(new Event("change", { bubbles: true }));
     if (suffix !== "none") {
-        if (!eligible(field) || location.href !== sourceURL || field.form !== form) {
+        if (Date.now() > expiresAt || document.visibilityState !== "visible"
+            || !eligible(field) || location.href !== sourceURL || field.form !== form) {
             throw new Error("Text was entered, but the page changed before Enter could be sent.");
         }
         const options = { bubbles: true, cancelable: true, key: "Enter", code: "Enter", keyCode: 13, which: 13 };
@@ -86,8 +103,10 @@
         if (proceed) proceed = field.dispatchEvent(new KeyboardEvent("keypress", options));
         field.dispatchEvent(new KeyboardEvent("keyup", options));
         if (suffix === "submit" && proceed) {
-            if (location.href !== sourceURL || !eligible(field) || field.form !== form || form.action !== action.href
-                || !["get", "post"].includes(form.method.toLowerCase()) || (form.target && form.target !== "_self")) {
+            const current = formInfo();
+            if (Date.now() > expiresAt || document.visibilityState !== "visible"
+                || location.href !== sourceURL || !eligible(field) || field.form !== form
+                || current.action.href !== info.action.href || current.method !== info.method || current.target !== "_self") {
                 throw new Error("Text was entered, but the form changed before submission.");
             }
             HTMLFormElement.prototype.requestSubmit.call(form);

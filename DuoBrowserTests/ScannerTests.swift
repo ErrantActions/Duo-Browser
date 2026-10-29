@@ -58,10 +58,11 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         return try XCTUnwrap(value as? String)
     }
 
-    private func apply(_ view: WKWebView, token: String, insertion: String = "selection", suffix: String = "none", value: String = "123") async throws {
+    private func apply(_ view: WKWebView, token: String, insertion: String = "selection", suffix: String = "none", value: String = "123", deadline: Double = 5000) async throws {
         let result = try await ScannerInput.call(on: view, arguments: [
             "mode": "apply", "token": token, "sourceURL": try XCTUnwrap(view.url).absoluteString,
-            "value": value, "insertion": insertion, "suffix": suffix
+            "value": value, "insertion": insertion, "suffix": suffix,
+            "expiresAt": Date().timeIntervalSince1970 * 1000 + deadline
         ])
         XCTAssertEqual(result as? Bool, true)
     }
@@ -122,10 +123,15 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         try await apply(view, token: appended, insertion: "append", value: "654")
         let final = try await view.evaluateJavaScript("document.querySelector('#target').value")
         XCTAssertEqual(final as? String, "987654")
+        let cancelled = try await capture(view)
+        await ScannerInput.clear(on: view, token: cancelled)
+        await reject { try await self.apply(view, token: cancelled) }
     }
 
     func testScannerRejectsChangedSensitiveHiddenAndOversizedTargets() async throws {
         let view = try await page()
+        let expired = try await capture(view)
+        await reject { try await self.apply(view, token: expired, deadline: -1) }
         let token = try await capture(view)
         try await view.evaluateJavaScript("document.querySelector('#target').value = 'changed'")
         await reject { try await self.apply(view, token: token) }

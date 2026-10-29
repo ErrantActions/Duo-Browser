@@ -159,6 +159,9 @@ single-use, expires after 75 seconds, and binds the exact element, source URL,
 value, selection and form. Native code also checks tab/navigation identity,
 foreground state and page-tool ownership. Backgrounding, closing or navigation
 invalidates native work; generation and insertion have 15-second UI deadlines.
+Canceled/late captures also clear their matching isolated ticket without
+clearing a newer scan. An insertion must begin within five seconds of native
+dispatch; the helper rechecks this deadline and visibility before Enter/submit.
 
 Only verified HTTPS and the exact bundled demo are supported. Passwords and
 autocomplete-marked payment/one-time-code inputs, hidden, disabled/read-only,

@@ -34,6 +34,17 @@ enum ScannerInput {
         try await webView.callAsyncJavaScript("return " + script(), arguments: arguments, in: nil, contentWorld: world)
     }
 
+    static func clear(on webView: WKWebView, token: String) async {
+        do {
+            let result = try await call(on: webView, arguments: ["mode": "clear", "token": token])
+            if result as? Bool != true {
+                Logger(subsystem: "com.duobrowser.app", category: "ScannerInput").error("Scanner target cleanup was not confirmed.")
+            }
+        } catch {
+            Logger(subsystem: "com.duobrowser.app", category: "ScannerInput").error("Scanner target cleanup failed: code \((error as NSError).code)")
+        }
+    }
+
     static func blockedReason(for model: BrowserViewModel) -> String? {
         if model.isClosed || model.showingStartPage || model.navigationError != nil { return "Open a webpage and select a text field first." }
         if model.webView.isLoading { return "Wait for the page to finish loading." }
@@ -121,7 +132,10 @@ struct ScannerInputView: View {
         do {
             let result = try await ScannerInput.call(on: model.webView, arguments: ["mode": "capture"])
             guard operation == id, scenePhase == .active, !model.isClosed,
-                  generation == model.navigationID, url == model.webView.url else { throw ScannerInputError.changedPage }
+                  generation == model.navigationID, url == model.webView.url else {
+                if let captured = result as? String { await ScannerInput.clear(on: model.webView, token: captured) }
+                throw ScannerInputError.changedPage
+            }
             guard let result = result as? String, UUID(uuidString: result) != nil else { throw ScannerInputError.changedPage }
             token = result
             source = url
@@ -167,6 +181,7 @@ struct ScannerInputView: View {
                 do {
                     let result = try await ScannerInput.call(on: model.webView, arguments: [
                         "mode": "apply", "token": token, "sourceURL": source.absoluteString, "value": value,
+                        "expiresAt": Date().timeIntervalSince1970 * 1000 + 5000,
                         "insertion": scanPreferences.insertion == .selection ? "selection" : (scanPreferences.insertion == .replace ? "replace" : "append"),
                         "suffix": scanPreferences.suffix == .none ? "none" : (scanPreferences.suffix == .enter ? "enter" : "submit")
                     ])
@@ -185,6 +200,9 @@ struct ScannerInputView: View {
         deadline?.cancel()
         deadline = nil
         operation = UUID()
+        if let token {
+            Task { await ScannerInput.clear(on: model.webView, token: token) }
+        }
         token = nil
         source = nil
         navigationID = nil
