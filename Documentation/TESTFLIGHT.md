@@ -458,6 +458,35 @@ Apple Intelligence enabled and its on-device model ready must complete that
 acceptance check. The conditional test calls the real on-device model when
 available; it has no fake model, network fallback, or alternate provider.
 
+### Verified Ask Duo delivery: version 1.0, build 1.0.5
+
+[Run 40837364527](https://github.com/ErrantActions/Duo-Browser/actions/runs/40837364527)
+delivered commit `7e6d81a467f83b0f57875e7dcf3b9ec9ea862457`, with the same
+application code as the focused Ask Duo UI pass above. All **72 native unit
+tests** passed with zero failures, including eight new assistant context,
+answer/link, lifecycle and clearing cases. The separate focused UI run was
+not duplicated in the signed upload.
+
+Preflight selected **1.0.5** above existing uploads. Logs separately confirm
+`ARCHIVE SUCCEEDED`, `Archive exempt-encryption declaration verified`,
+`EXPORT SUCCEEDED`, and `UPLOAD SUCCEEDED with no errors` on October 29, 2026
+at 07:57 UTC.
+
+Apple subsequently reported **VALID**, not expired,
+`usesNonExemptEncryption=false`, internal **IN_BETA_TESTING**, and external
+**READY_FOR_BETA_SUBMISSION**. The build was read back from **Owner Testing Auto**
+with automatic distribution still enabled, no public link, and exactly the
+same single owner. **No manual build-to-group assignment was performed** for
+1.0.5. No external review or external distribution was started.
+
+Use the browser menu's **Ask Duo**, explicitly read/review/approve an excerpt,
+then ask Apple Intelligence. Supported hardware with Apple Intelligence enabled
+and its model downloaded is required for actual generation. CI verified the
+real framework compiled, private/consent/filtering safeguards, unavailable
+model handling and confirmed navigation, but did not generate a live model
+answer. Phone installation and live-model acceptance remain owner checks;
+there is no alternate provider or fake-answer fallback.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.

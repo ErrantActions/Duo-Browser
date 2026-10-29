@@ -71,7 +71,7 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   is **VALID**; this build also needs the owner's export-compliance answer before
   distribution. That build used first-tap inline typing and second-tap full
   editing; the latest release below replaces the second tap with closing.
-  **Latest: build 1.0.4** delivers the matching rail background, bounded **URL**
+  **Build 1.0.4** delivers the matching rail background, bounded **URL**
   label, and connected open/close bubble in
   [release run 40823535016](https://github.com/ErrantActions/Duo-Browser/actions/runs/40823535016).
   All **64 native unit tests** passed. The owner-confirmed exempt-encryption
@@ -83,6 +83,14 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   Future eligible uploads no longer require manual group assignment.
   Actual phone installation remains unverified. The original manual group was
   preserved; no France/store-territory setting was changed.
+- **Latest: build 1.0.5** includes **Ask Duo**, powered by Apple's on-device
+  Foundation Models, delivered in
+  [release run 40837364527](https://github.com/ErrantActions/Duo-Browser/actions/runs/40837364527)
+  after **72 passing native unit tests** and the separate focused UI acceptance
+  below. Apple processing is **VALID**, encryption compliance was accepted, and
+  the build appeared in **Owner Testing Auto** as **IN_BETA_TESTING** without
+  manual group assignment. Live answer generation still needs checking on an
+  eligible device because CI reported the on-device model unavailable.
 - Ask Duo's Apple Foundation Models integration compiled and passed
   [focused native run 40835752864](https://github.com/ErrantActions/Duo-Browser/actions/runs/40835752864):
   two tests, zero failures, covering private-tab exclusion, explicit excerpt
@@ -345,7 +353,9 @@ Further tests cover old saved-data decoding, favorites/folder filtering, write
 rollback, Reading List state, calendar-day grouping across daylight-saving
 changes, recently closed/private exclusions, bulk tab closing, page zoom, and
 Quick Look data-source wiring, and address-editor capability isolation during
-scene reactivation. The latest release passed all 64 native unit tests.
+scene reactivation. Ask Duo adds context/action bounds, unsafe-link rejection,
+prompt-metadata filtering, approval/data clearing and assistant lifecycle guards.
+The latest release passed all 72 native unit tests.
 The UI tests cover demo permission, event delivery, panel clearing,
 tab creation/closing, regular/private grid switching, selection preservation,
 an ordinary HTTPS address, and back/forward navigation.
