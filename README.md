@@ -83,7 +83,7 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   Future eligible uploads no longer require manual group assignment.
   Actual phone installation remains unverified. The original manual group was
   preserved; no France/store-territory setting was changed.
-- **Latest: build 1.0.5** includes **Ask Duo**, powered by Apple's on-device
+- **Build 1.0.5** includes **Ask Duo**, powered by Apple's on-device
   Foundation Models, delivered in
   [release run 40837364527](https://github.com/ErrantActions/Duo-Browser/actions/runs/40837364527)
   after **72 passing native unit tests** and the separate focused UI acceptance
@@ -99,6 +99,17 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   The simulator reported its model unavailable; this is **not** a claim that
   Apple Intelligence generated a live answer. That requires an eligible,
   enabled device.
+- **Latest: build 1.0.6** delivers the redesigned start page, local Reading View,
+  persistent reading themes/type size, Read Aloud controls, paginated reading
+  PDF sharing and bookmark keyboard fixes through
+  [release run 40856101620](https://github.com/ErrantActions/Duo-Browser/actions/runs/40856101620).
+  All **79 native unit tests** passed, including actual PDF page/searchable-text
+  checks and old-settings migration. Apple reports **VALID** and
+  **IN_BETA_TESTING**, with encryption accepted and automatic delivery to the
+  same owner-only group. English TestFlight testing notes were added.
+  Voice output, live AI generation and physical-phone installation remain
+  device checks; this release is not a claim of perfection or complete Safari
+  parity.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 - The Reading View/start-page upgrade passed
@@ -396,7 +407,7 @@ changes, recently closed/private exclusions, bulk tab closing, page zoom, and
 Quick Look data-source wiring, and address-editor capability isolation during
 scene reactivation. Ask Duo adds context/action bounds, unsafe-link rejection,
 prompt-metadata filtering, approval/data clearing and assistant lifecycle guards.
-The latest release passed all 72 native unit tests.
+The latest release passed all 79 native unit tests.
 The UI tests cover demo permission, event delivery, panel clearing,
 tab creation/closing, regular/private grid switching, selection preservation,
 an ordinary HTTPS address, and back/forward navigation.
@@ -406,7 +417,7 @@ still need an approved native rerun. No all-green native suite is claimed.
 CI boots one simulator explicitly and runs the native suites sequentially.
 Optional artifacts contain whitelisted test counts only; raw result bundles,
 screenshots, and signing files are not uploaded. The local checks have
-31 passing Node tests and 4 passing Python tests. Actual profile/API/
+33 passing Node tests and 4 passing Python tests. Actual profile/API/
 archive validation still requires privately configured secrets and an approved job.
 Do not equate project syntax checks or SDK tests with
 successful iOS compilation or runtime acceptance.

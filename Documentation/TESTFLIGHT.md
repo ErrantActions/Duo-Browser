@@ -526,6 +526,39 @@ failure UI were added; no successful live-model result is claimed.
 Eligible physical-device generation remains an acceptance check, not a
 green result inferred from the unavailable-model regression.
 
+### Verified reading/polish delivery: version 1.0, build 1.0.6
+
+[Run 40856101620](https://github.com/ErrantActions/Duo-Browser/actions/runs/40856101620)
+delivered commit `1af70ea2c662ef1e9c1a2291268868b1b3e6d398`.
+All **79 native unit tests** passed with zero failures, including six reading
+tests for structured/bounded content, actual paginated/searchable PDF output,
+query-metadata omission, old settings migration, reader preferences, capability
+suspension and stopped speech state. The earlier reading/home acceptance passed
+three UI cases; the separate AI-boundary regression passed two without claiming
+live inference. Neither suite was duplicated in the signed job.
+
+Preflight selected **1.0.6** above existing uploads. Logs separately verify
+`ARCHIVE SUCCEEDED`, `Archive exempt-encryption declaration verified`,
+`EXPORT SUCCEEDED`, and `UPLOAD SUCCEEDED with no errors` on October 29, 2026
+at 10:33 UTC. An earlier attempt passed tests/archive/export but timed out on a
+final read-only Apple metadata check before upload. Bounded GET retry contracts
+were added and tested; no upload was blindly repeated.
+
+The version-filtered build listing initially lagged. App Store Connect showed
+the upload complete, then the direct build resource
+`929537a0-1f1d-41e2-ba35-6d68b9b2ec3b` verified **VALID**, not expired,
+`usesNonExemptEncryption=false`, internal **IN_BETA_TESTING**, and external
+**READY_FOR_BETA_SUBMISSION**. The build was read back from **Owner Testing Auto**
+with exactly the same one owner, automatic access enabled and no public link.
+No manual group assignment or external review submission was performed.
+English What to Test notes describe the features and remaining device checks;
+existing owner notes in other languages were preserved.
+
+This is a substantial tested feature/polish iteration, not certification that
+the app is perfect, all Safari features exist, speech was heard, every sharing
+destination succeeded, or Apple Intelligence produced a live answer. Those
+remaining physical-device checks are explicitly retained.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
