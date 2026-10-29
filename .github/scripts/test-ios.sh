@@ -2,8 +2,8 @@
 set -euo pipefail
 
 suite="${1:-all}"
-if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel ) ]]; then
-  echo "::error::Choose all, unit, or duo-panel for the native test suite."
+if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo ) ]]; then
+  echo "::error::Choose all, unit, duo-panel, or ask-duo for the native test suite."
   exit 1
 fi
 set --
@@ -11,6 +11,8 @@ if [[ "$suite" == unit ]]; then
   set -- -only-testing:DuoBrowserTests
 elif [[ "$suite" == duo-panel ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation
+elif [[ "$suite" == ask-duo ]]; then
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation
 fi
 
 xcodebuild -version

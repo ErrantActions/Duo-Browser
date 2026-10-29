@@ -135,6 +135,39 @@ An uploaded owner-only beta is not proof of a passing UI suite.
 
 ## Using the browser
 
+### Ask Duo
+
+Open the browser menu and choose **Ask Duo**. It uses **Apple Intelligence's
+on-device Foundation Models**, not OpenAI, Copilot, a cloud fallback, or an API
+key. Generation requires iOS 26+ on a supported device with Apple Intelligence
+enabled and its model ready. The browser still supports iOS 17.
+
+Nothing is read automatically. Choose **Read This Page**, review the filtered
+excerpt, enter a question, and choose **Ask Apple Intelligence**. The excerpt is
+limited to 1,800 characters and up to 12 HTTPS link labels, so it is not a full
+copy of a long page. Forms, editable/input values, hidden content and frames are
+excluded; other visible text can still contain personal information.
+URL query values and full link addresses are not included in the model prompt.
+The preview remains local even if Apple Intelligence is unavailable.
+
+**Allow a link suggestion** lets the model propose an existing page-link ID.
+It cannot invent a navigation destination or run page code. Opening any
+captured or suggested link requires a native confirmation showing its full
+destination. The page/document/tab is revalidated, the sheet closes, and only
+then does normal HTTPS navigation occur.
+
+Private tabs are excluded. Closing, backgrounding, changing the page, or
+changing tabs cancels work and clears the excerpt/question/answer. Nothing is
+saved as chat history. There is no arbitrary clicking, form submission,
+purchase automation, image analysis, or Duo Control execution in this first
+version. AI can be wrong: verify its answer against the page.
+
+The shared browser-menu entry is used instead of adding another crowded rail
+button. Real on-device inference must be checked on eligible hardware; a
+simulator showing unavailable is not proof that the model generated an answer.
+
+### Address and navigation
+
 In native Duo vertical-toolbar layouts, the address button is labeled **URL**,
 not the potentially long hostname. Tap it to expand a connected, editable bubble;
 enter an address/search and press Go. Tap **URL** again to close it without

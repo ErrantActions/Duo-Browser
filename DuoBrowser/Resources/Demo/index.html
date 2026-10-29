@@ -50,7 +50,12 @@
             <h2>Browser checks</h2>
             <a href="https://example.com">Open example.com</a>
             <a href="https://www.apple.com" target="_blank" rel="noopener">Open Apple in a new tab</a>
-            <label>Text input <input placeholder="Type here to check keyboard behavior"></label>
+            <p>Ask Duo privacy check: the form and editable text below must be excluded from page context.</p>
+            <form onsubmit="return false">
+                <p>ASK_DUO_FORM_SENTINEL</p>
+                <label>Text input <input placeholder="Type here to check keyboard behavior" value="ASK_DUO_INPUT_SENTINEL"></label>
+            </form>
+            <div contenteditable="true">ASK_DUO_EDITABLE_SENTINEL</div>
             <button id="alert">JavaScript alert</button>
             <button id="confirm">JavaScript confirmation</button>
             <button id="prompt">JavaScript prompt</button>

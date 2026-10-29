@@ -78,6 +78,15 @@ hardware-keyboard connection so the on-screen keyboard is actually exercised.
 It does not duplicate the unit suite that TestFlight will run and does not
 claim full UI acceptance.
 
+For Ask Duo, `test_scope=ask-duo` selects its consent/private-tab, filtered
+excerpt, model-availability, and confirmed-navigation UI regression. It invokes
+real on-device generation only if Apple reports the model available; otherwise
+it explicitly verifies the unavailable state and does not fabricate inference
+or claim that generation ran. The native unit suite covers response/link bounds,
+stale contexts, modal capability suspension and clearing local data.
+Eligible physical hardware with Apple Intelligence enabled is required to
+complete live-model acceptance when CI reports unavailable.
+
 Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
 with one-day retention. It does not publish an app, IPA, screenshot, result
 bundle, profile, keychain, API key, or raw diagnostic logs. A missing result
@@ -125,6 +134,12 @@ The `app-store` environment disables administrator bypass and allows only the
 `main` branch. At the owner's request, it has no separate deployment-review
 click: manually starting the confirmed TestFlight workflow authorizes the run.
 The local helper checks the remaining protections without changing them.
+
+The owner's delivery preference is to commit/push completed, validated app
+changes and start the confirmed TestFlight workflow without another deployment
+prompt. Keep the tests, signing preflight, main-only environment and owner-only
+distribution gates. This is not authorization to upload broken intermediate
+commits or to change the workflows into automatic push/pull-request triggers.
 
 Nonsecret environment variables:
 

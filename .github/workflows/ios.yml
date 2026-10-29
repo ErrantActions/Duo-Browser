@@ -14,12 +14,13 @@ on:
         type: boolean
         default: false
       test_scope:
-        description: Full validation or the focused right-hand Duo Panel UI regression
+        description: Full validation, native Duo controls, or focused Ask Duo privacy/navigation UI
         required: true
         type: choice
         options:
           - all
           - duo-panel
+          - ask-duo
         default: all
 
 permissions:

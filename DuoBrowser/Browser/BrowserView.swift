@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum BrowserSheet: String, Identifiable {
-    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs
+    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs, assistant
     var id: String { rawValue }
 }
 
@@ -9,6 +9,8 @@ struct BrowserView: View {
     @StateObject private var library: BrowserLibrary
     @StateObject private var manager: BrowserTabManager
     @State private var sheet: BrowserSheet?
+    @State private var assistantTab: BrowserViewModel?
+    @State private var pendingAssistantNavigation: AskDuoNavigation?
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -27,7 +29,7 @@ struct BrowserView: View {
             }
         }
         .preferredColorScheme(colorScheme)
-        .sheet(item: $sheet, onDismiss: { manager.selectedTab?.isActive = true }) { selection in
+        .sheet(item: $sheet, onDismiss: finishSheet) { selection in
             NavigationStack {
                 sheetContent(selection)
                     .toolbar {
@@ -60,6 +62,11 @@ struct BrowserView: View {
             }
         }
         .onChange(of: manager.selectedID) { _, _ in
+            if sheet == .assistant, assistantTab?.id != manager.selectedID {
+                pendingAssistantNavigation = nil
+                sheet = nil
+                manager.notice = "Ask Duo was closed because the selected tab changed."
+            }
             if sheet != nil { manager.selectedTab?.deactivate() }
         }
     }
@@ -79,6 +86,13 @@ struct BrowserView: View {
         case .downloads: DownloadsView(manager: manager.downloads)
         case .settings: BrowserSettingsView(library: library, manager: manager)
         case .permissions: SitePermissionsView(library: library, manager: manager)
+        case .assistant:
+            if let assistantTab {
+                AskDuoView(model: assistantTab) { navigation in
+                    pendingAssistantNavigation = navigation
+                    sheet = nil
+                }
+            }
         case .bookmark:
             if let tab = manager.selectedTab, let url = tab.shareURL {
                 BookmarkEditor(
@@ -98,8 +112,30 @@ struct BrowserView: View {
     }
 
     private func present(_ selection: BrowserSheet) {
+        if selection == .assistant {
+            assistantTab = manager.selectedTab
+            assistantTab?.beginAssistantPresentation()
+        }
         manager.selectedTab?.deactivate()
         sheet = selection
+    }
+
+    private func finishSheet() {
+        if let assistantTab {
+            assistantTab.endAssistantPresentation(
+                isActive: manager.selectedID == assistantTab.id && scenePhase == .active
+            )
+        }
+        assistantTab = nil
+        manager.selectedTab?.isActive = scenePhase == .active
+        let navigation = pendingAssistantNavigation
+        pendingAssistantNavigation = nil
+        guard let navigation else { return }
+        guard scenePhase == .active, let tab = manager.selectedTab, navigation.isCurrent(for: tab) else {
+            manager.notice = "Ask Duo canceled navigation because the page or tab changed."
+            return
+        }
+        tab.load(navigation.destination)
     }
 
     private func open(_ url: URL) {

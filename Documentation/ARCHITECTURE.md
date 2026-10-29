@@ -2,6 +2,40 @@
 
 ## Ownership and UI
 
+### Ask Duo
+
+`AskDuoView` is a browser-owned sheet, opened once through the shared menu.
+`AskDuoModel` uses an explicit on-device `SystemLanguageModel` and a fresh
+`LanguageModelSession` for each question. `@Generable` constrains the response
+to answer text and a bounded existing-link ID; no model tools, JavaScript,
+network client, or cloud provider are registered. OS/model availability is
+checked and an unavailable state never becomes a sample or fabricated answer.
+
+`AskDuoContext.js` runs only after Read This Page in a separate named
+`WKContentWorld`. It extracts visible non-form/non-editable text and HTTPS
+links with bounded DOM work and no reads of input values, cookies, or storage.
+Native decoding revalidates the 32 KiB envelope, source URL, document UUID,
+text/link limits, credential-free HTTPS URLs, and contiguous link IDs.
+Only origin/title/excerpt/link labels reach the model; query values and full
+hrefs stay in native memory. Context is untrusted data, not model instructions.
+
+Every context/action is bound to the original tab, exact URL, navigation UUID,
+and isolated document UUID. Explicit navigation invalidates the UUID
+synchronously, and WebKit navigation callbacks also invalidate it. Before a
+confirmed action, the static reader checks that the original document and
+visible link still exist. The parent applies the fixed destination only after
+sheet dismissal and a final tab/URL/navigation check.
+
+Assistant presentation independently suspends website capability UI, including
+across scene reactivation. Capture/link checks have 15-second deadlines and
+generation has a 60-second deadline. Cancellation invalidates an operation
+token so late results cannot repopulate cleared UI. The sheet clears all
+context on close, inactivity, tab changes, or navigation. Private, loading,
+error, start, non-HTTPS and insecure pages are blocked, except the exact bundled
+DuoKit demo. There is no persistent conversation history.
+
+### Browser layout
+
 SwiftUI/MVVM, iOS 17+. `BrowserView` owns a `BrowserLibrary` and
 `BrowserTabManager`. The selected tab is observed by a dedicated tab view with
 stable identity. Each `BrowserViewModel` retains one `WKWebView`, one navigation/UI

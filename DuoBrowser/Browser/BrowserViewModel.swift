@@ -13,9 +13,10 @@ final class BrowserViewModel: ObservableObject {
     var onNewWindow: ((URLRequest) -> Void)?
     var onStateChanged: (() -> Void)?
     var isActive: Bool {
-        get { !isClosed && !isEditingAddress && bridge.isActive }
-        set { bridge.isActive = newValue && !isClosed && !isEditingAddress }
+        get { !isClosed && !isEditingAddress && !isShowingAssistant && bridge.isActive }
+        set { bridge.isActive = newValue && !isClosed && !isEditingAddress && !isShowingAssistant }
     }
+    @Published private(set) var navigationID = UUID()
     @Published private(set) var currentURL: URL?
     @Published private(set) var pageTitle = ""
     @Published private(set) var isLoading = false
@@ -32,6 +33,7 @@ final class BrowserViewModel: ObservableObject {
     @Published var pageDialog: PageDialog?
     private(set) var isClosed = false
     private(set) var isEditingAddress = false
+    private(set) var isShowingAssistant = false
 
     let webView: WKWebView
     private let webDelegate: BrowserWebDelegate
@@ -95,7 +97,7 @@ final class BrowserViewModel: ObservableObject {
         webDelegate.owner = self
         bridge.canPresentNativeUI = { [weak self] in
             guard let self else { return false }
-            return !self.isEditingAddress && self.pageDialog == nil && self.alert == nil
+            return !self.isEditingAddress && !self.isShowingAssistant && self.pageDialog == nil && self.alert == nil
         }
         webView.navigationDelegate = webDelegate
         webView.uiDelegate = webDelegate
@@ -133,6 +135,17 @@ final class BrowserViewModel: ObservableObject {
         self.isActive = isActive
     }
 
+    func beginAssistantPresentation() {
+        guard !isClosed else { return }
+        isShowingAssistant = true
+        deactivate()
+    }
+
+    func endAssistantPresentation(isActive: Bool) {
+        isShowingAssistant = false
+        self.isActive = isActive
+    }
+
     func navigate(_ input: String) {
         switch URLNormalizer.resolve(input, searchProvider: library.settings.searchProvider) {
         case .empty:
@@ -152,6 +165,7 @@ final class BrowserViewModel: ObservableObject {
             showNotice("Duo Browser can only load HTTP and HTTPS webpages.")
             return
         }
+        navigationID = UUID()
         cancelPageDialog()
         requestedURL = url
         navigationError = nil
@@ -162,6 +176,7 @@ final class BrowserViewModel: ObservableObject {
 
     func goToStartPage() {
         guard !isClosed else { return }
+        navigationID = UUID()
         cancelPageDialog()
         bridge.navigationStarted()
         webView.stopLoading()
@@ -189,6 +204,7 @@ final class BrowserViewModel: ObservableObject {
             showNotice("The new window did not request a supported website.")
             return
         }
+        navigationID = UUID()
         showingStartPage = false
         navigationError = nil
         requestedURL = url
@@ -202,6 +218,7 @@ final class BrowserViewModel: ObservableObject {
             showNotice("The DuoKit demo is missing from this build.")
             return
         }
+        navigationID = UUID()
         showingStartPage = false
         navigationError = nil
         requestedURL = url
@@ -211,6 +228,7 @@ final class BrowserViewModel: ObservableObject {
 
     func goBack() {
         guard !isClosed else { return }
+        navigationID = UUID()
         if showingStartPage, currentURL != nil {
             showingStartPage = false
             onStateChanged?()
@@ -221,12 +239,14 @@ final class BrowserViewModel: ObservableObject {
 
     func goForward() {
         guard !isClosed else { return }
+        navigationID = UUID()
         showingStartPage = false
         webView.goForward()
     }
 
     func reload() {
         guard !isClosed else { return }
+        navigationID = UUID()
         if let navigationError, let url = navigationError.url {
             load(url)
         } else if !showingStartPage {
@@ -238,12 +258,14 @@ final class BrowserViewModel: ObservableObject {
 
     func stop() {
         guard !isClosed else { return }
+        navigationID = UUID()
         webView.stopLoading()
         webView.scrollView.refreshControl?.endRefreshing()
     }
 
     func toggleContentMode() {
         guard !isClosed else { return }
+        navigationID = UUID()
         requestsDesktopSite.toggle()
         webView.configuration.defaultWebpagePreferences.preferredContentMode =
             requestsDesktopSite ? .desktop : .mobile
@@ -295,6 +317,7 @@ final class BrowserViewModel: ObservableObject {
 
     func navigationWillStart() {
         guard !isClosed else { return }
+        navigationID = UUID()
         cancelPageDialog()
         bridge.navigationStarted()
         navigationError = nil
@@ -343,6 +366,7 @@ final class BrowserViewModel: ObservableObject {
 
     func contentProcessDidTerminate() {
         guard !isClosed else { return }
+        navigationID = UUID()
         cancelPageDialog()
         bridge.navigationStarted()
         webView.scrollView.refreshControl?.endRefreshing()
@@ -391,6 +415,7 @@ final class BrowserViewModel: ObservableObject {
     func tearDown() {
         guard !isClosed else { return }
         isClosed = true
+        navigationID = UUID()
         deactivate()
         bridge.tearDown()
         observations.removeAll()

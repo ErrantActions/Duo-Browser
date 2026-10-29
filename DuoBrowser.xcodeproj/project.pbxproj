@@ -45,6 +45,11 @@
         A0000000000000000000011D = {isa = PBXBuildFile; fileRef = B0000000000000000000011D; };
         A0000000000000000000011E = {isa = PBXBuildFile; fileRef = B0000000000000000000011E; };
         A0000000000000000000011F = {isa = PBXBuildFile; fileRef = B0000000000000000000011F; };
+        A00000000000000000000120 = {isa = PBXBuildFile; fileRef = B00000000000000000000120; };
+        A00000000000000000000121 = {isa = PBXBuildFile; fileRef = B00000000000000000000121; };
+        A00000000000000000000122 = {isa = PBXBuildFile; fileRef = B00000000000000000000122; };
+        A00000000000000000000123 = {isa = PBXBuildFile; fileRef = B00000000000000000000123; };
+        A00000000000000000000124 = {isa = PBXBuildFile; fileRef = B00000000000000000000124; };
         A00000000000000000000110 = {isa = PBXBuildFile; fileRef = B00000000000000000000110; };
         A00000000000000000000111 = {isa = PBXBuildFile; fileRef = B00000000000000000000111; };
         A00000000000000000000112 = {isa = PBXBuildFile; fileRef = B00000000000000000000112; };
@@ -105,6 +110,11 @@
         B0000000000000000000011D = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoNativeToolbar.swift; sourceTree = "<group>"; };
         B0000000000000000000011E = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoCapabilityPresentation.swift; sourceTree = "<group>"; };
         B0000000000000000000011F = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserAddressEditor.swift; sourceTree = "<group>"; };
+        B00000000000000000000120 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskDuoContext.swift; sourceTree = "<group>"; };
+        B00000000000000000000121 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskDuoModel.swift; sourceTree = "<group>"; };
+        B00000000000000000000122 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskDuoView.swift; sourceTree = "<group>"; };
+        B00000000000000000000123 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskDuoTests.swift; sourceTree = "<group>"; };
+        B00000000000000000000124 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = AskDuoContext.js; sourceTree = "<group>"; };
         B00000000000000000000110 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = duo.js; sourceTree = "<group>"; };
         B00000000000000000000111 = {isa = PBXFileReference; lastKnownFileType = folder; path = Demo; sourceTree = "<group>"; };
         B00000000000000000000112 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -160,6 +170,9 @@
                 B0000000000000000000011B,
                 B0000000000000000000011E,
                 B0000000000000000000011F,
+                B00000000000000000000120,
+                B00000000000000000000121,
+                B00000000000000000000122,
             );
             path = Browser;
             sourceTree = "<group>";
@@ -172,13 +185,13 @@
         };
         C00000000000000000000006 = {
             isa = PBXGroup;
-            children = (B0000000000000000000000E, B00000000000000000000111, B00000000000000000000112, B00000000000000000000114);
+            children = (B0000000000000000000000E, B00000000000000000000111, B00000000000000000000112, B00000000000000000000114, B00000000000000000000124);
             path = Resources;
             sourceTree = "<group>";
         };
         C00000000000000000000007 = {
             isa = PBXGroup;
-            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A);
+            children = (B0000000000000000000000F, B0000000000000000000010E, B0000000000000000000010F, B00000000000000000000116, B0000000000000000000011A, B00000000000000000000123);
             path = DuoBrowserTests;
             sourceTree = "<group>";
         };
@@ -292,7 +305,7 @@
         F00000000000000000000003 = {
             isa = PBXResourcesBuildPhase;
             buildActionMask = 2147483647;
-            files = (A00000000000000000000110, A00000000000000000000111, A00000000000000000000112, A00000000000000000000114);
+            files = (A00000000000000000000110, A00000000000000000000111, A00000000000000000000112, A00000000000000000000114, A00000000000000000000124);
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000006 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
@@ -338,13 +351,16 @@
                 A0000000000000000000011E,
                 A0000000000000000000011F,
                 A0000000000000000000011D,
+                A00000000000000000000120,
+                A00000000000000000000121,
+                A00000000000000000000122,
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000004 = {
             isa = PBXSourcesBuildPhase;
             buildActionMask = 2147483647;
-            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A);
+            files = (A0000000000000000000000F, A0000000000000000000010E, A0000000000000000000010F, A00000000000000000000116, A0000000000000000000011A, A00000000000000000000123);
             runOnlyForDeploymentPostprocessing = 0;
         };
         F00000000000000000000101 = {

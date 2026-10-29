@@ -41,6 +41,10 @@ struct BrowserToolbar: View {
         .sheet(isPresented: $showsMenu, onDismiss: completeMenuAction) {
             NavigationStack {
                 List {
+                    Section {
+                        menuAction("Ask Duo", icon: "sparkles") { present(.assistant) }
+                            .accessibilityIdentifier("browser.askduo")
+                    }
                     Section("Tabs") {
                         menuAction("Forward", icon: "chevron.forward", action: model.goForward)
                             .disabled(!model.canGoForward || model.showingStartPage)

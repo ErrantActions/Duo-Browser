@@ -81,7 +81,7 @@ defaults() {
 export -f xcodebuild xcrun mkdir defaults
 exec bash .github/scripts/test-ios.sh "$SUITE"
 `;
-    for (const suite of ["unit", "all", "duo-panel", "invalid"]) {
+    for (const suite of ["unit", "all", "duo-panel", "ask-duo", "invalid"]) {
         const result = cp.spawnSync(bash, ["-c", fixture], {
             cwd: root, encoding: "utf8",
             env: { ...process.env, SUITE: suite, EXPECTED_IOS_SDK: "27.1" }
@@ -105,6 +105,9 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
             if (suite === "unit") assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             else if (suite === "duo-panel") {
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation>/);
+                assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
+            } else if (suite === "ask-duo") {
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoRequiresConsentAndConfirmsNavigation>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             } else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
         }

@@ -3,6 +3,102 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testAskDuoRequiresConsentAndConfirmsNavigation() throws {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        app.launch()
+        openMenu(in: app)
+        app.buttons["New Private Tab"].tap()
+        openMenu(in: app)
+        app.buttons["browser.askduo"].tap()
+        XCTAssertTrue(app.navigationBars["Ask Duo"].waitForExistence(timeout: 10))
+        let blocked = app.staticTexts["askduo.page.blocked"]
+        XCTAssertTrue(blocked.waitForExistence(timeout: 10))
+        XCTAssertTrue(blocked.label.contains("Private Browsing"))
+        XCTAssertFalse(app.buttons["askduo.capture"].exists)
+        app.navigationBars["Ask Duo"].buttons["Done"].tap()
+        openMenu(in: app)
+        app.buttons["New Tab"].tap()
+        let demo = app.buttons["Explore DuoKit Demo"]
+        let start = app.scrollViews["browser.start-page"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        for _ in 0..<4 {
+            if demo.exists && demo.isHittable { break }
+            start.swipeUp()
+        }
+        XCTAssertTrue(demo.isHittable)
+        demo.tap()
+        XCTAssertTrue(app.webViews.buttons["Install Duo Panel"].waitForExistence(timeout: 15))
+        openMenu(in: app)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
+        app.buttons["browser.askduo"].tap()
+        XCTAssertTrue(app.navigationBars["Ask Duo"].waitForExistence(timeout: 10))
+        let available = (app.staticTexts["askduo.model.status"].value as? String) == "available"
+        XCTAssertFalse(app.staticTexts["askduo.context"].exists)
+        let capture = app.buttons["askduo.capture"]
+        revealAssistant(capture, in: app)
+        capture.tap()
+        let excerpt = app.staticTexts["askduo.context"]
+        XCTAssertTrue(app.buttons["Read Page Again"].waitForExistence(timeout: 15))
+        revealAssistant(excerpt, in: app)
+        XCTAssertTrue(excerpt.exists)
+        XCTAssertTrue(excerpt.label.contains("DuoKit Demo"))
+        XCTAssertTrue(excerpt.label.contains("Browser checks"))
+        XCTAssertFalse(excerpt.label.contains("ASK_DUO_INPUT_SENTINEL"))
+        XCTAssertFalse(excerpt.label.contains("ASK_DUO_FORM_SENTINEL"))
+        XCTAssertFalse(excerpt.label.contains("ASK_DUO_EDITABLE_SENTINEL"))
+        print("Ask Duo native verification: consentedExcerpt=true, excludedFields=true, onDeviceModelAvailable=\(available), liveGenerationExercised=\(available)")
+        if available {
+            let question = app.descendants(matching: .any).matching(identifier: "askduo.question").firstMatch
+            revealAssistant(question, in: app)
+            question.tap()
+            question.typeText("What is this demo about?")
+            let ask = app.buttons["askduo.ask"]
+            revealAssistant(ask, in: app)
+            ask.tap()
+            let finished = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "value == %@", "answered"),
+                object: app.staticTexts["askduo.request.status"]
+            )
+            XCTAssertEqual(XCTWaiter.wait(for: [finished], timeout: 75), .completed)
+            revealAssistant(app.staticTexts["askduo.answer"], in: app)
+            XCTAssertFalse(app.staticTexts["askduo.answer"].label.isEmpty)
+        } else {
+            let ask = app.buttons["askduo.ask"]
+            revealAssistant(ask, in: app)
+            XCTAssertFalse(ask.isEnabled)
+        }
+        let link = app.buttons["askduo.link.1"]
+        revealAssistant(link, in: app)
+        link.tap()
+        XCTAssertTrue(app.buttons["askduo.confirm.open"].waitForExistence(timeout: 10))
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(app.navigationBars["Ask Duo"].exists)
+        link.tap()
+        app.buttons["askduo.confirm.open"].tap()
+        XCTAssertTrue(app.navigationBars["Ask Duo"].waitForNonExistence(timeout: 15))
+        assertLoadedHTTPSPage(in: app, host: "example.com")
+    }
+
+    @MainActor
+    private func revealAssistant(_ element: XCUIElement, in app: XCUIApplication) {
+        let list = app.collectionViews["askduo.content"]
+        XCTAssertTrue(list.waitForExistence(timeout: 10))
+        for _ in 0..<16 {
+            if element.exists && element.isHittable { return }
+            let frame = element.exists ? element.frame : .zero
+            let down = frame.height > 0 && frame.midY < list.frame.minY
+            list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.3 : 0.7))
+                .press(forDuration: 0.05, thenDragTo: list.coordinate(
+                    withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.6 : 0.4)
+                ))
+        }
+        XCTAssertTrue(element.isHittable)
+    }
+
+    @MainActor
     func testDemoPanelEventsAndTabLifecycle() {
         continueAfterFailure = false
         let app = XCUIApplication()
