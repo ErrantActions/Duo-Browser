@@ -212,6 +212,8 @@ Apple processing subsequently completed with **VALID** for build 1, ID
 `79ca0ac0-fc8f-435d-bcab-e881c447a631`. Apple's beta detail currently reports
 **MISSING_EXPORT_COMPLIANCE**. The owner was unavailable to confirm that answer;
 no encryption exemption or legal declaration was submitted automatically.
+In a subsequent lookup, Apple reported `usesNonExemptEncryption=false` for
+build 1; the agent did not submit that answer.
 
 Next, the owner must resolve export compliance in App Store Connect. Then assign
 the processed build to Owner Testing and verify actual phone installation and
@@ -229,8 +231,22 @@ The subsequent native Duo toolbar correction was independently verified in
 [focused UI run 40802771417](https://github.com/ErrantActions/Duo-Browser/actions/runs/40802771417):
 one test passed, zero failed. It measured a 466-point window, 382-point webpage,
 and a 38-point native action beginning at x=399, then verified website
-Previous/Next events, browser Refresh, and site clearing. The newer toolbar
-has not yet been claimed as delivered by the first-build checkpoint above.
+Previous/Next events, browser Refresh, and site clearing.
+
+### Verified native-toolbar delivery: version 1.0, build 1.0.1
+
+[Run 40803693515](https://github.com/ErrantActions/Duo-Browser/actions/runs/40803693515)
+successfully delivered commit `98a53f730a9e49e1f8b7adbc38ea8c19daaf6138`.
+All 62 native unit tests passed, followed by successful archive, export, and
+Apple upload at approximately 9:15 PM US Central on October 28, 2026.
+The focused toolbar UI regression was run separately on the same application
+code; it was not duplicated in the upload job.
+
+The immediate Apple API lookup had not yet listed build 1.0.1. Processing,
+compliance, assignment, and actual installation of this update remain separate
+unverified checkpoints. Do not upload another copy just because processing is
+asynchronous. Test the native strip using build **1.0.1**, not the earlier build
+1 with bottom-only controls.
 
 After an upload:
 
