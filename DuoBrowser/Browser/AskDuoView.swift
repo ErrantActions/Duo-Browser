@@ -289,6 +289,8 @@ struct AskDuoView: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
         .background(.regularMaterial)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("askduo.composer")
     }
 
     private func questionBubble(_ question: String) -> some View {

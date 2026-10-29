@@ -54,7 +54,10 @@ final class BrowserUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [expanded], timeout: 10), .completed)
         let summary = app.buttons["askduo.quick.summary"]
         revealAssistant(summary, in: app)
-        print("Ask Duo summary target: x=\(summary.frame.minX), y=\(summary.frame.minY), width=\(summary.frame.width), height=\(summary.frame.height), expandedHeight=\(surface.frame.height)")
+        let composer = app.otherElements["askduo.composer"]
+        XCTAssertTrue(composer.exists)
+        XCTAssertLessThanOrEqual(summary.frame.maxY, composer.frame.minY)
+        print("Ask Duo summary target: x=\(summary.frame.minX), y=\(summary.frame.minY), width=\(summary.frame.width), height=\(summary.frame.height), composerY=\(composer.frame.minY), expandedHeight=\(surface.frame.height)")
         summary.tap()
         let approve = app.buttons["askduo.approve"]
         print("Ask Duo quick prompt: approvedButtonCount=\(app.buttons.matching(identifier: "askduo.approve").count), pageAttached=\(app.buttons["Read Page Again"].exists), usePage=\(app.switches["askduo.usepage"].value as? String ?? "missing"), status=\(app.staticTexts["askduo.request.status"].value as? String ?? "missing"), errorVisible=\(app.staticTexts["askduo.error"].exists), notice=\(app.staticTexts["askduo.notice"].exists ? app.staticTexts["askduo.notice"].label : "none")")
@@ -393,22 +396,32 @@ final class BrowserUITests: XCTestCase {
 
     @MainActor
     private func revealAssistant(_ element: XCUIElement, in app: XCUIApplication) {
-        revealControl(element, in: app.collectionViews["askduo.content"])
+        revealControl(element, in: app.collectionViews["askduo.content"], occluder: app.otherElements["askduo.composer"])
     }
 
     @MainActor
-    private func revealControl(_ element: XCUIElement, in scroll: XCUIElement) {
+    private func revealControl(_ element: XCUIElement, in scroll: XCUIElement, occluder: XCUIElement? = nil) {
         XCTAssertTrue(scroll.waitForExistence(timeout: 10))
         for _ in 0..<16 {
-            if element.exists && element.isHittable { return }
             let frame = element.exists ? element.frame : .zero
-            let down = frame.height > 0 && frame.midY < scroll.frame.minY
-            scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.3 : 0.7))
-                .press(forDuration: 0.05, thenDragTo: scroll.coordinate(
-                    withNormalizedOffset: CGVector(dx: 0.5, dy: down ? 0.6 : 0.4)
+            let scrollFrame = scroll.frame
+            var visibleBottom = scrollFrame.maxY
+            if let occluder, occluder.exists { visibleBottom = min(visibleBottom, occluder.frame.minY) }
+            let visibleHeight = max(0, visibleBottom - scrollFrame.minY)
+            if element.exists && element.isHittable {
+                if let occluder, occluder.exists,
+                   occluder.descendants(matching: .any).matching(identifier: element.identifier).firstMatch.exists { return }
+                // XCTest may report a row behind the composer as hittable.
+                if occluder == nil || (frame.minY >= scrollFrame.minY && frame.maxY <= visibleBottom) { return }
+            }
+            let down = frame.height > 0 && frame.midY < scrollFrame.minY
+            let origin = scroll.coordinate(withNormalizedOffset: .zero)
+            origin.withOffset(CGVector(dx: scrollFrame.width * 0.5, dy: visibleHeight * (down ? 0.3 : 0.7)))
+                .press(forDuration: 0.05, thenDragTo: origin.withOffset(
+                    CGVector(dx: scrollFrame.width * 0.5, dy: visibleHeight * (down ? 0.6 : 0.4))
                 ))
         }
-        XCTAssertTrue(element.isHittable)
+        XCTFail("The control could not be revealed in the visible viewport.")
     }
 
     @MainActor
