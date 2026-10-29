@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
@@ -53,7 +54,7 @@ final class BrowserUITests: XCTestCase {
     }
 
     @MainActor
-    func testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation() {
+    func testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation() throws {
         continueAfterFailure = false
         executionTimeAllowance = 180
         XCUIDevice.shared.orientation = .portrait
@@ -95,6 +96,8 @@ final class BrowserUITests: XCTestCase {
         XCTAssertFalse(app.buttons["duo.controls.open"].exists)
         let addressButton = app.buttons["browser.address.open"]
         XCTAssertTrue(addressButton.exists)
+        XCTAssertEqual(addressButton.label, "URL")
+        XCTAssertLessThanOrEqual(addressButton.frame.width, 64)
         XCTAssertFalse(app.textFields["Address and search"].exists)
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)
         for button in [addressButton, app.buttons["duo.browser.back"], app.buttons["duo.browser.refresh"], app.buttons["browser.tabs"], app.buttons["Browser menu"]] {
@@ -106,6 +109,23 @@ final class BrowserUITests: XCTestCase {
         }
         XCTAssertEqual(app.buttons.matching(identifier: "Browser menu").count, 1)
         captureScreenshot(app, name: "Full Safe Viewport With Native Duo Edge Controls")
+
+        let background = app.webViews.buttons["Toggle Page Background"]
+        for (name, rgb) in [("Teal", [224, 245, 236]), ("Navy", [20, 42, 61])] {
+            for _ in 0..<4 {
+                if background.exists && background.isHittable { break }
+                webpage.swipeUp()
+            }
+            XCTAssertTrue(background.isHittable)
+            background.tap()
+            XCTAssertTrue(app.webViews.staticTexts["Page background: \(name)"].waitForExistence(timeout: 10))
+            let image = try XCTUnwrap(app.screenshot().image.cgImage)
+            for x in [webpage.frame.minX + 2, webpage.frame.maxX + 2, app.frame.maxX - 2] {
+                let actual = try pixel(at: CGPoint(x: x, y: webpage.frame.midY), in: image, window: app.frame)
+                print("Duo background: variant=\(name), sampleX=\(x), red=\(actual[0]), green=\(actual[1]), blue=\(actual[2])")
+                for channel in 0..<3 { XCTAssertEqual(Double(actual[channel]), Double(rgb[channel]), accuracy: 8) }
+            }
+        }
 
         next.tap()
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
@@ -125,21 +145,24 @@ final class BrowserUITests: XCTestCase {
         print("Duo address bubble: addressX=\(addressButton.frame.minX), addressY=\(addressButton.frame.minY), addressHeight=\(addressButton.frame.height), fieldX=\(bubble.frame.minX), fieldY=\(bubble.frame.minY), fieldWidth=\(bubble.frame.width), fieldHeight=\(bubble.frame.height)")
         XCTAssertFalse(bubble.frame.intersects(addressButton.frame))
         XCTAssertLessThan(abs(bubble.frame.midY - addressButton.frame.midY), 44)
+        let connectedImage = try XCTUnwrap(app.screenshot().image.cgImage)
+        let connected = try pixel(
+            at: CGPoint(x: webpage.frame.maxX + 1, y: bubble.frame.midY),
+            in: connectedImage, window: app.frame
+        )
+        XCTAssertGreaterThan(abs(Int(connected[0]) - 20) + abs(Int(connected[1]) - 42) + abs(Int(connected[2]) - 61), 60)
+        print("Duo connected bubble: red=\(connected[0]), green=\(connected[1]), blue=\(connected[2])")
         app.buttons["Clear address"].tap()
         bubble.typeText("javascript:alert(1)")
         app.buttons["browser.address.bubble.go"].tap()
         XCTAssertTrue(app.staticTexts["browser.address.validation"].waitForExistence(timeout: 5))
         XCTAssertTrue(bubble.exists)
         app.buttons["Clear address"].tap()
-        let draft = "https://example.com/draft"
-        bubble.typeText(draft)
+        bubble.typeText("https://example.com/draft")
         addressButton.tap()
-        let editor = app.textFields["browser.address.editor"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 10))
-        XCTAssertEqual(editor.value as? String, draft)
-        XCTAssertFalse(bubble.exists)
-        XCTAssertEqual(app.buttons.matching(identifier: "Clear address").count, 1)
-        app.navigationBars["Address and Search"].buttons["Cancel"].tap()
+        XCTAssertTrue(bubble.waitForNonExistence(timeout: 10))
+        XCTAssertFalse(app.navigationBars["Address and Search"].exists)
+        XCTAssertFalse(app.textFields["browser.address.editor"].exists)
         XCTAssertTrue(next.waitForExistence(timeout: 10))
         XCTAssertTrue(next.isEnabled)
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].exists)
@@ -361,11 +384,26 @@ final class BrowserUITests: XCTestCase {
         address.tap()
         app.buttons["Clear address"].tap()
         address.typeText(input)
-        if app.navigationBars["Address and Search"].exists {
-            app.navigationBars["Address and Search"].buttons["Go"].tap()
-        } else {
-            address.typeText("\n")
+        address.typeText("\n")
+    }
+
+    private func pixel(at point: CGPoint, in image: CGImage, window: CGRect) throws -> [UInt8] {
+        let rect = CGRect(
+            x: ((point.x - window.minX) * CGFloat(image.width) / window.width).rounded(.down),
+            y: ((point.y - window.minY) * CGFloat(image.height) / window.height).rounded(.down),
+            width: 1, height: 1
+        )
+        let cropped = try XCTUnwrap(image.cropping(to: rect))
+        var result = [UInt8](repeating: 0, count: 4)
+        try result.withUnsafeMutableBytes { bytes in
+            let context = try XCTUnwrap(CGContext(
+                data: bytes.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+            ))
+            context.draw(cropped, in: CGRect(x: 0, y: 0, width: 1, height: 1))
         }
+        return Array(result.prefix(3))
     }
 
     @MainActor

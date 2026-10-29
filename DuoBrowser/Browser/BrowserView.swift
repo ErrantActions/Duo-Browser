@@ -137,7 +137,6 @@ private struct BrowserTabView: View {
     @State private var sharedPage: SharedPage?
     @State private var showsCompactControls = false
     @State private var showsAddressBubble = false
-    @State private var showsAddressEditor = false
     @State private var addressDraft = ""
     @State private var addressBubbleHeight: CGFloat = 60
     @State private var pendingAddress: String?
@@ -146,8 +145,6 @@ private struct BrowserTabView: View {
     private var showsSiteControls: Bool {
         model.bridge.panel != nil && !model.bridge.browserControlsVisible
     }
-
-    private var isEditingAddress: Bool { showsAddressBubble || showsAddressEditor }
 
     var body: some View {
         Group {
@@ -169,16 +166,6 @@ private struct BrowserTabView: View {
         .onChange(of: showsSiteControls) { _, available in
             if !available { showsCompactControls = false }
         }
-        .sheet(isPresented: $showsAddressEditor, onDismiss: completeAddressEditing) {
-            BrowserAddressEditor(
-                address: $addressDraft, searchProvider: model.library.settings.searchProvider,
-                submit: {
-                    pendingAddress = $0
-                    showsAddressEditor = false
-                },
-                cancel: { showsAddressEditor = false }
-            )
-        }
         .sheet(isPresented: $showsCompactControls, onDismiss: model.bridge.cancelPendingCapabilities) {
             NavigationStack {
                 siteControls
@@ -193,7 +180,7 @@ private struct BrowserTabView: View {
             .accessibilityIdentifier("duo.panel.sheet")
             .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: showsCompactControls))
         }
-        .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: !showsCompactControls && !isEditingAddress))
+        .modifier(DuoCapabilityPresentation(bridge: model.bridge, enabled: !showsCompactControls && !showsAddressBubble))
         .sheet(item: $sharedPage, onDismiss: { model.isActive = true }) { ShareSheet(url: $0.url) }
         .sheet(item: $model.pageDialog, onDismiss: model.cancelPageDialog) { dialog in
             PageDialogView(dialog: dialog, complete: model.completePageDialog)
@@ -219,16 +206,15 @@ private struct BrowserTabView: View {
             }
         }
         .onDisappear {
-            if isEditingAddress {
+            if showsAddressBubble {
                 showsAddressBubble = false
-                showsAddressEditor = false
                 pendingAddress = nil
                 addressDraft = ""
                 model.endAddressEditing(isActive: false)
             }
         }
         .onChange(of: showsAddressBubble) { _, visible in
-            if !visible && !showsAddressEditor { completeAddressEditing() }
+            if !visible { completeAddressEditing() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { showsAddressBubble = false }
@@ -249,7 +235,7 @@ private struct BrowserTabView: View {
                 GeometryReader { geometry in
                     BrowserAddressEditor(
                         address: $addressDraft, searchProvider: model.library.settings.searchProvider,
-                        compact: true,
+                        connectedExtension: max(0, addressFrame.maxX - geometry.frame(in: .global).maxX + 16),
                         submit: {
                             pendingAddress = $0
                             showsAddressBubble = false
@@ -351,7 +337,6 @@ private struct BrowserTabView: View {
     private func openAddress() {
         if showsAddressBubble {
             showsAddressBubble = false
-            showsAddressEditor = true
         } else {
             model.beginAddressEditing()
             addressDraft = model.addressText

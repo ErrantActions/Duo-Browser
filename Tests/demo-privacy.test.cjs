@@ -11,7 +11,7 @@ function createDemo(available = true) {
     const panels = [];
     const document = {
         querySelector(selector) {
-            if (!elements.has(selector)) elements.set(selector, { textContent: "" });
+            if (!elements.has(selector)) elements.set(selector, { textContent: "", style: {} });
             return elements.get(selector);
         }
     };
@@ -73,4 +73,17 @@ test("HTML navigation remains functional outside Duo Browser", () => {
     elements.get("#html-previous").onclick();
     assert.equal(elements.get("#record-position").textContent, "Record 2 of 3");
     assert.equal(panels.length, 0);
+});
+
+test("page background checks switch readable light and dark colors without native requests", () => {
+    const { elements, panels, requests } = createDemo(false);
+    elements.get("#background").onclick();
+    assert.equal(elements.get("body").style.backgroundColor, "rgb(224, 245, 236)");
+    assert.equal(elements.get("#background-status").textContent, "Page background: Teal");
+    elements.get("#background").onclick();
+    assert.equal(elements.get("body").style.backgroundColor, "rgb(20, 42, 61)");
+    assert.equal(elements.get("body").style.color, "#f2f7ff");
+    assert.equal(elements.get("#background-status").textContent, "Page background: Navy");
+    assert.equal(panels.length, 0);
+    assert.equal(requests.length, 0);
 });

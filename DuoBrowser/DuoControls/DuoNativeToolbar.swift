@@ -73,7 +73,10 @@ private struct DuoNativeToolbarContent<Content: View>: View {
 
     var body: some View {
         content(usesVerticalBar, addressFrame)
+            .background(Color(uiColor: model.browserBackgroundColor).ignoresSafeArea(.container))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackgroundVisibility(usesVerticalBar ? .hidden : .automatic,
+                                        for: .navigationBar, .bottomBar)
             .toolbarVisibility(usesVerticalBar || activePanel != nil ? .visible : .hidden,
                                for: .navigationBar, .bottomBar)
             .toolbar {
@@ -94,16 +97,17 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                                 } else {
                                     Image(systemName: model.isPrivate ? "hand.raised" : (model.isSecure ? "lock" : "globe"))
                                 }
-                                Text(addressTitle)
+                                Text("URL")
                                     .font(.caption2)
                                     .lineLimit(1)
+                                    .minimumScaleFactor(0.5)
                             }
-                            .frame(maxWidth: 64)
+                            .frame(width: 44, height: 44)
                         }
-                        .accessibilityLabel("Address and search")
+                        .accessibilityLabel("URL")
                         .accessibilityValue(addressValue)
                         .accessibilityHint(addressExpanded
-                            ? "Open the full address editor with your current draft"
+                            ? "Close the address bubble without navigating"
                             : "Expand an address and search bubble")
                         .accessibilityIdentifier("browser.address.open")
                         .onGeometryChange(for: CGRect.self) { geometry in
@@ -111,6 +115,7 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         } action: { addressFrame = $0 }
                     }
                     .axisBehavior(.verticalPreferred)
+                    .sharedBackgroundVisibility(addressExpanded ? .hidden : .automatic)
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         Button {
                             if model.isLoading { model.stop() } else { model.reload() }

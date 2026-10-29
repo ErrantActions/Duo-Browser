@@ -25,6 +25,13 @@ This app currently declares no custom signing entitlements; camera/microphone/
 location purpose strings and the used-API privacy manifest are checked in.
 Do not add push, app-group, iCloud, or other capabilities without a feature need.
 Export-compliance answers remain an owner decision; no exemption is fabricated.
+The owner explicitly confirmed that this app uses only exempt Apple-provided
+encryption. `Info.plist` now records `ITSAppUsesNonExemptEncryption=false` as
+a Boolean, and the archive check requires that exact declaration.
+Apple documents that including it avoids the repeated per-build questionnaire.
+No France-distribution answer, store-territory change, or invented export
+compliance code is added. Reassess the declaration before introducing custom
+or non-exempt cryptography or another SDK.
 
 ## Standard runner and cost
 
@@ -62,9 +69,11 @@ For an edge-control change, `test_scope=duo-panel` selects only the focused
 native-strip geometry/navigation UI regression. It checks the collapsed
 address on ordinary pages, absence of duplicate bottom chrome, a webpage
 height above 85% of the window, no overlap with core edge buttons, address
-two-stage bubble/full editing with draft preservation, keyboard focus,
+connected URL-bubble toggling without a full sheet, keyboard focus,
 invalid-input reporting, outside-tap cancellation, unique browser controls,
-submission, and website navigation/refresh/clear. UI runs disable the simulator's
+submission, and website navigation/refresh/clear. Screenshot pixels check live
+light/dark page colors across the webpage, seam, and outer rail, plus the
+bubble's material connection. UI runs disable the simulator's
 hardware-keyboard connection so the on-screen keyboard is actually exercised.
 It does not duplicate the unit suite that TestFlight will run and does not
 claim full UI acceptance.

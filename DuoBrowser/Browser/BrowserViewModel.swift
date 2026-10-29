@@ -23,6 +23,7 @@ final class BrowserViewModel: ObservableObject {
     @Published private(set) var canGoBack = false
     @Published private(set) var canGoForward = false
     @Published private(set) var hasOnlySecureContent = false
+    @Published private(set) var pageBackgroundColor = UIColor.systemBackground
     @Published private(set) var showingStartPage = true
     @Published private(set) var requestsDesktopSite: Bool
     @Published private(set) var pageZoom = 1.0
@@ -48,6 +49,12 @@ final class BrowserViewModel: ObservableObject {
     var isSecure: Bool {
         !showingStartPage && navigationError == nil
             && currentURL?.scheme?.lowercased() == "https" && hasOnlySecureContent
+    }
+
+    var browserBackgroundColor: UIColor {
+        if showingStartPage { return .systemGroupedBackground }
+        if navigationError != nil { return .systemBackground }
+        return pageBackgroundColor
     }
 
     var shareURL: URL? {
@@ -417,6 +424,9 @@ final class BrowserViewModel: ObservableObject {
             },
             webView.observe(\.hasOnlySecureContent, options: [.new]) { [weak self] _, _ in
                 Task { @MainActor [weak self] in self?.synchronizeState() }
+            },
+            webView.observe(\.underPageBackgroundColor, options: [.initial, .new]) { [weak self] _, _ in
+                Task { @MainActor [weak self] in self?.synchronizeState() }
             }
         ]
     }
@@ -430,6 +440,7 @@ final class BrowserViewModel: ObservableObject {
         canGoBack = webView.canGoBack
         canGoForward = webView.canGoForward
         hasOnlySecureContent = webView.hasOnlySecureContent
+        pageBackgroundColor = webView.underPageBackgroundColor ?? .systemBackground
         if !isLoading {
             webView.scrollView.refreshControl?.endRefreshing()
         }

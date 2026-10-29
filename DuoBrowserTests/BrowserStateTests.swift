@@ -1,3 +1,5 @@
+import Combine
+import UIKit
 import WebKit
 import XCTest
 @testable import DuoBrowser
@@ -61,6 +63,26 @@ final class BrowserStateTests: XCTestCase {
         XCTAssertFalse(tab.isActive)
         tab.isActive = true
         XCTAssertTrue(tab.isActive)
+    }
+
+    func testBackgroundTracksWebKitColorChangesWithoutReplacingTheWebView() async throws {
+        let manager = BrowserTabManager(library: library())
+        defer { for tab in manager.tabs { tab.tearDown() } }
+        let tab = try XCTUnwrap(manager.selectedTab)
+        let webView = tab.webView
+        XCTAssertTrue(tab.browserBackgroundColor.isEqual(UIColor.systemGroupedBackground))
+        for color in [UIColor.red, UIColor.blue] {
+            let changed = expectation(description: "WebKit background color updated")
+            let observation = tab.$pageBackgroundColor
+                .first(where: { $0.isEqual(color) })
+                .sink { _ in changed.fulfill() }
+            tab.webView.underPageBackgroundColor = color
+            await fulfillment(of: [changed], timeout: 5)
+            observation.cancel()
+            XCTAssertTrue(tab.pageBackgroundColor.isEqual(color))
+            XCTAssertTrue(tab.webView === webView)
+        }
+        XCTAssertTrue(tab.browserBackgroundColor.isEqual(UIColor.systemGroupedBackground))
     }
 
     func testRestoredURLsSurviveSavingBeforeWebKitLoads() throws {

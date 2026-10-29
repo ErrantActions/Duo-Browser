@@ -21,25 +21,33 @@ core browser navigation, collapsed address, tabs, and the shared browser menu as
 native edge items even on sites without DuoKit. Nonvertical/older layouts retain
 the normal bottom chrome.
 
-`BrowserAddressEditor` shares its input/validation between a compact floating
-bubble and the full sheet. The first native address-icon tap expands the bubble
-and focuses the keyboard; the second tap on that same icon promotes the shared
-draft to the full editor. The toolbar button reports its global frame so the
-bubble is aligned beside it inside the webpage's safe viewport, not under
-the native rail. No second launcher or permanent bottom chrome is created.
+`BrowserAddressEditor` edits a tab-local draft in a compact bubble.
+The native button has a fixed **URL** caption and a 44-point layout box;
+the real host/security/private state remain in its accessibility value.
+The first tap expands the bubble and focuses the keyboard; the second tap on
+the same icon closes it without navigating or opening another sheet.
+The toolbar button reports its global frame so the input remains inside the
+webpage's safe viewport. Its noninteractive material background extends to
+enclose that same native icon; the icon's separate shared-glass background is
+hidden while expanded. No second launcher or permanent bottom chrome is created.
 The shared URL normalizer validates the draft; submission is applied only after dismissal so external-app
 confirmation or navigation errors do not compete with the editor presentation.
 Cancel leaves the page intact. Address editing suspends website capability UI
 even if scene activation attempts to reactivate the tab; dismissal resumes only
 the selected, active tab. The existing WebKit instance and form/scroll state are
-preserved. Bubble-to-sheet promotion keeps capability suspension continuous.
+preserved.
 While the bubble is open, a webpage tap dismisses it without delivering a site
 click; other native actions are temporarily disabled, but the same address icon
-remains available to open the full editor. Backgrounding or leaving vertical
+remains available to close the bubble. Backgrounding or leaving vertical
 layout cancels the bubble. No browser Back/Refresh controls are repeated in the
 horizontal website toolbar because the regular browser chrome already owns them.
-The webpage relies on native container safe areas, not
-`ignoresSafeArea` behind toolbar buttons.
+The webpage relies on native container safe areas. A KVO observation of
+`WKWebView.underPageBackgroundColor` follows WebKit's resolved page color,
+including CSS updates, without evaluating page JavaScript. Only that color
+layer ignores container safe areas behind the native rail; the rail's base
+background is transparent, while normal item glass is preserved.
+Start/error pages use their own system background colors rather than an old
+website's color. Neither the webpage nor its hit targets ignore safe areas.
 
 The native toolbar contains trusted browser Back and Refresh/Stop plus the
 website-declared navigation and special actions. It appears only for an approved

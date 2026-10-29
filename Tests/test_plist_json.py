@@ -13,6 +13,12 @@ SCRIPT = Path(__file__).resolve().parents[1] / ".github" / "scripts" / "plist-js
 
 
 class PlistMetadataTests(unittest.TestCase):
+    def test_owner_confirmed_encryption_declaration_is_a_plist_boolean(self):
+        source = SCRIPT.parents[2] / "DuoBrowser" / "Resources" / "Info.plist"
+        info = plistlib.loads(source.read_bytes())
+        self.assertIs(info["ITSAppUsesNonExemptEncryption"], False)
+        self.assertNotIn("ITSEncryptionExportComplianceCode", info)
+
     def test_dates_certificate_data_and_entitlements_are_normalized(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "profile.plist"

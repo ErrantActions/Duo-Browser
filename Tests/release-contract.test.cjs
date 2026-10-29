@@ -30,6 +30,29 @@ function profile() {
 }
 const signing = { teamId, bundleId, certificateDER, now: Date.parse("2026-10-28T00:00:00Z") };
 
+test("signed archives must preserve the owner's Boolean exempt-encryption declaration", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "duo-archive-contract-"));
+    try {
+        const source = path.join(directory, "info.json");
+        for (const value of [false, true, undefined, "false"]) {
+            fs.writeFileSync(source, JSON.stringify({
+                CFBundleIdentifier: bundleId, CFBundleVersion: "1.0.4",
+                ITSAppUsesNonExemptEncryption: value
+            }));
+            const result = cp.spawnSync(process.execPath, [
+                path.join(__dirname, "..", ".github", "scripts", "release-contract.cjs"),
+                "check-archive", source
+            ], { encoding: "utf8", env: { ...process.env, APP_BUNDLE_ID: bundleId, BUILD_NUMBER: "1.0.4" } });
+            assert.ifError(result.error);
+            if (value === false) assert.equal(result.status, 0, result.stderr);
+            else {
+                assert.notEqual(result.status, 0);
+                assert.match(result.stderr, /exempt-encryption declaration/);
+            }
+        }
+    } finally { fs.rmSync(directory, { recursive: true }); }
+});
+
 test("build selection exceeds every prior upload, including dotted versions and migration counters", () => {
     assert.equal(selectBuildNumber([]), "1");
     assert.equal(selectBuildNumber(["1", "1000", "999"]), "1000.0.1");

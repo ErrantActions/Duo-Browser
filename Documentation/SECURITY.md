@@ -62,15 +62,18 @@ Scanner permission/UI
 is presented from the visible native container and cancelled when it closes;
 origin, tab, and document authorization are unchanged. Page messages remain
 explicitly website-labeled sheets, not disguised as iOS alerts.
-The native edge bar's collapsed address is browser-owned and displays a host
-derived from WebKit/navigation state. Sites cannot replace it. Expanded editing
+The native edge bar's browser-owned **URL** button exposes the actual host and
+connection state through its accessibility value and expanded editor. Sites
+cannot replace it. Expanded editing
 uses a local draft and the same URL scheme/search policy as the standard
 address field; opening it cancels pending capability work and blocks new
-website prompts until it is dismissed, including during promotion from the
-inline bubble to the full editor. The draft is tab-local and is not navigated
-or persisted merely by expanding either editor. An outside tap dismisses the
+website prompts until it is dismissed. The same URL button closes the bubble
+on its second tap; no larger address sheet is presented. The draft is tab-local
+and is not navigated or persisted merely by expanding it. An outside tap dismisses the
 bubble instead of activating the webpage underneath it. No webpage is drawn underneath the
-edge controls by disabling native safe areas.
+edge controls by disabling native safe areas. Only a noninteractive color
+layer from WebKit's resolved background and the connected bubble's decorative
+material extend behind the rail; webpage content and tap targets do not.
 
 Optional confirmations identify the website. Appearance/accent choices are a
 small catalog, not arbitrary native styling or images. VoiceOver labels and

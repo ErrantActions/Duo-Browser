@@ -201,7 +201,11 @@ async function main() {
         if (info.CFBundleIdentifier !== process.env.APP_BUNDLE_ID || info.CFBundleVersion !== process.env.BUILD_NUMBER) {
             throw new ReleaseError("The signed archive has an unexpected app identity or build number.");
         }
+        if (info.ITSAppUsesNonExemptEncryption !== false) {
+            throw new ReleaseError("The signed archive is missing the owner-confirmed exempt-encryption declaration.");
+        }
         console.log("Archive app identity and build number verified.");
+        console.log("Archive exempt-encryption declaration verified.");
     } else {
         throw new ReleaseError("Unknown release contract command.");
     }

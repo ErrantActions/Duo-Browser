@@ -60,6 +60,14 @@ document.querySelector("#clear").onclick = () => {
     if (available) perform(() => window.duo.controls.clear());
     else log("No native panel to clear.");
 };
+let darkBackground = false;
+document.querySelector("#background").onclick = () => {
+    const body = document.querySelector("body");
+    body.style.backgroundColor = darkBackground ? "rgb(20, 42, 61)" : "rgb(224, 245, 236)";
+    body.style.color = darkBackground ? "#f2f7ff" : "#102a43";
+    document.querySelector("#background-status").textContent = `Page background: ${darkBackground ? "Navy" : "Teal"}`;
+    darkBackground = !darkBackground;
+};
 if (available) {
     perform(() => window.duo.device.capabilities());
     window.duo.events.subscribe(event => {
