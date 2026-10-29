@@ -489,7 +489,7 @@ with automatic distribution still enabled, no public link, and exactly the
 same single owner. **No manual build-to-group assignment was performed** for
 1.0.5. No external review or external distribution was started.
 
-Use the browser menu's **Ask Duo**, explicitly read/review/approve an excerpt,
+Use the direct **Ask Duo** sparkle icon, explicitly read/review/approve an excerpt,
 then ask Apple Intelligence. Supported hardware with Apple Intelligence enabled
 and its model downloaded is required for actual generation. CI verified the
 real framework compiled, private/consent/filtering safeguards, unavailable

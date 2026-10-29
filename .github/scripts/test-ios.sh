@@ -10,7 +10,8 @@ set --
 if [[ "$suite" == unit ]]; then
   set -- -only-testing:DuoBrowserTests
 elif [[ "$suite" == duo-panel ]]; then
-  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoHasOneDirectToolbarControl \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation
 elif [[ "$suite" == ask-duo ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoBlocksPrivateTabs \
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation

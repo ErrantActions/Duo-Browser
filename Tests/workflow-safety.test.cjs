@@ -104,6 +104,7 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
             }
             if (suite === "unit") assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             else if (suite === "duo-panel") {
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoHasOneDirectToolbarControl>/);
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             } else if (suite === "ask-duo") {

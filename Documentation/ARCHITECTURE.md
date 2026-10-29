@@ -29,7 +29,10 @@ monograms rather than fetching third-party favicons.
 
 ### Ask Duo
 
-`AskDuoView` is a browser-owned sheet, opened once through the shared menu.
+`AskDuoView` is a browser-owned sheet, opened directly by the trusted sparkle
+button in the native Duo strip. The nonvertical/legacy browser toolbar has the
+same direct action, and the menu does not repeat it. Opening the icon uses the
+existing page-tool presenter and does not capture content automatically.
 `AskDuoModel` uses an explicit on-device `SystemLanguageModel` and a fresh
 `LanguageModelSession` for each question. `@Generable` constrains the response
 to answer text and a bounded existing-link ID; no model tools, JavaScript,

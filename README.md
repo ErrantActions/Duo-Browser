@@ -177,8 +177,8 @@ An uploaded owner-only beta is not proof of a passing UI suite.
 
 ### Reading View and reading PDFs
 
-The browser menu's **Page Tools** brings **Reading View**, **Ask Duo**, and
-**Find on Page** together without adding duplicate rail controls.
+The browser menu's **Page Tools** brings **Reading View** and **Find on Page**
+together. **Ask Duo** has its own sparkle icon in the native control strip.
 Reading View creates a local, text-only snapshot with headings, paragraphs,
 lists, quotes, and code. Choose Paper, Sepia, or Night and adjust text size;
 these preferences persist without changing the original page.
@@ -204,7 +204,8 @@ background tracking calls, or second URL/navigation bar were added.
 
 ### Ask Duo
 
-Open the browser menu and choose **Ask Duo**. It uses **Apple Intelligence's
+Tap the **Ask Duo** sparkle icon directly in the native Duo controls.
+Other layouts have the same direct icon in their browser toolbar. It uses **Apple Intelligence's
 on-device Foundation Models**, not OpenAI, Copilot, a cloud fallback, or an API
 key. Generation requires iOS 26+ on a supported device with Apple Intelligence
 enabled and its model ready. The browser still supports iOS 17.
@@ -231,8 +232,10 @@ saved as chat history. There is no arbitrary clicking, form submission,
 purchase automation, image analysis, or Duo Control execution in this first
 version. AI can be wrong: verify its answer against the page.
 
-The shared browser-menu entry is used instead of adding another crowded rail
-button. Real on-device inference must be checked on eligible hardware; a
+There is exactly one Ask Duo launcher in each layout, not a second menu entry.
+The icon remains available on ordinary and DuoKit websites, and private tabs
+open an explanatory blocked state rather than reading their content.
+Real on-device inference must be checked on eligible hardware; a
 simulator showing unavailable is not proof that the model generated an answer.
 
 ### Address and navigation

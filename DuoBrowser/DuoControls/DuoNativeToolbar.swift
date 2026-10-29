@@ -85,12 +85,19 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                                for: .navigationBar, .bottomBar)
             .toolbar {
                 if usesVerticalBar {
-                    ToolbarItem(placement: .topBarLeading) {
+                    ToolbarItemGroup(placement: .topBarLeading) {
                         Button(action: model.goBack) {
                             Label("Back", systemImage: "chevron.backward")
                         }
                         .disabled(addressExpanded || (!model.canGoBack && !(model.showingStartPage && model.currentURL != nil)))
                         .accessibilityIdentifier("duo.browser.back")
+                        Button { present(.assistant) } label: {
+                            Label("Ask Duo", systemImage: "sparkles")
+                        }
+                        .labelStyle(.iconOnly)
+                        .disabled(addressExpanded)
+                        .accessibilityHint("Ask Apple Intelligence about the current page")
+                        .accessibilityIdentifier("browser.askduo")
                     }
                     .axisBehavior(.verticalPreferred)
                     ToolbarItem(placement: .topBarTrailing) {

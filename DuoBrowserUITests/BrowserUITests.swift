@@ -3,6 +3,47 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testAskDuoHasOneDirectToolbarControl() {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        app.launch()
+        openAskDuo(in: app)
+        XCTAssertTrue(app.staticTexts["askduo.page.blocked"].waitForExistence(timeout: 10))
+        app.navigationBars["Ask Duo"].buttons["Done"].tap()
+        openReadingDemo(in: app, isPrivate: false)
+        app.webViews.buttons["Install Duo Panel"].tap()
+        let allow = app.buttons["Allow for This Site"]
+        XCTAssertTrue(allow.waitForExistence(timeout: 10))
+        allow.tap()
+        let next = app.buttons["duo.control.next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 10))
+        let ask = app.buttons["browser.askduo"]
+        waitUntilHittable(ask)
+        let webpage = app.webViews.firstMatch
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
+        XCTAssertGreaterThanOrEqual(ask.frame.minX, webpage.frame.maxX - 2)
+        XCTAssertFalse(webpage.frame.intersects(ask.frame))
+        print("Ask Duo direct control: x=\(ask.frame.minX), y=\(ask.frame.minY), width=\(ask.frame.width), height=\(ask.frame.height), webWidth=\(webpage.frame.width), windowWidth=\(app.frame.width)")
+        next.tap()
+        XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
+        openMenu(in: app)
+        XCTAssertEqual(app.collectionViews["browser.menu.actions"].buttons.matching(identifier: "browser.askduo").count, 0)
+        app.navigationBars["Browser Menu"].buttons["Close Menu"].tap()
+        openAskDuo(in: app)
+        XCTAssertFalse(app.staticTexts["askduo.context"].exists)
+        app.navigationBars["Ask Duo"].buttons["Done"].tap()
+        XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
+        XCTAssertTrue(next.isEnabled)
+        openMenu(in: app)
+        app.buttons["New Private Tab"].tap()
+        openAskDuo(in: app)
+        XCTAssertTrue(app.staticTexts["askduo.page.blocked"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["askduo.capture"].exists)
+    }
+
+    @MainActor
     func testReadingViewAppearanceAndPDF() {
         continueAfterFailure = false
         executionTimeAllowance = 300
@@ -78,8 +119,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(warning.waitForNonExistence(timeout: 10))
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.share").firstMatch.exists)
         app.navigationBars["Reading View"].buttons["Done"].tap()
-        openMenu(in: app)
-        app.buttons["browser.askduo"].tap()
+        openAskDuo(in: app)
         XCTAssertTrue(app.staticTexts["askduo.page.blocked"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["askduo.capture"].exists)
     }
@@ -114,8 +154,7 @@ final class BrowserUITests: XCTestCase {
         app.launch()
         openMenu(in: app)
         app.buttons["New Private Tab"].tap()
-        openMenu(in: app)
-        app.buttons["browser.askduo"].tap()
+        openAskDuo(in: app)
         XCTAssertTrue(app.navigationBars["Ask Duo"].waitForExistence(timeout: 10))
         let blocked = app.staticTexts["askduo.page.blocked"]
         XCTAssertTrue(blocked.waitForExistence(timeout: 10))
@@ -142,9 +181,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(demo.isHittable)
         demo.tap()
         XCTAssertTrue(app.webViews.buttons["Install Duo Panel"].waitForExistence(timeout: 15))
-        openMenu(in: app)
-        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
-        app.buttons["browser.askduo"].tap()
+        openAskDuo(in: app)
         XCTAssertTrue(app.navigationBars["Ask Duo"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.staticTexts["askduo.context"].exists)
         let capture = app.buttons["askduo.capture"]
@@ -331,14 +368,15 @@ final class BrowserUITests: XCTestCase {
         XCTAssertLessThanOrEqual(addressButton.frame.width, 64)
         XCTAssertFalse(app.textFields["Address and search"].exists)
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)
-        for button in [addressButton, app.buttons["duo.browser.back"], app.buttons["duo.browser.refresh"], app.buttons["browser.tabs"], app.buttons["Browser menu"]] {
+        for button in [addressButton, app.buttons["duo.browser.back"], app.buttons["duo.browser.refresh"], app.buttons["browser.tabs"], app.buttons["Browser menu"], app.buttons["browser.askduo"]] {
             XCTAssertTrue(button.exists)
             XCTAssertFalse(webpage.frame.intersects(button.frame))
         }
-        for identifier in ["browser.address.open", "duo.browser.back", "duo.browser.refresh", "browser.tabs"] {
+        for identifier in ["browser.address.open", "duo.browser.back", "duo.browser.refresh", "browser.tabs", "browser.askduo"] {
             XCTAssertEqual(app.buttons.matching(identifier: identifier).count, 1)
         }
         XCTAssertEqual(app.buttons.matching(identifier: "Browser menu").count, 1)
+        XCTAssertTrue(app.buttons["browser.askduo"].isHittable)
         captureScreenshot(app, name: "Full Safe Viewport With Native Duo Edge Controls")
 
         let background = app.webViews.buttons["Toggle Page Background"]
@@ -598,6 +636,16 @@ final class BrowserUITests: XCTestCase {
     @MainActor
     private func menuButton(in app: XCUIApplication) -> XCUIElement {
         app.buttons["Browser menu"]
+    }
+
+    @MainActor
+    private func openAskDuo(in app: XCUIApplication) {
+        let button = app.buttons["browser.askduo"]
+        XCTAssertTrue(button.waitForExistence(timeout: 10))
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
+        waitUntilHittable(button)
+        button.tap()
+        XCTAssertTrue(app.navigationBars["Ask Duo"].waitForExistence(timeout: 10))
     }
 
     @MainActor

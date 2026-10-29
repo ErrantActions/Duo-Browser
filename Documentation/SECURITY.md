@@ -7,7 +7,7 @@ or complete resistance to WebKit/OS vulnerabilities.
 
 Ask Duo uses Apple's on-device `SystemLanguageModel`; it has no OpenAI/Copilot
 backend, API key, cloud fallback, or model-registered action tools. The browser
-menu opens a native sheet but does not read the page. A separate Read This Page
+control opens a native sheet but does not read the page. A separate Read This Page
 tap is required before a filtered preview is captured. Use This Excerpt
 explicitly approves that snapshot; a separate Ask tap starts generation.
 Private tabs, error/start/loading pages and non-verified
