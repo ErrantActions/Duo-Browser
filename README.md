@@ -29,6 +29,10 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   The native Duo toolbar correction passed its focused simulator UI test:
   the webpage retained 382 of 466 points of width and site actions appeared
   in the slim native strip to its right. This is not a half-screen split.
+  The edge-only update also passed [focused UI run 40807358107](https://github.com/ErrantActions/Duo-Browser/actions/runs/40807358107):
+  a 382-by-620-point webpage in a 466-by-678-point window, no duplicate
+  bottom chrome or overlap with edge buttons, and working address expand,
+  Cancel, and Go. That focused pass is not a claim that the full UI suite passed.
 - Both workflows are **manual only**, using the documented standard `xcode-27`
   public runner with Xcode 27.1/iOS 27.1 selected explicitly. Standard public
   compute is free; larger runners can be billed and are not selected here.
@@ -266,8 +270,8 @@ cases failed an external page-heading assumption; the corrected assertions
 still need an approved native rerun. No all-green native suite is claimed.
 CI boots one simulator explicitly and runs the native suites sequentially.
 Optional artifacts contain whitelisted test counts only; raw result bundles,
-screenshots, and signing files are not uploaded. The new release contracts have
-19 passing Node tests and 3 passing Python tests locally. Actual profile/API/
+screenshots, and signing files are not uploaded. The local checks have
+23 passing Node tests and 3 passing Python tests. Actual profile/API/
 archive validation still requires privately configured secrets and an approved job.
 Do not equate project syntax checks or SDK tests with
 successful iOS compilation or runtime acceptance.

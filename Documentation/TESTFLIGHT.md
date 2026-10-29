@@ -58,9 +58,13 @@ It compiles with `build-for-testing` before booting the simulator, then runs the
 selected tests with `test-without-building` using the same build directory.
 Compilation errors therefore fail before the potentially slow simulator startup.
 
-For a control-pane change, `test_scope=duo-panel` selects only the focused
-right-pane geometry/navigation UI regression. It does not duplicate the unit
-suite that TestFlight will run, and does not claim full UI acceptance.
+For an edge-control change, `test_scope=duo-panel` selects only the focused
+native-strip geometry/navigation UI regression. It checks the collapsed
+address on ordinary pages, absence of duplicate bottom chrome, a webpage
+height above 85% of the window, no overlap with core edge buttons, address
+editing/cancellation/submission, and website navigation/refresh/clear.
+It does not duplicate the unit suite that TestFlight will run and does not
+claim full UI acceptance.
 
 Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
 with one-day retention. It does not publish an app, IPA, screenshot, result
@@ -247,6 +251,22 @@ compliance, assignment, and actual installation of this update remain separate
 unverified checkpoints. Do not upload another copy just because processing is
 asynchronous. Test the native strip using build **1.0.1**, not the earlier build
 1 with bottom-only controls.
+
+### Verified edge-only layout and address editor
+
+[Focused UI run 40807358107](https://github.com/ErrantActions/Duo-Browser/actions/runs/40807358107)
+passed one test with zero failures for application commit
+`62d20b187a3a226b2c26d43297f467424819d2d1`.
+Native diagnostics measured a 466-by-678-point window and a webpage at
+x=0, y=24, width=382, height=620. The native website action began at x=399
+with width=38. The webpage used all height between the system's top and
+bottom safe-area insets, without a duplicate bottom browser bar.
+
+The regression also verified the collapsed address before any DuoKit
+configuration, no overlap with core edge buttons, full-URL editing, Cancel
+preserving Record 2, Go loading HTTPS, and website Previous/Next, Refresh,
+and Clear. This proves that focused simulator flow, not physical-device
+installation, the full UI suite, or delivery of this newer code.
 
 After an upload:
 
