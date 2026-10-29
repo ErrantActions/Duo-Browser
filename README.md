@@ -33,6 +33,10 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   a 382-by-620-point webpage in a 466-by-678-point window, no duplicate
   bottom chrome or overlap with edge buttons, and working address expand,
   Cancel, and Go. That focused pass is not a claim that the full UI suite passed.
+  The two-stage address bubble and unique core controls passed
+  [focused UI run 40813672395](https://github.com/ErrantActions/Duo-Browser/actions/runs/40813672395):
+  one address field and on-screen keyboard on the first tap, then the same
+  icon opening the full editor with the typed draft preserved.
 - Both workflows are **manual only**, using the documented standard `xcode-27`
   public runner with Xcode 27.1/iOS 27.1 selected explicitly. Standard public
   compute is free; larger runners can be billed and are not selected here.

@@ -296,6 +296,25 @@ After resolving compliance, the owner should confirm this build's assignment
 to the existing owner-only internal group. Actual phone installation remains
 unverified.
 
+### Verified two-stage address editing and unique browser controls
+
+[Focused UI run 40813672395](https://github.com/ErrantActions/Duo-Browser/actions/runs/40813672395)
+passed one test with zero failures for commit
+`64a94d811de9f505af85a7da8b3e8cef28a7a00a`.
+The first address-icon tap exposed exactly one editable field and one on-screen
+keyboard, with no full editor or duplicate bottom chrome. The field and native
+icon shared the same vertical center (y=258); the resting webpage remained
+382-by-620 points in a 466-by-678-point window.
+
+The test counted one each of Address, Back, Refresh, Tabs, Menu, and Clear,
+rejected an unsafe URL inline, promoted the typed draft with a second tap on
+the same icon, and verified full-editor Cancel and outside-bubble dismissal
+preserved Record 2. Compact keyboard Go loaded HTTPS. Website Previous/Next,
+Refresh, and Clear still passed. Keyboard-hidden or disabled website actions
+were unavailable while typing. The compact accessibility container preserves
+individual editable controls rather than overriding their identifiers.
+This is focused simulator proof, not a full-suite or phone-installation claim.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
