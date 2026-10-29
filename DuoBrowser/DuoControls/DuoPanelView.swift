@@ -60,7 +60,6 @@ struct DuoPanelView: View {
                                 .font(.headline)
                                 .accessibilityAddTraits(.isHeader)
                         }
-                        .accessibilityIdentifier("duo.controls.list")
                         ForEach(panel.controls) { control in
                             controlView(control)
                                 .disabled(control.enabled == false)
@@ -71,6 +70,7 @@ struct DuoPanelView: View {
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .accessibilityIdentifier("duo.controls.list")
             }
             .background(Color(uiColor: .secondarySystemGroupedBackground))
             .tint(accent(panel.accent))

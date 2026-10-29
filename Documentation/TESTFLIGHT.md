@@ -54,6 +54,13 @@ gh workflow run ios.yml --repo ErrantActions/Duo-Browser --ref main `
 This runs build/security contracts, Python plist tests, and native unit/UI tests
 with `CODE_SIGNING_ALLOWED=NO`. It never receives Apple signing secrets.
 The simulator job is bounded to 30 minutes and its native step to 20 minutes.
+It compiles with `build-for-testing` before booting the simulator, then runs the
+selected tests with `test-without-building` using the same build directory.
+Compilation errors therefore fail before the potentially slow simulator startup.
+
+For a control-pane change, `test_scope=duo-panel` selects only the focused
+right-pane geometry/navigation UI regression. It does not duplicate the unit
+suite that TestFlight will run, and does not claim full UI acceptance.
 
 Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
 with one-day retention. It does not publish an app, IPA, screenshot, result

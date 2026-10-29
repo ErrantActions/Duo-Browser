@@ -69,7 +69,8 @@ xcrun() {
   if [[ "$1" == --sdk ]]; then echo 27.1
   elif [[ "$2" == list ]]; then
     printf '%s\\n' '{"devices":{"fixture.iOS-27-1":[{"name":"iPhone","isAvailable":true,"udid":"fixture-device"}]}}'
-  elif [[ "$2" != bootstatus ]]; then return 99
+  elif [[ "$2" == bootstatus ]]; then echo BOOT_SIMULATOR
+  else return 99
   fi
 }
 mkdir() { :; }
@@ -88,7 +89,10 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
         } else {
             assert.equal(result.status, 0, result.stderr);
             assert.match(result.stdout, /XCODE_ARG<CODE_SIGNING_ALLOWED=NO>/);
-            assert.match(result.stdout, /XCODE_ARG<test>/);
+            assert.match(result.stdout, /XCODE_ARG<build-for-testing>/);
+            assert.match(result.stdout, /XCODE_ARG<test-without-building>/);
+            assert.ok(result.stdout.indexOf("XCODE_ARG<build-for-testing>") < result.stdout.indexOf("BOOT_SIMULATOR"));
+            assert.ok(result.stdout.indexOf("BOOT_SIMULATOR") < result.stdout.indexOf("XCODE_ARG<test-without-building>"));
             if (suite === "unit") assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             else if (suite === "duo-panel") {
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testDuoRightPaneKeepsWebsiteVisibleAndDeliversNavigation>/);
