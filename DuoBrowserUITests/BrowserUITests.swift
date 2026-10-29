@@ -29,8 +29,13 @@ final class BrowserUITests: XCTestCase {
         next.tap()
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
         openMenu(in: app)
-        XCTAssertEqual(app.collectionViews["browser.menu.actions"].buttons.matching(identifier: "browser.askduo").count, 0)
-        app.navigationBars["Browser Menu"].buttons["Close Menu"].tap()
+        let menu = app.collectionViews["browser.menu.actions"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 10))
+        XCTAssertEqual(menu.buttons.matching(identifier: "browser.askduo").count, 0)
+        let closeMenu = app.buttons["Close Menu"]
+        XCTAssertTrue(closeMenu.waitForExistence(timeout: 10))
+        closeMenu.tap()
+        XCTAssertTrue(menu.waitForNonExistence(timeout: 10))
         openAskDuo(in: app)
         XCTAssertFalse(app.staticTexts["askduo.context"].exists)
         app.navigationBars["Ask Duo"].buttons["Done"].tap()
