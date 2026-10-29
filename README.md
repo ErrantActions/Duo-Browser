@@ -99,7 +99,7 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   The simulator reported its model unavailable; this is **not** a claim that
   Apple Intelligence generated a live answer. That requires an eligible,
   enabled device.
-- **Latest: build 1.0.6** delivers the redesigned start page, local Reading View,
+- **Build 1.0.6** delivers the redesigned start page, local Reading View,
   persistent reading themes/type size, Read Aloud controls, paginated reading
   PDF sharing and bookmark keyboard fixes through
   [release run 40856101620](https://github.com/ErrantActions/Duo-Browser/actions/runs/40856101620).
@@ -110,6 +110,14 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   Voice output, live AI generation and physical-phone installation remain
   device checks; this release is not a claim of perfection or complete Safari
   parity.
+- **Latest: build 1.0.7** puts **Ask Duo** directly in the native Duo controls
+  as a sparkle icon, with the same direct control in other browser layouts.
+  The menu duplicate is removed. Delivered through
+  [release run 40910443054](https://github.com/ErrantActions/Duo-Browser/actions/runs/40910443054)
+  after **79 passing native unit tests** and two passing native control UI tests.
+  Apple reports **VALID** and **IN_BETA_TESTING**, automatically distributed to
+  the same owner-only group. Page consent/private/model-availability safeguards
+  are unchanged.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 - The Reading View/start-page upgrade passed

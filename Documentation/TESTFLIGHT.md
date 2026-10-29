@@ -578,6 +578,29 @@ page loading wait timed out; the unchanged job was rerun without loosening
 assertions or changing browser network behavior. No live model inference
 was required or claimed for this entry-point-only change.
 
+### Verified direct Ask Duo delivery: version 1.0, build 1.0.7
+
+[Run 40910443054](https://github.com/ErrantActions/Duo-Browser/actions/runs/40910443054)
+delivered commit `46aa7af7c2c89ae2a9045088319b7efbcd2287af`, with the same
+application code as the direct-control UI acceptance above. All **79 native
+unit tests** passed with zero failures. Preflight chose **1.0.7** above existing
+uploads, and logs separately confirm `ARCHIVE SUCCEEDED`,
+`Archive exempt-encryption declaration verified`, `EXPORT SUCCEEDED`, and
+`UPLOAD SUCCEEDED with no errors` on October 29, 2026 at 16:38 UTC.
+
+Apple initially did not expose the new build in its listing. Without a duplicate
+upload or manual assignment, it subsequently appeared in **Owner Testing Auto**
+as **VALID**, not expired, `usesNonExemptEncryption=false`, internal
+**IN_BETA_TESTING**, and external **READY_FOR_BETA_SUBMISSION**. The group still
+has automatic access enabled, exactly the same one owner and no public link.
+English What to Test notes describe the direct sparkle icon and unchanged
+consent/private protections. No external review or additional tester was added.
+
+The icon opens Ask Duo in one tap on ordinary and DuoKit pages; opening does
+not capture content or bypass model availability/private-tab restrictions.
+The backend was not changed and live generation is not claimed by this
+entry-point-only validation. Actual phone installation remains unverified.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
