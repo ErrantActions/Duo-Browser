@@ -35,7 +35,6 @@ final class BrowserUITests: XCTestCase {
         XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
         app.buttons["browser.askduo"].tap()
         XCTAssertTrue(app.navigationBars["Ask Duo"].waitForExistence(timeout: 10))
-        let available = (app.staticTexts["askduo.model.status"].value as? String) == "available"
         XCTAssertFalse(app.staticTexts["askduo.context"].exists)
         let capture = app.buttons["askduo.capture"]
         revealAssistant(capture, in: app)
@@ -49,7 +48,6 @@ final class BrowserUITests: XCTestCase {
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_INPUT_SENTINEL"))
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_FORM_SENTINEL"))
         XCTAssertFalse(excerpt.label.contains("ASK_DUO_EDITABLE_SENTINEL"))
-        print("Ask Duo native verification: consentedExcerpt=true, excludedFields=true, onDeviceModelAvailable=\(available)")
         let question = app.descendants(matching: .any).matching(identifier: "askduo.question").firstMatch
         revealAssistant(question, in: app)
         question.tap()
@@ -60,6 +58,9 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 10))
         let ask = app.buttons["askduo.ask"]
         revealAssistant(ask, in: app)
+        let available = (ask.value as? String) == "available"
+        XCTAssertEqual(ask.isEnabled, available)
+        print("Ask Duo native verification: consentedExcerpt=true, excludedFields=true, onDeviceModelAvailable=\(available)")
         if available {
             ask.tap()
             print("Ask Duo live generation: requested=true")

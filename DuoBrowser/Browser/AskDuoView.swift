@@ -57,6 +57,7 @@ struct AskDuoView: View {
                     }
                         .disabled(assistant.isBusy || assistant.availabilityMessage != nil || assistant.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || assistant.question.count > 400)
                         .accessibilityIdentifier("askduo.ask")
+                        .accessibilityValue(assistant.availabilityMessage == nil ? "available" : "unavailable")
                     Text(assistant.isBusy ? "Working locally…" : (assistant.answer == nil ? "No answer yet." : "Answer ready below."))
                         .font(.caption)
                         .accessibilityIdentifier("askduo.request.status")
@@ -104,7 +105,7 @@ struct AskDuoView: View {
                     .accessibilityIdentifier("askduo.keyboard.done")
             }
         }
-        .confirmationDialog("Open this link?", isPresented: $confirmsNavigation, titleVisibility: .visible) {
+        .alert("Open this link?", isPresented: $confirmsNavigation) {
             if let selectedLink {
                 Button("Open in This Tab") { assistant.open(selectedLink, model: model, confirmed: navigate) }
                     .accessibilityIdentifier("askduo.confirm.open")
