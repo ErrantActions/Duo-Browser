@@ -261,6 +261,10 @@ The icon remains available on ordinary and DuoKit websites, and private tabs
 open an explanatory blocked state rather than reading their content.
 Real on-device inference must be checked on eligible hardware; a
 simulator showing unavailable is not proof that the model generated an answer.
+UI automation uses a visibly labeled, opt-in DEBUG fixture so page consent,
+follow-ups and navigation can be checked without pretending a model ran.
+A separate native probe exercises the real Apple provider when usable.
+Neither the fixture nor a cloud fallback is available in the Release app.
 
 ### Address and navigation
 

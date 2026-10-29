@@ -1,4 +1,6 @@
 import XCTest
+import FoundationModels
+import Combine
 @testable import DuoBrowser
 
 @MainActor
@@ -190,5 +192,75 @@ final class AskDuoTests: XCTestCase {
         assistant.ask(privateTab, usingPage: false)
         XCTAssertTrue(assistant.errorMessage?.contains("Private Browsing") == true)
         XCTAssertFalse(assistant.isBusy)
+    }
+
+    func testRealAppleModelWhenRuntimeIsUsable() async throws {
+        executionTimeAllowance = 90
+        guard #available(iOS 26.0, *), case .available = SystemLanguageModel.default.availability else {
+            throw XCTSkip("Apple Intelligence reports unavailable. No live inference is claimed.")
+        }
+        let session = LanguageModelSession(model: SystemLanguageModel.default)
+        var options = GenerationOptions()
+        options.maximumResponseTokens = 32
+        do {
+            let response = try await session.respond(to: "Reply with OK only.", options: options)
+            XCTAssertFalse(response.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        } catch {
+            #if targetEnvironment(simulator)
+            if #available(iOS 27.0, *), error is LanguageModelError { throw error }
+            if error is LanguageModelSession.GenerationError { throw error }
+            let failure = error as NSError
+            if failure.domain == "FoundationModels.LanguageModelError", failure.code == -1 {
+                throw XCTSkip("Simulator model reports available but fails a minimal plain-text probe with FoundationModels.LanguageModelError -1. Live inference remains unverified; UI uses an explicitly labeled debug-only fixture, never a production fallback.")
+            }
+            #endif
+            throw error
+        }
+        let answer = try await AskDuoModel.generate(
+            question: "Write a brief friendly greeting.", context: nil, history: "[]", allowsNavigation: false
+        )
+        XCTAssertFalse(answer.text.isEmpty)
+        XCTAssertNil(answer.link)
+        let pageAnswer = try await AskDuoModel.generate(
+            question: "Summarize the supplied excerpt.", context: try context(), history: "[]", allowsNavigation: false
+        )
+        XCTAssertFalse(pageAnswer.text.isEmpty)
+        XCTAssertNil(pageAnswer.link)
+        print("Ask Duo real Apple model probe: plainText=true, generalSchema=true, pageSchema=true")
+    }
+
+    func testGeneralChatPassesFollowUpHistoryWithoutPageAccessOrNavigation() async throws {
+        let manager = manager()
+        defer { for tab in manager.tabs { tab.tearDown() } }
+        let tab = try XCTUnwrap(manager.selectedTab)
+        var histories: [String] = []
+        let assistant = AskDuoModel(availability: { nil }, generator: { _, context, history, navigation in
+            XCTAssertNil(context)
+            XCTAssertFalse(navigation)
+            histories.append(history)
+            return AskDuoAnswer(text: "Controlled test response.", link: nil)
+        })
+        let first = expectation(description: "First completed exchange")
+        let firstSubscription = assistant.$conversation.dropFirst().prefix(1).sink { _ in first.fulfill() }
+        assistant.question = "Hello"
+        assistant.allowsNavigation = true
+        assistant.ask(tab, usingPage: false)
+        await fulfillment(of: [first], timeout: 5)
+        firstSubscription.cancel()
+        XCTAssertEqual(assistant.conversation.turns.count, 1)
+        let second = expectation(description: "Follow-up completed exchange")
+        let secondSubscription = assistant.$conversation.dropFirst().prefix(1).sink { _ in second.fulfill() }
+        assistant.question = "Explain that more simply."
+        assistant.ask(tab, usingPage: false)
+        await fulfillment(of: [second], timeout: 5)
+        secondSubscription.cancel()
+        XCTAssertEqual(assistant.conversation.turns.count, 2)
+        XCTAssertEqual(histories.count, 2)
+        XCTAssertEqual(histories.first, "[]")
+        XCTAssertTrue(histories.last?.contains("Hello") == true)
+        XCTAssertNil(assistant.context)
+        XCTAssertNil(assistant.answer?.link)
+        assistant.clear()
+        XCTAssertTrue(assistant.conversation.turns.isEmpty)
     }
 }

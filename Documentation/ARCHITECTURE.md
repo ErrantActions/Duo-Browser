@@ -43,6 +43,16 @@ to answer text and a bounded existing-link ID; no model tools, JavaScript,
 network client, or cloud provider are registered. OS/model availability is
 checked and an unavailable state never becomes a sample or fabricated answer.
 
+The model accepts typed availability/generation dependencies for deterministic
+state-machine tests. Native UI tests explicitly opt into a visibly labeled
+`--ask-duo-ui-fixture` only in DEBUG builds; its scripted responses are not
+Apple inference. Release builds exclude this generator and always use the real
+Apple provider. A separate native probe first attempts a minimal plain-text
+response, then tests the actual general/page response schemas. It explicitly
+skips unavailable models or the simulator's known internal `-1` failure on that
+minimal probe; it does not convert an application-schema failure into success.
+Live inference is not claimed when the probe skips.
+
 General chat starts with page access off and does not invoke the page reader.
 `AskDuoContext.js` runs only after an explicit page shortcut, Read This Page,
 or Send with page access enabled, in a separate named

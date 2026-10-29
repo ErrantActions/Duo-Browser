@@ -111,6 +111,7 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoBlocksPrivateTabs>/);
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoRequiresConsentAndConfirmsNavigation>/);
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext>/);
+                assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testAskDuoGeneralChatKeepsFollowUpsWithoutReadingPage>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests>/);
             } else if (suite === "reading") {
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testReadingViewAppearanceAndPDF>/);
@@ -122,7 +123,7 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
                 assert.match(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserUITests\/BrowserUITests\/testScannerSettingsPersistAfterReturningFromEditor>/);
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests/);
             } else if (suite === "page-tools") {
-                for (const method of ["testAskDuoBlocksPrivateTabs", "testAskDuoRequiresConsentAndConfirmsNavigation", "testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext", "testScannerUsesCompactSheetAndRequiresASelectedField", "testScannerSettingsPersistAfterReturningFromEditor"]) {
+                for (const method of ["testAskDuoBlocksPrivateTabs", "testAskDuoRequiresConsentAndConfirmsNavigation", "testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext", "testAskDuoGeneralChatKeepsFollowUpsWithoutReadingPage", "testScannerUsesCompactSheetAndRequiresASelectedField", "testScannerSettingsPersistAfterReturningFromEditor"]) {
                     assert.ok(result.stdout.includes(`XCODE_ARG<-only-testing:DuoBrowserUITests/BrowserUITests/${method}>`));
                 }
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests/);

@@ -20,6 +20,7 @@ private struct AskDuoGeneratedAnswer {
 
 @MainActor
 final class AskDuoModel: ObservableObject {
+    typealias Generator = @MainActor (String, AskDuoContext?, String, Bool) async throws -> AskDuoAnswer
     @Published private(set) var context: AskDuoContext?
     @Published private(set) var hasApprovedContext = false
     @Published private(set) var answer: AskDuoAnswer?
@@ -27,7 +28,7 @@ final class AskDuoModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var failureCode: String?
     @Published private(set) var notice: String?
-    @Published private(set) var availabilityMessage = AskDuoModel.modelUnavailableReason
+    @Published private(set) var availabilityMessage: String?
     @Published private(set) var conversation = AskDuoConversation()
     @Published private(set) var pendingQuestion: String?
     @Published var question = ""
@@ -36,6 +37,45 @@ final class AskDuoModel: ObservableObject {
     private var deadline: Task<Void, Error>?
     private var operationID = UUID()
     private let logger = Logger(subsystem: "com.duobrowser.app", category: "AskDuo")
+    private let availability: @MainActor () -> String?
+    private let generator: Generator
+
+    init(
+        availability: @escaping @MainActor () -> String? = { AskDuoModel.modelUnavailableReason },
+        generator: @escaping Generator = { question, context, history, allowsNavigation in
+            guard #available(iOS 26.0, *) else { throw AskDuoError.unavailable("Apple Intelligence requires iOS 26 or later.") }
+            return try await AskDuoModel.generate(question: question, context: context, history: history, allowsNavigation: allowsNavigation)
+        }
+    ) {
+        self.availability = availability
+        self.generator = generator
+        availabilityMessage = availability()
+    }
+
+    static var usesUITestFixture: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--ask-duo-ui-fixture")
+        #else
+        false
+        #endif
+    }
+
+    static func makeForPresentation() -> AskDuoModel {
+        #if DEBUG
+        if usesUITestFixture {
+            return AskDuoModel(availability: { nil }, generator: { _, context, history, _ in
+                try Task.checkCancellation()
+                guard let exchanges = try JSONSerialization.jsonObject(with: Data(history.utf8)) as? [[String: String]] else {
+                    throw AskDuoError.invalidAnswer
+                }
+                let text = "UI TEST RESPONSE (not a model answer). Exchange \(exchanges.count + 1)."
+                if let context { return try context.answer(text: text, linkID: 0, allowsNavigation: false) }
+                return AskDuoAnswer(text: text, link: nil)
+            })
+        }
+        #endif
+        return AskDuoModel()
+    }
 
     deinit {
         task?.cancel()
@@ -55,7 +95,7 @@ final class AskDuoModel: ObservableObject {
         }
     }
 
-    func refreshAvailability() { availabilityMessage = Self.modelUnavailableReason }
+    func refreshAvailability() { availabilityMessage = availability() }
 
     func clear(notice: String? = nil) {
         cancel()
@@ -141,9 +181,9 @@ final class AskDuoModel: ObservableObject {
         answer = nil
         pendingQuestion = question
         self.question = ""
+        let generator = generator
         perform(seconds: 60, work: {
-            guard #available(iOS 26.0, *) else { throw AskDuoError.unavailable("Apple Intelligence requires iOS 26 or later.") }
-            let response = try await Self.generate(question: question, context: page, history: history, allowsNavigation: allowsNavigation)
+            let response = try await generator(question, page, history, allowsNavigation)
             guard !model.isClosed, generation == model.navigationID, source == model.webView.url,
                   page?.isCurrent(for: model) != false else { throw AskDuoError.staleContext }
             try conversation.append(question: question, answer: response)
@@ -233,6 +273,7 @@ final class AskDuoModel: ObservableObject {
 
     static func describeFailure(_ error: Error) -> (code: String, message: String) {
         if let error = error as? AskDuoError { return ("page.validation", error.localizedDescription) }
+        let frameworkError = error as NSError
         if #available(iOS 27.0, *), let error = error as? LanguageModelError {
             switch error {
             case .contextSizeExceeded:
@@ -269,6 +310,9 @@ final class AskDuoModel: ObservableObject {
                 return ("apple.unknown", "Apple Intelligence could not complete this request. Nothing was opened.")
             }
         }
+        if frameworkError.domain == "FoundationModels.LanguageModelError", frameworkError.code == -1 {
+            return ("apple.runtimeUnavailable", "Apple Intelligence reported available but could not start a response. Check its model download and settings, then retry on an eligible device. No cloud fallback was used.")
+        }
         var current: NSError? = error as NSError
         var codes: [String] = []
         for _ in 0..<3 {
@@ -284,7 +328,7 @@ final class AskDuoModel: ObservableObject {
     }
 
     @available(iOS 26.0, *)
-    private static func generate(question: String, context: AskDuoContext?, history: String, allowsNavigation: Bool) async throws -> AskDuoAnswer {
+    static func generate(question: String, context: AskDuoContext?, history: String, allowsNavigation: Bool) async throws -> AskDuoAnswer {
         let session = LanguageModelSession(model: SystemLanguageModel.default) {
             """
             You are Ask Duo, an on-device browser companion.

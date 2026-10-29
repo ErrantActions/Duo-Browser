@@ -3,10 +3,38 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testAskDuoGeneralChatKeepsFollowUpsWithoutReadingPage() {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        app.launchArguments += ["--ask-duo-ui-fixture"]
+        captureFinalState(of: app)
+        app.launch()
+        openAskDuo(in: app)
+        let question = app.descendants(matching: .any).matching(identifier: "askduo.question").firstMatch
+        XCTAssertFalse(app.staticTexts["askduo.context"].exists)
+        for (index, prompt) in ["Help me write a short note.", "Make that more friendly."].enumerated() {
+            question.tap()
+            question.typeText(prompt)
+            app.buttons["askduo.keyboard.done"].tap()
+            app.buttons["askduo.ask"].tap()
+            let reply = app.staticTexts["askduo.answer"]
+            let received = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "label CONTAINS %@", "Exchange \(index + 1)."), object: reply
+            )
+            XCTAssertEqual(XCTWaiter.wait(for: [received], timeout: 10), .completed)
+            XCTAssertFalse(app.staticTexts["askduo.context"].exists)
+            XCTAssertEqual(app.switches["askduo.usepage"].value as? String, "0")
+        }
+        print("Ask Duo UI conversation: twoFollowUps=true, pageAccess=false, syntheticEngine=true")
+    }
+
+    @MainActor
     func testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext() {
         continueAfterFailure = false
         executionTimeAllowance = 180
         let app = XCUIApplication()
+        app.launchArguments += ["--ask-duo-ui-fixture"]
         captureFinalState(of: app)
         openReadingDemo(in: app, isPrivate: false)
         openAskDuo(in: app, expanded: false)
@@ -250,6 +278,7 @@ final class BrowserUITests: XCTestCase {
     func testAskDuoBlocksPrivateTabs() {
         continueAfterFailure = false
         let app = XCUIApplication()
+        app.launchArguments += ["--ask-duo-ui-fixture"]
         captureFinalState(of: app)
         app.launch()
         openMenu(in: app)
@@ -267,6 +296,7 @@ final class BrowserUITests: XCTestCase {
         continueAfterFailure = false
         executionTimeAllowance = 300
         let app = XCUIApplication()
+        app.launchArguments += ["--ask-duo-ui-fixture"]
         captureFinalState(of: app)
         app.launch()
         openMenu(in: app)
@@ -314,12 +344,13 @@ final class BrowserUITests: XCTestCase {
         revealAssistant(ask, in: app)
         let available = (ask.value as? String) == "available"
         XCTAssertEqual(ask.isEnabled, available)
-        print("Ask Duo native verification: consentedExcerpt=true, excludedFields=true, onDeviceModelAvailable=\(available)")
+        print("Ask Duo native UI verification: consentedExcerpt=true, excludedFields=true, uiEngineReady=\(available), syntheticEngine=true")
+        XCTAssertTrue(available)
         if available {
             let status = app.staticTexts["askduo.request.status"]
             revealAssistant(status, in: app)
             ask.tap()
-            print("Ask Duo live generation: requested=true")
+            print("Ask Duo UI conversation: requested=true, syntheticEngine=true")
             let finished = XCTNSPredicateExpectation(
                 predicate: NSPredicate(format: "value == %@ OR value BEGINSWITH %@", "answered", "failed:"),
                 object: status
@@ -329,10 +360,11 @@ final class BrowserUITests: XCTestCase {
             XCTAssertEqual(status.value as? String, "answered")
             revealAssistant(app.staticTexts["askduo.answer"], in: app)
             XCTAssertFalse(app.staticTexts["askduo.answer"].label.isEmpty)
-            print("Ask Duo live generation: completed=true")
+            XCTAssertTrue(app.staticTexts["askduo.answer"].label.contains("UI TEST RESPONSE"))
+            print("Ask Duo UI conversation: completed=true, notLiveInference=true")
         } else {
             XCTAssertFalse(ask.isEnabled)
-            print("Ask Duo live generation: requested=false, modelUnavailable=true")
+            print("Ask Duo UI conversation: requested=false, modelUnavailable=true")
         }
         let links = app.buttons["askduo.links.toggle"]
         revealAssistant(links, in: app)
@@ -752,6 +784,9 @@ final class BrowserUITests: XCTestCase {
             let expand = app.buttons["askduo.expand"]
             XCTAssertTrue(expand.waitForExistence(timeout: 10))
             expand.tap()
+        }
+        if app.launchArguments.contains("--ask-duo-ui-fixture") {
+            XCTAssertTrue(app.staticTexts["askduo.test-engine"].waitForExistence(timeout: 10))
         }
     }
 

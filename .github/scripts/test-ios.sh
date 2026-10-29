@@ -15,7 +15,8 @@ elif [[ "$suite" == duo-panel ]]; then
 elif [[ "$suite" == ask-duo ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoBlocksPrivateTabs \
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation \
-    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoGeneralChatKeepsFollowUpsWithoutReadingPage
 elif [[ "$suite" == reading ]]; then
   set -- -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewAppearanceAndPDF \
     -only-testing:DuoBrowserUITests/BrowserUITests/testReadingViewPrivateExportRequiresConfirmation \
@@ -28,7 +29,8 @@ elif [[ "$suite" == page-tools ]]; then
     -only-testing:DuoBrowserUITests/BrowserUITests/testScannerSettingsPersistAfterReturningFromEditor \
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoBlocksPrivateTabs \
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation \
-    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoGeneralChatKeepsFollowUpsWithoutReadingPage
 fi
 maximum_test_seconds=180
 if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading || "$suite" == page-tools ]]; then

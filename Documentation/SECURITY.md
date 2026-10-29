@@ -53,6 +53,14 @@ cloud fallbacks. Logs contain numeric error codes, not page text, questions,
 answers or addresses. This first version provides reviewed excerpts and
 confirmed navigation, not an unrestricted autonomous browsing agent.
 
+Deterministic UI generation is an explicitly launched, visibly labeled DEBUG
+test fixture, not a response fallback. Its generator is excluded from Release;
+normal availability/error paths never select it. Native unit tests separately
+probe the real Apple provider with public synthetic prompts. A simulator that
+reports available but fails even the minimal plain-text probe is recorded as a
+skip, not successful live inference; failures after a usable probe remain test
+failures.
+
 ## Untrusted website boundary
 
 Reading View is a separate local plain-text presentation, including in private

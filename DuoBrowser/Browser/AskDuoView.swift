@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AskDuoView: View {
     @ObservedObject var model: BrowserViewModel
-    @StateObject private var assistant = AskDuoModel()
+    @StateObject private var assistant = AskDuoModel.makeForPresentation()
     @State private var selectedLink: AskDuoLink?
     @State private var confirmsNavigation = false
     @State private var showsExcerpt = false
@@ -29,14 +29,18 @@ struct AskDuoView: View {
                     Section {
                         Text(blockedReason).accessibilityIdentifier("askduo.page.blocked")
                     }
-                    if blockedReason == nil, let pageBlockedReason {
-                        Section {
-                            Text("\(pageBlockedReason) You can still chat without page access.")
-                                .font(.footnote).accessibilityIdentifier("askduo.page.blocked")
-                        }
+                }
+                if blockedReason == nil, let pageBlockedReason {
+                    Section {
+                        Text("\(pageBlockedReason) You can still chat without page access.")
+                            .font(.footnote).accessibilityIdentifier("askduo.page.blocked")
                     }
                 }
                 Section {
+                    if AskDuoModel.usesUITestFixture {
+                        Text("UI TEST ENGINE - no Apple Intelligence response is being generated.")
+                            .font(.caption).accessibilityIdentifier("askduo.test-engine")
+                    }
                     Label("On-device Apple Intelligence", systemImage: "sparkles")
                         .font(.subheadline.weight(.semibold))
                     Text(assistant.availabilityMessage ?? "Ready for questions, writing help and approved page context.")
@@ -293,7 +297,7 @@ struct AskDuoView: View {
         Button(title) {
             usesPage = true
             assistant.question = question
-            send()
+            prepareSend(includingPage: true)
         }
         .buttonStyle(.bordered).controlSize(.small)
         .frame(minHeight: 44).font(.caption)
@@ -311,10 +315,14 @@ struct AskDuoView: View {
     }
 
     private func send() {
+        prepareSend(includingPage: usesPage)
+    }
+
+    private func prepareSend(includingPage: Bool) {
         questionFocused = false
         guard !assistant.isBusy, blockedReason == nil else { return }
         guard let question = assistant.validatedQuestion() else { return }
-        if !usesPage {
+        if !includingPage {
             sendAfterApproval = false
             assistant.ask(model, usingPage: false)
         } else if assistant.hasApprovedContext {
