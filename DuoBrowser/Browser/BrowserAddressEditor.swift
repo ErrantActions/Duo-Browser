@@ -34,7 +34,7 @@ struct BrowserAddressEditor: View {
                         .allowsHitTesting(false)
                 }
                 .shadow(color: .black.opacity(0.15), radius: 8, y: 3)
-                .accessibilityIdentifier("browser.address.bubble")
+                .accessibilityElement(children: .contain)
                 .accessibilityAction(.escape, cancel)
             } else {
                 fullEditor

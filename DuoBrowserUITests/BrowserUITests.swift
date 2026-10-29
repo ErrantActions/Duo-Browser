@@ -111,7 +111,9 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(app.webViews.staticTexts["Record 2 of 3"].waitForExistence(timeout: 10))
         addressButton.tap()
         let bubble = app.textFields["browser.address.bubble.field"]
-        XCTAssertTrue(bubble.waitForExistence(timeout: 10))
+        let bubbleExists = bubble.waitForExistence(timeout: 10)
+        print("Duo address expansion: bubbleField=\(bubbleExists), addressFields=\(app.textFields.matching(identifier: "Address and search").count), keyboards=\(app.keyboards.count), fullEditor=\(app.navigationBars["Address and Search"].exists), bottomChrome=\(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)")
+        XCTAssertTrue(bubbleExists)
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10))
         XCTAssertFalse(app.navigationBars["Address and Search"].exists)
         XCTAssertEqual(app.textFields.matching(identifier: "Address and search").count, 1)
