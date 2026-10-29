@@ -209,7 +209,18 @@ final class AskDuoModel: ObservableObject {
                 return ("apple.unknown", "Apple Intelligence could not complete this request. Nothing was opened.")
             }
         }
-        return ("operation.\((error as NSError).code)", "Apple Intelligence or the page reader could not complete this request. Nothing was opened.")
+        var current: NSError? = error as NSError
+        var codes: [String] = []
+        for _ in 0..<3 {
+            guard let item = current else { break }
+            let safe = item.domain.utf8.allSatisfy {
+                (48...57).contains($0) || (65...90).contains($0) || (97...122).contains($0)
+                    || [45, 46, 95].contains($0)
+            }
+            codes.append("\(safe ? String(item.domain.prefix(96)) : "framework").\(item.code)")
+            current = item.userInfo[NSUnderlyingErrorKey] as? NSError
+        }
+        return ("operation." + codes.joined(separator: "/"), "Apple Intelligence or the page reader could not complete this request. Nothing was opened.")
     }
 
     @available(iOS 26.0, *)

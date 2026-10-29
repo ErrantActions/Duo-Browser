@@ -135,7 +135,7 @@ final class AskDuoTests: XCTestCase {
             domain: "Fixture", code: 123,
             userInfo: [NSLocalizedDescriptionKey: "PRIVATE_DIAGNOSTIC_MARKER"]
         ))
-        XCTAssertEqual(failure.code, "operation.123")
+        XCTAssertEqual(failure.code, "operation.Fixture.123")
         XCTAssertFalse(failure.message.contains("PRIVATE_DIAGNOSTIC_MARKER"))
         XCTAssertEqual(AskDuoModel.describeFailure(AskDuoError.staleContext).code, "page.validation")
     }
