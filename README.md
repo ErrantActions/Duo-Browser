@@ -65,11 +65,20 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   Its beta state is **MISSING_EXPORT_COMPLIANCE**: the owner must answer that
   Apple prompt truthfully before distribution. No answer was invented or copied
   automatically. Assignment and phone installation remain unverified.
-  **Latest:** the two-stage address bubble and unique controls are delivered in
+  The earlier two-stage address bubble and unique controls were delivered in
   **build 1.0.3**, [release run 40814804265](https://github.com/ErrantActions/Duo-Browser/actions/runs/40814804265),
   after the focused UI pass and **63 passing native unit tests**. Apple processing
   is **VALID**; this build also needs the owner's export-compliance answer before
-  distribution. Use 1.0.3 for first-tap inline typing and second-tap full editing.
+  distribution. That build used first-tap inline typing and second-tap full
+  editing; the latest release below replaces the second tap with closing.
+  **Latest: build 1.0.4** delivers the matching rail background, bounded **URL**
+  label, and connected open/close bubble in
+  [release run 40823535016](https://github.com/ErrantActions/Duo-Browser/actions/runs/40823535016).
+  All **64 native unit tests** passed. The owner-confirmed exempt-encryption
+  declaration survived the signed archive; Apple reports **VALID**,
+  `usesNonExemptEncryption=false`, and **READY_FOR_BETA_TESTING** without a
+  compliance questionnaire. Owner Testing assignment and phone installation
+  remain unverified. No France/store-territory setting was changed.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 
@@ -289,7 +298,7 @@ Further tests cover old saved-data decoding, favorites/folder filtering, write
 rollback, Reading List state, calendar-day grouping across daylight-saving
 changes, recently closed/private exclusions, bulk tab closing, page zoom, and
 Quick Look data-source wiring, and address-editor capability isolation during
-scene reactivation. The latest release passed all 63 native unit tests.
+scene reactivation. The latest release passed all 64 native unit tests.
 The UI tests cover demo permission, event delivery, panel clearing,
 tab creation/closing, regular/private grid switching, selection preservation,
 an ordinary HTTPS address, and back/forward navigation.

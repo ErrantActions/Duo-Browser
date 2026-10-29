@@ -363,6 +363,35 @@ editor. Cancellation preserved Record 2; input validation, keyboard Go,
 unique browser controls, website navigation, refresh, and clear also passed.
 This is focused simulator proof, not full UI acceptance or phone installation.
 
+### Verified connected URL and automatic compliance: version 1.0, build 1.0.4
+
+[Run 40823535016](https://github.com/ErrantActions/Duo-Browser/actions/runs/40823535016)
+delivered commit `df5552495dc14f21cd587b913cdfa94c2a947c6b`, with the same
+application code as the focused pixel-based UI pass above. All **64 native unit
+tests** passed, including a real visible WebKit document's initial and updated
+CSS background colors, retained WebView identity, and start-page color reset.
+The test restores its temporary key window. No tests were removed or skipped
+to release the app.
+
+Preflight selected **1.0.4** above existing uploads. The logs separately verify
+`ARCHIVE SUCCEEDED`, `Archive exempt-encryption declaration verified`,
+`EXPORT SUCCEEDED`, and `UPLOAD SUCCEEDED with no errors` on October 29, 2026
+at 05:40 UTC. The archive check requires the actual app plist's
+`ITSAppUsesNonExemptEncryption` Boolean to remain `false`.
+
+Apple subsequently reported **VALID**, not expired,
+`usesNonExemptEncryption=false`, internal **READY_FOR_BETA_TESTING**, and
+external **READY_FOR_BETA_SUBMISSION**. It no longer reports
+**MISSING_EXPORT_COMPLIANCE** for this build: the owner-confirmed plist answer
+was accepted automatically. No France-distribution answer, store-territory
+change, export-compliance code, public testing link, or external review
+submission was added.
+
+Owner Testing assignment and actual phone installation remain unverified.
+The upload key's earlier restricted group visibility was not bypassed or
+broadened. Earlier builds' compliance states are historical and are not changed
+retroactively by this new plist.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
