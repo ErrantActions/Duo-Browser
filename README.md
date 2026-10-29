@@ -83,6 +83,14 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   Future eligible uploads no longer require manual group assignment.
   Actual phone installation remains unverified. The original manual group was
   preserved; no France/store-territory setting was changed.
+- Ask Duo's Apple Foundation Models integration compiled and passed
+  [focused native run 40835752864](https://github.com/ErrantActions/Duo-Browser/actions/runs/40835752864):
+  two tests, zero failures, covering private-tab exclusion, explicit excerpt
+  approval, filtered form/editable content, keyboard interaction, unavailable
+  model handling, native confirmation/cancellation, and actual HTTPS navigation.
+  The simulator reported its model unavailable; this is **not** a claim that
+  Apple Intelligence generated a live answer. That requires an eligible,
+  enabled device.
 - Physical-device scanning and the manual browser checklist below require
   additional validation. This is not an App Store-ready Safari replacement.
 
@@ -347,7 +355,7 @@ still need an approved native rerun. No all-green native suite is claimed.
 CI boots one simulator explicitly and runs the native suites sequentially.
 Optional artifacts contain whitelisted test counts only; raw result bundles,
 screenshots, and signing files are not uploaded. The local checks have
-25 passing Node tests and 4 passing Python tests. Actual profile/API/
+29 passing Node tests and 4 passing Python tests. Actual profile/API/
 archive validation still requires privately configured secrets and an approved job.
 Do not equate project syntax checks or SDK tests with
 successful iOS compilation or runtime acceptance.

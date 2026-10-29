@@ -86,6 +86,9 @@ or claim that generation ran. The native unit suite covers response/link bounds,
 stale contexts, modal capability suspension and clearing local data.
 Eligible physical hardware with Apple Intelligence enabled is required to
 complete live-model acceptance when CI reports unavailable.
+Private-tab coverage is a separate focused case. The complete integration case
+has a bounded 300-second budget to include model generation and slow simulator
+accessibility; unit and Duo-only scopes retain their 180-second maximum.
 
 Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
 with one-day retention. It does not publish an app, IPA, screenshot, result
@@ -436,6 +439,24 @@ same existing owner. The earlier HTTP 403 concerned a build-to-group endpoint;
 the documented direct group resources worked without changing key permissions.
 Actual phone installation remains unverified. Earlier builds' compliance states
 are historical and are not changed retroactively by this new plist.
+
+### Verified Ask Duo native acceptance
+
+[Run 40835752864](https://github.com/ErrantActions/Duo-Browser/actions/runs/40835752864)
+passed **two focused UI tests with zero failures** for commit
+`c8a95b6c1acd476fb495b5d222e51728b076b38f`.
+It compiled the real Apple Foundation Models / guided-generation implementation.
+Native tests verified private-tab exclusion, no implicit page capture, explicit
+Use This Excerpt approval, actual bundled-page filtering of input/form/editable
+markers, a valid typed question, unavailable-model disabling, and native
+navigation alert Cancel/Open followed by real HTTPS loading.
+
+The simulator reported `onDeviceModelAvailable=false` and
+`requested=false, modelUnavailable=true`. No live model answer was fabricated,
+and this run is not proof of actual model generation. An eligible device with
+Apple Intelligence enabled and its on-device model ready must complete that
+acceptance check. The conditional test calls the real on-device model when
+available; it has no fake model, network fallback, or alternate provider.
 
 After an upload:
 
