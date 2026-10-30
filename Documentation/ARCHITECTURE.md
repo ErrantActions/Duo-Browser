@@ -99,7 +99,8 @@ dismissal, like other browser page tools.
 
 Per-origin regular preferences store only stable SHA-256 route digests for
 pin/hide choices, not link href/query text. Private preferences remain per-tab
-and never touch the library. Up to three links are shown, pinned first.
+and never touch the library. Up to two links are shown, pinned first, with
+configuration in the existing browser menu rather than another crowded item.
 Explicit panels and the user's browser-only state suppress the entire detected
 set. The native rail groups Back/Refresh separately from URL and Ask/Tabs/Menu;
 the existing website-actions group remains distinct.

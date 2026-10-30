@@ -18,7 +18,7 @@ struct SiteNavigationPreferences: Codable, Equatable {
         enabled = try values.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
         pinned = try values.decodeIfPresent([String].self, forKey: .pinned) ?? []
         hidden = try values.decodeIfPresent([String].self, forKey: .hidden) ?? []
-        guard pinned.count <= 3, hidden.count <= 24,
+        guard pinned.count <= 2, hidden.count <= 24,
               Set(pinned).count == pinned.count, Set(hidden).count == hidden.count,
               (pinned + hidden).allSatisfy({ $0.count == 64 && $0.utf8.allSatisfy { (48...57).contains($0) || (97...102).contains($0) } }) else {
             throw DecodingError.dataCorruptedError(forKey: .pinned, in: values, debugDescription: "Invalid site navigation preferences.")
@@ -105,7 +105,7 @@ struct SiteNavigationSnapshot: Equatable, Sendable {
         guard preferences.enabled else { return [] }
         let visible = links.filter { !preferences.hidden.contains($0.id) }
         let pins = preferences.pinned.compactMap { id in visible.first { $0.id == id } }
-        return Array((pins + visible.filter { !preferences.pinned.contains($0.id) }).prefix(3))
+        return Array((pins + visible.filter { !preferences.pinned.contains($0.id) }).prefix(2))
     }
 }
 
@@ -374,8 +374,8 @@ final class SiteNavigationModel: ObservableObject {
         guard let origin else { errorMessage = SiteNavigationError.unavailable.localizedDescription; return }
         var profile = preferences
         update(&profile)
-        guard profile.pinned.count <= 3, profile.hidden.count <= 24 else {
-            errorMessage = "Keep at most three pinned links and 24 hidden links per site. Reset this site's choices to clear old entries."
+        guard profile.pinned.count <= 2, profile.hidden.count <= 24 else {
+            errorMessage = "Keep at most two pinned links and 24 hidden links per site. Reset this site's choices to clear old entries."
             return
         }
         if isPrivate {

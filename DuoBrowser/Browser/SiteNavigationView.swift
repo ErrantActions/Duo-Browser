@@ -3,6 +3,7 @@ import SwiftUI
 struct SiteNavigationView: View {
     @ObservedObject var model: BrowserViewModel
     @ObservedObject var navigation: SiteNavigationModel
+    @Environment(\.dismiss) private var dismiss
     let navigate: (SiteNavigationAction) -> Void
 
     var body: some View {
@@ -31,7 +32,7 @@ struct SiteNavigationView: View {
                 Button("Refresh Detected Navigation") { navigation.refreshForReview() }
                     .disabled(navigation.origin == nil || navigation.isRefreshing || !navigation.detectionEnabled)
                     .accessibilityIdentifier("site.navigation.refresh")
-                Text("Automatic detection must also be enabled in Settings. Up to three links appear in the controls; pinned links come first. Hide affects only Duo's shortcuts.")
+                Text("Automatic detection must also be enabled in Settings. Up to two links appear in the controls; pinned links come first. Hide affects only Duo's shortcuts.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             if navigation.isRefreshing { Section { ProgressView("Reading navigation...") } }
@@ -60,6 +61,7 @@ struct SiteNavigationView: View {
                             }
                             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         }
+                        .buttonStyle(.borderless)
                         .disabled(navigation.isOpening || model.bridge.panel != nil || !navigation.preferences.enabled)
                         .accessibilityIdentifier("site.navigation.link.\(index)")
                         Toggle("Show in Duo Controls", isOn: Binding(
@@ -84,7 +86,8 @@ struct SiteNavigationView: View {
                                 }
                             }
                         }
-                        .disabled(!navigation.preferences.pinned.contains(link.id) && navigation.preferences.pinned.count >= 3)
+                        .buttonStyle(.borderless)
+                        .disabled(!navigation.preferences.pinned.contains(link.id) && navigation.preferences.pinned.count >= 2)
                         .accessibilityIdentifier("site.navigation.pin.\(index)")
                     }
                 }
@@ -99,6 +102,12 @@ struct SiteNavigationView: View {
         .accessibilityIdentifier("site.navigation.list")
         .navigationTitle("Site Navigation")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") { dismiss() }
+                    .accessibilityIdentifier("site.navigation.close")
+            }
+        }
         .onAppear {
             if navigation.detectionEnabled, model.bridge.panel == nil { navigation.refreshForReview() }
         }

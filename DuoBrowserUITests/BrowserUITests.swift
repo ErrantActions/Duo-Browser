@@ -13,7 +13,7 @@ final class BrowserUITests: XCTestCase {
         let first = app.buttons["site.navigation.quick.0"]
         XCTAssertTrue(first.waitForExistence(timeout: 15))
         let webpage = app.webViews.firstMatch
-        for index in 0..<3 {
+        for index in 0..<2 {
             let link = app.buttons["site.navigation.quick.\(index)"]
             XCTAssertEqual(app.buttons.matching(identifier: "site.navigation.quick.\(index)").count, 1)
             XCTAssertTrue(link.isHittable)
@@ -38,7 +38,6 @@ final class BrowserUITests: XCTestCase {
         allow.tap()
         XCTAssertTrue(app.buttons["duo.control.next"].waitForExistence(timeout: 10))
         XCTAssertTrue(first.waitForNonExistence(timeout: 10))
-        XCTAssertFalse(app.buttons["site.navigation.all"].exists)
         let clear = app.webViews.buttons["Clear Duo Panel"]
         revealControl(clear, in: webpage)
         clear.tap()
@@ -55,7 +54,8 @@ final class BrowserUITests: XCTestCase {
         captureFinalState(of: app)
         openReadingDemo(in: app, isPrivate: false)
         enableNavigationDemo(in: app)
-        app.buttons["site.navigation.all"].tap()
+        openMenu(in: app)
+        app.buttons["browser.site-navigation"].tap()
         XCTAssertTrue(app.navigationBars["Site Navigation"].waitForExistence(timeout: 10))
         let visible = app.switches["site.navigation.visible.0"]
         revealControl(visible, in: app.collectionViews["site.navigation.list"])
@@ -64,7 +64,10 @@ final class BrowserUITests: XCTestCase {
         let pin = app.buttons["site.navigation.pin.2"]
         revealControl(pin, in: app.collectionViews["site.navigation.list"])
         pin.tap()
-        app.buttons["Done"].firstMatch.tap()
+        let pinned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", "Unpin Link"), object: pin)
+        XCTAssertEqual(XCTWaiter.wait(for: [pinned], timeout: 5), .completed)
+        XCTAssertTrue(app.navigationBars["Site Navigation"].exists)
+        app.buttons["site.navigation.close"].tap()
         XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForExistence(timeout: 10))
         XCTAssertEqual(app.buttons["site.navigation.quick.0"].label, "Scanner")
         XCTAssertFalse(app.buttons["site.navigation.quick.2"].exists)
@@ -75,12 +78,13 @@ final class BrowserUITests: XCTestCase {
         openReadingDemo(in: app, isPrivate: true)
         enableNavigationDemo(in: app)
         XCTAssertEqual(app.buttons["site.navigation.quick.0"].label, "Catalog")
-        app.buttons["site.navigation.all"].tap()
+        openMenu(in: app)
+        app.buttons["browser.site-navigation"].tap()
         XCTAssertTrue(app.staticTexts["Private choices stay in this tab only"].waitForExistence(timeout: 10))
         let enabled = app.switches["site.navigation.enabled"]
         revealControl(enabled, in: app.collectionViews["site.navigation.list"])
         enabled.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
-        app.buttons["Done"].firstMatch.tap()
+        app.buttons["site.navigation.close"].tap()
         XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForNonExistence(timeout: 10))
         openReadingDemo(in: app, isPrivate: false)
         enableNavigationDemo(in: app)
@@ -94,8 +98,8 @@ final class BrowserUITests: XCTestCase {
         revealControl(enable, in: app.webViews.firstMatch)
         enable.tap()
         XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForExistence(timeout: 15))
-        print("Detected toolbar AX: quickCounts=\((0..<3).map { app.buttons.matching(identifier: "site.navigation.quick.\($0)").count }), overviewTypes=\(app.descendants(matching: .any).matching(identifier: "site.navigation.all").allElementsBoundByIndex.map { $0.elementType.rawValue })")
-        XCTAssertTrue(app.buttons["site.navigation.all"].waitForExistence(timeout: 10))
+        print("Detected toolbar AX: quickCounts=\((0..<2).map { app.buttons.matching(identifier: "site.navigation.quick.\($0)").count })")
+        XCTAssertTrue(app.buttons["site.navigation.quick.1"].waitForExistence(timeout: 10))
     }
 
     @MainActor

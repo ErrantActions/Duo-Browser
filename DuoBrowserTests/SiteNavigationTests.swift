@@ -51,9 +51,11 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
         var profile = SiteNavigationPreferences()
         profile.pinned = [page.links[4].id]
         profile.hidden = [page.links[0].id]
-        XCTAssertEqual(page.toolbarLinks(preferences: profile).map(\.label), ["Page 4", "Page 1", "Page 2"])
+        XCTAssertEqual(page.toolbarLinks(preferences: profile).map(\.label), ["Page 4", "Page 1"])
         profile.enabled = false
         XCTAssertTrue(page.toolbarLinks(preferences: profile).isEmpty)
+        profile.pinned = page.links.prefix(3).map(\.id)
+        XCTAssertThrowsError(try JSONDecoder().decode(SiteNavigationPreferences.self, from: JSONEncoder().encode(profile)))
         XCTAssertThrowsError(try JSONDecoder().decode(
             SiteNavigationPreferences.self, from: Data(#"{"enabled":true,"pinned":["not-a-digest"],"hidden":[]}"#.utf8)
         ))

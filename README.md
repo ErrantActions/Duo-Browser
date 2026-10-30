@@ -399,7 +399,7 @@ The in-memory recently closed tab list is cleared.
 ### Automatic Site Navigation
 
 Duo can detect visible primary navigation from a website's `nav`, navigation
-landmark or header, then show up to **three** same-site links in its controls.
+landmark or header, then show up to **two** same-site links in its controls.
 The website's original menu stays untouched. This is local semantic inspection,
 not AI, web search, execution of site-provided actions or an external service.
 

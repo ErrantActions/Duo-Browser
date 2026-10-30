@@ -185,15 +185,6 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         }
                         .axisBehavior(.horizontalOnly)
                     }
-                    ToolbarItem(placement: .bottomBar) {
-                        Button { present(.siteNavigation) } label: {
-                            Label("Site Navigation", systemImage: "list.bullet")
-                        }
-                        .labelStyle(.iconOnly)
-                        .disabled(addressExpanded)
-                        .accessibilityIdentifier("site.navigation.all")
-                    }
-                    .axisBehavior(.verticalPreferred)
                     ToolbarItemGroup(placement: .bottomBar) {
                         ForEach(Array(model.siteNavigation.toolbarLinks.enumerated()), id: \.element.id) { index, link in
                             DetectedNavigationToolbarControl(

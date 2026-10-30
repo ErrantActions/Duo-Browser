@@ -132,7 +132,7 @@ struct BrowserView: View {
         NavigationStack {
             sheetContent(selection)
                 .toolbar {
-                    if selection != .tabs && selection != .bookmark {
+                    if selection != .tabs && selection != .bookmark && selection != .siteNavigation {
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Done") { sheet = nil }
                                 .disabled(manager.isClearingData)
