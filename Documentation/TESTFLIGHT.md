@@ -142,6 +142,24 @@ not Apple model inference. The Release app excludes that generator. The real
 provider has a separate native probe; no device-generation or physical-camera
 acceptance is implied by these six UI checks.
 
+### Verified detected-navigation UI
+
+[Run 41015613403, attempt 2](https://github.com/ErrantActions/Duo-Browser/actions/runs/41015613403/attempts/2)
+passed all **three native UI cases** with zero failures on source
+`9b9c9e21ba1c939d0f3552e3ec641eae8957e228`. It verifies two unique detected
+shortcuts outside the webpage viewport, live label updates, real bundled
+fragment navigation, immediate DuoKit precedence and fallback after clear,
+pin/hide persistence across app restart, and private choices not affecting
+regular preferences. The full existing native-strip/URL-bubble/RGB/HTTPS
+regression also passed unchanged.
+
+The adaptive native bottom group hid extra items, so the final design uses two
+icon-only shortcuts and the existing browser menu for configuration, not another
+competing overview button. Settings dismissal is a persistent native button in
+a visible context header, outside virtualized rows. The first attempt's old
+permission-prompt regression failed intermittently; the identical source was
+rerun without changing permission behavior or weakening assertions.
+
 Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
 with one-day retention. It does not publish an app, IPA, screenshot, result
 bundle, profile, keychain, API key, or raw diagnostic logs. A missing result
