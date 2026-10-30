@@ -185,6 +185,15 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         }
                         .axisBehavior(.horizontalOnly)
                     }
+                    ToolbarItem(placement: .bottomBar) {
+                        Button { present(.siteNavigation) } label: {
+                            Label("Site Navigation", systemImage: "list.bullet")
+                        }
+                        .labelStyle(.iconOnly)
+                        .disabled(addressExpanded)
+                        .accessibilityIdentifier("site.navigation.all")
+                    }
+                    .axisBehavior(.verticalPreferred)
                     ToolbarItemGroup(placement: .bottomBar) {
                         ForEach(Array(model.siteNavigation.toolbarLinks.enumerated()), id: \.element.id) { index, link in
                             DetectedNavigationToolbarControl(
@@ -193,15 +202,6 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                                 addressExpanded: addressExpanded
                             )
                         }
-                    }
-                    .axisBehavior(.verticalPreferred)
-                    ToolbarItem(placement: .bottomBar) {
-                        Button { present(.siteNavigation) } label: {
-                            Label("Site Navigation", systemImage: "list.bullet")
-                        }
-                        .labelStyle(.iconOnly)
-                        .disabled(addressExpanded)
-                        .accessibilityIdentifier("site.navigation.all")
                     }
                     .axisBehavior(.verticalPreferred)
                 }
@@ -219,12 +219,10 @@ private struct DetectedNavigationToolbarControl: View {
 
     var body: some View {
         Button { navigation.activate(link) } label: {
-            VStack(spacing: 2) {
-                Image(systemName: link.icon)
-                Text(verbatim: link.label).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
-            }
-            .frame(width: 44, height: 44)
+            Label { Text(verbatim: link.label) } icon: { Image(systemName: link.icon) }
         }
+        .labelStyle(.iconOnly)
+        .help(link.label)
         .disabled(addressExpanded || navigation.isOpening)
         .accessibilityLabel(link.label)
         .accessibilityHint("Detected website link from \(origin)")
