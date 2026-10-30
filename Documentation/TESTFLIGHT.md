@@ -700,6 +700,40 @@ Actual phone installation, supported-device Apple Intelligence generation,
 camera recognition and vibration remain unverified. The notes explicitly ask
 the owner to check those hardware-dependent paths.
 
+### Verified automatic navigation delivery: version 1.0, build 1.0.9
+
+[Run 41020184943](https://github.com/ErrantActions/Duo-Browser/actions/runs/41020184943)
+delivered commit `987ccac2271d79b5489ebd892fb0298b2f16fe3b`. **104 native cases
+executed: 103 passed, one explicitly skipped, zero failures**, in 27.37 seconds.
+The skipped real-Apple-model probe reported unavailable; no model inference is
+claimed. **43 Node tests**, **four Python tests**, and membership for **53 Swift
+files / seven required resources** passed.
+
+The three UI cases above passed on the same application logic; the later
+test-only change attaches observer fixtures to an actual visible window.
+The first signed attempt stopped before archive/upload because an offscreen
+WebKit observer was not a valid active-page timing fixture. The correction
+retained origin/document checks, all assertions and the ten-second deadline.
+
+Preflight chose and rechecked **1.0.9** above existing uploads. Logs separately
+confirm `ARCHIVE SUCCEEDED`, the archive's Boolean exempt-encryption declaration,
+`EXPORT SUCCEEDED`, and `UPLOAD SUCCEEDED with no errors` on October 30, 2026
+at **07:37:17 UTC**.
+
+After a short listing delay, Apple verified **VALID**, not expired,
+`usesNonExemptEncryption=false`, internal **IN_BETA_TESTING**, and external
+**READY_FOR_BETA_SUBMISSION**. The build appeared automatically in **Owner
+Testing Auto**, still internal with access to all builds, no public link, and
+exactly the same one owner as the original preserved group. No group changes,
+manual assignment, new tester, external review, or permission escalation was
+performed. English `whatsNew` notes were created and re-read successfully,
+preserving other locales.
+
+This release adds local semantic site shortcuts and regular/private preference
+behavior, not web search or new model actions. Actual phone installation,
+eligible-device Apple Intelligence generation, camera and vibration remain
+physical-device checks.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
