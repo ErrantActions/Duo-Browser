@@ -96,7 +96,7 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         }
                         .labelStyle(.iconOnly)
                         .disabled(addressExpanded)
-                        .accessibilityHint("Ask Apple Intelligence about the current page")
+                        .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
                         .accessibilityIdentifier("browser.askduo")
                     }
                     .axisBehavior(.verticalPreferred)

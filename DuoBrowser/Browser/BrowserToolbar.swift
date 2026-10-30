@@ -33,7 +33,7 @@ struct BrowserToolbar: View {
             .accessibilityIdentifier("browser.tabs")
             Spacer(minLength: 0)
             toolbarButton("Ask Duo", icon: "sparkles") { present(.assistant) }
-                .accessibilityHint("Ask Apple Intelligence about the current page")
+                .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
                 .accessibilityIdentifier("browser.askduo")
             Spacer(minLength: 0)
             }

@@ -78,14 +78,29 @@ hardware-keyboard connection so the on-screen keyboard is actually exercised.
 It does not duplicate the unit suite that TestFlight will run and does not
 claim full UI acceptance.
 
-For Ask Duo, `test_scope=ask-duo` selects its consent/private-tab, filtered
-excerpt, model-availability, and confirmed-navigation UI regression. It invokes
-real on-device generation only if Apple reports the model available; otherwise
-it explicitly verifies the unavailable state and does not fabricate inference
-or claim that generation ran. The native unit suite covers response/link bounds,
-stale contexts, modal capability suspension and clearing local data.
-Eligible physical hardware with Apple Intelligence enabled is required to
-complete live-model acceptance when CI reports unavailable.
+For Ask Duo, `test_scope=ask-duo` selects four native UI cases: private exclusion,
+page-free follow-up chat, compact/expanded quick-prompt review, and filtered
+excerpt approval with confirmed navigation. These explicitly launch a visibly
+labeled DEBUG-only scripted engine. They verify real UI/page-reader/controller
+behavior, **not Apple model inference**. Release builds exclude that engine and
+always use the real Apple provider; it is never an availability/error fallback.
+
+The native unit suite separately tests conversation bounds, prompt metadata
+omission, two-turn pipeline history, stale contexts, modal capability suspension
+and clearing local data. Its real-provider probe first attempts a minimal plain
+response, then the application's general/page schemas. Unavailable models, or
+an untyped simulator `FoundationModels.LanguageModelError -1` on the minimal
+probe, are explicitly skipped without a live-inference claim. Errors after a
+usable minimal probe remain failures. Eligible physical hardware is required
+to certify Apple Intelligence when that probe skips.
+
+For scanning, `test_scope=scanner` selects compact input-sheet/no-target handling
+and saved scanner preferences/reopening. `test_scope=page-tools` combines those
+two with all four assistant cases without duplicating native unit execution.
+Unit tests exercise actual WKWebView field insertion, beforeinput/input/change
+and Enter events, normal form validation, cancellation, target changes, exact
+barcode preservation, migration and on-disk settings. Camera recognition and
+vibration still require a supported physical iPhone.
 For local reading/start-page changes, `test_scope=reading` selects reader
 appearance/persistence, original-page-state retention, real PDF share
 presentation and private-export confirmation plus continued private-AI
@@ -94,8 +109,29 @@ Native unit tests separately inspect actual PDF pages/searchable
 text, metadata omission, extraction bounds, settings migration and capability
 suspension. Audible speech output requires physical-device acceptance.
 Private-tab coverage is a separate focused case. The complete integration case
-has a bounded 300-second budget to include model generation and slow simulator
+has a bounded 300-second budget for navigation and slow simulator
 accessibility; unit and Duo-only scopes retain their 180-second maximum.
+
+### Verified scanner and conversational assistant UI
+
+The scanner cases passed in
+[run 40971329713](https://github.com/ErrantActions/Duo-Browser/actions/runs/40971329713):
+explicit scanner Save/reopen persistence and compact no-target handling. The
+surface measured **450 x 320.33 points** at y=349.67 in a 466 x 678-point window.
+
+All four assistant cases passed in
+[run 40976769613](https://github.com/ErrantActions/Duo-Browser/actions/runs/40976769613),
+source `996f86078ae7ddaa8a8189c3c350f22556922ffe`: private exclusion, page-free
+two-turn chat, compact/expanded shortcuts with explicit excerpt approval, and
+real filtered-page reading plus confirmed HTTPS navigation. The compact chat
+surface measured 309.67 points high; expansion and an unobscured shortcut above
+the composer were checked. XCTest had previously reported a shortcut behind
+the composer as hittable; the helper now uses the actually visible viewport.
+
+Assistant replies in these UI cases are explicitly labeled DEBUG fixtures,
+not Apple model inference. The Release app excludes that generator. The real
+provider has a separate native probe; no device-generation or physical-camera
+acceptance is implied by these six UI checks.
 
 Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
 with one-day retention. It does not publish an app, IPA, screenshot, result
