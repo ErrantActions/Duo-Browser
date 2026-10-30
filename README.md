@@ -152,7 +152,7 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   group with encryption accepted and English testing notes. Real iPhone model
   inference, camera recognition, vibration and installation remain device checks.
 
-- **Latest: build 1.0.9** adds local **automatic Site Navigation**, two native
+- **Build 1.0.9** adds local **automatic Site Navigation**, two native
   shortcuts with per-site pin/hide choices, private-tab isolation, live menu
   updates and strict DuoKit precedence. Browser navigation, address and tools
   are grouped more consistently.
@@ -162,6 +162,16 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   **VALID** and **IN_BETA_TESTING**, automatically available to the same single
   owner, with encryption accepted and verified English testing notes. No new
   live-model or physical-camera acceptance is claimed.
+
+- **Latest: build 1.0.10** temporarily hides **Ask Duo** from native/classic
+  controls and normal presentation, without a menu replacement or enable
+  setting. Its code remains for future work; Reader, scanner and Site Navigation
+  remain available.
+  [Release run 41068266600](https://github.com/ErrantActions/Duo-Browser/actions/runs/41068266600)
+  passed **104 native unit tests** with one explicit unavailable-model skip and
+  **two focused native UI checks**. Apple reports **VALID** and
+  **IN_BETA_TESTING**, automatically delivered to the same single owner, with
+  encryption accepted and verified English testing notes.
 
 ## Build, run, and test
 

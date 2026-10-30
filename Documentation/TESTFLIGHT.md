@@ -750,6 +750,36 @@ behavior, not web search or new model actions. Actual phone installation,
 eligible-device Apple Intelligence generation, camera and vibration remain
 physical-device checks.
 
+### Verified hidden-assistant delivery: version 1.0, build 1.0.10
+
+[Run 41068266600](https://github.com/ErrantActions/Duo-Browser/actions/runs/41068266600)
+delivered commit `5ae14026b926b77016654f9343fa25f2ce1dbdb3`, with the same
+application code as the default-off UI acceptance above. **105 native cases
+executed: 104 passed, one explicitly skipped, zero failures**. The retained
+real-Apple-model probe reported unavailable; no inference is claimed.
+All **44 Node tests**, **four Python tests**, and membership for **53 Swift
+files / seven required resources** passed.
+
+Preflight chose and rechecked **1.0.10** above existing uploads. Logs separately
+confirm `ARCHIVE SUCCEEDED`, the archive's Boolean exempt-encryption declaration,
+`EXPORT SUCCEEDED`, and `UPLOAD SUCCEEDED with no errors` on October 30, 2026
+at **14:18:56 UTC**.
+
+Apple subsequently verified **VALID**, not expired,
+`usesNonExemptEncryption=false`, internal **IN_BETA_TESTING**, and external
+**READY_FOR_BETA_SUBMISSION**. The build appeared automatically in **Owner
+Testing Auto**, still internal with access to all builds, no public link, and
+exactly the same one owner as the original preserved group. No group changes,
+manual assignment, new tester, external review, or permission escalation was
+performed. English `whatsNew` notes were created and re-read successfully,
+preserving other locales.
+
+Normal native/classic launchers are absent and the presenter rejects assistant
+requests; no menu replacement or enable switch is added. Only explicit DEBUG
+acceptance fixtures expose the retained code. Reader extraction, scanning and
+detected site navigation remain independent. Actual phone installation remains
+unverified; no new camera or model-hardware acceptance is claimed.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.
