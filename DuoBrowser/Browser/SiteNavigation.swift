@@ -196,9 +196,11 @@ final class SiteNavigationModel: ObservableObject {
 
     func receive(_ message: WKScriptMessage) {
         guard message.frameInfo.isMainFrame, message.webView === webView, active, !suppressed,
+              detectionEnabled, contextProvider?() != nil,
               let webView, DuoOrigin.validated(message: message, webView: webView) != nil,
               let body = message.body as? [String: String], body.count == 2,
               UUID(uuidString: body["documentID"] ?? "") != nil,
+              (body["url"]?.utf8.count ?? 0) <= 16_384,
               URL(string: body["url"] ?? "") == webView.url else {
             logger.debug("Ignored stale or inactive navigation observation.")
             return

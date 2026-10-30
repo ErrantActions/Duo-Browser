@@ -25,6 +25,7 @@
                 state.timer = setTimeout(() => {
                     state.timer = null;
                     state.lastSent = performance.now();
+                    if (location.href.length > 4096) return;
                     webkit.messageHandlers.siteNavigation.postMessage({
                         documentID: state.documentID, url: location.href
                     });

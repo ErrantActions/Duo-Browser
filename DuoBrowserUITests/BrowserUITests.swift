@@ -94,6 +94,7 @@ final class BrowserUITests: XCTestCase {
         revealControl(enable, in: app.webViews.firstMatch)
         enable.tap()
         XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForExistence(timeout: 15))
+        print("Detected toolbar AX: quickCounts=\((0..<3).map { app.buttons.matching(identifier: "site.navigation.quick.\($0)").count }), overviewTypes=\(app.descendants(matching: .any).matching(identifier: "site.navigation.all").allElementsBoundByIndex.map { $0.elementType.rawValue })")
         XCTAssertTrue(app.buttons["site.navigation.all"].waitForExistence(timeout: 10))
     }
 

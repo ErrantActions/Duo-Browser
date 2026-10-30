@@ -187,18 +187,15 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                     }
                     ToolbarItemGroup(placement: .bottomBar) {
                         ForEach(Array(model.siteNavigation.toolbarLinks.enumerated()), id: \.element.id) { index, link in
-                            Button { model.siteNavigation.activate(link) } label: {
-                                VStack(spacing: 2) {
-                                    Image(systemName: link.icon)
-                                    Text(verbatim: link.label).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
-                                }
-                                .frame(width: 44, height: 44)
-                            }
-                            .disabled(addressExpanded || model.siteNavigation.isOpening)
-                            .accessibilityLabel(link.label)
-                            .accessibilityHint("Detected website link from \(detectedNavigation.context.url.host ?? "DuoKit Demo")")
-                            .accessibilityIdentifier("site.navigation.quick.\(index)")
+                            DetectedNavigationToolbarControl(
+                                navigation: model.siteNavigation, link: link, index: index,
+                                origin: detectedNavigation.context.url.host ?? "DuoKit Demo",
+                                addressExpanded: addressExpanded
+                            )
                         }
+                    }
+                    .axisBehavior(.verticalPreferred)
+                    ToolbarItem(placement: .bottomBar) {
                         Button { present(.siteNavigation) } label: {
                             Label("Site Navigation", systemImage: "list.bullet")
                         }
@@ -209,6 +206,29 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                     .axisBehavior(.verticalPreferred)
                 }
             }
+    }
+}
+
+@available(iOS 27.1, *)
+private struct DetectedNavigationToolbarControl: View {
+    @ObservedObject var navigation: SiteNavigationModel
+    let link: SiteNavigationLink
+    let index: Int
+    let origin: String
+    let addressExpanded: Bool
+
+    var body: some View {
+        Button { navigation.activate(link) } label: {
+            VStack(spacing: 2) {
+                Image(systemName: link.icon)
+                Text(verbatim: link.label).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
+            }
+            .frame(width: 44, height: 44)
+        }
+        .disabled(addressExpanded || navigation.isOpening)
+        .accessibilityLabel(link.label)
+        .accessibilityHint("Detected website link from \(origin)")
+        .accessibilityIdentifier("site.navigation.quick.\(index)")
     }
 }
 

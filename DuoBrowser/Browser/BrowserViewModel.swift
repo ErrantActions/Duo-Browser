@@ -532,6 +532,7 @@ final class BrowserViewModel: ObservableObject {
     private func synchronizeState() {
         guard !isClosed else { return }
         let previousURL = currentURL
+        let previouslySecure = isSecure
         currentURL = webView.url
         pageTitle = webView.title ?? ""
         isLoading = webView.isLoading
@@ -542,7 +543,7 @@ final class BrowserViewModel: ObservableObject {
         pageBackgroundColor = webView.underPageBackgroundColor ?? .systemBackground
         if !isLoading {
             webView.scrollView.refreshControl?.endRefreshing()
-            if previousURL != currentURL {
+            if previousURL != currentURL || previouslySecure != isSecure {
                 siteNavigation.reset()
                 siteNavigation.refresh()
             }
