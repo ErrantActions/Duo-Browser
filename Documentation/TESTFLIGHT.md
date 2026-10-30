@@ -163,6 +163,19 @@ a visible context header, outside virtualized rows. The first attempt's old
 permission-prompt regression failed intermittently; the identical source was
 rerun without changing permission behavior or weakening assertions.
 
+### Verified hidden Ask Duo presentation
+
+[Run 41066209097](https://github.com/ErrantActions/Duo-Browser/actions/runs/41066209097)
+passed both native UI cases with zero failures on source
+`ec1285418a99befdbb8b69796b94965a8a8d9362`. Default-off acceptance supplies no
+assistant fixture flag and verifies no launcher on ordinary/DuoKit/private
+pages or menu entry, while Reader/scanner tools and approved website controls
+remain. The full native-strip/RGB/address/navigation regression also passes
+without an assistant button or reserved gap.
+
+The retained internal assistant UI cases explicitly opt into the DEBUG fixture;
+they are not evidence that the feature is exposed in normal or Release builds.
+
 Optional `save_summary=true` publishes **only whitelisted numeric test counts**,
 with one-day retention. It does not publish an app, IPA, screenshot, result
 bundle, profile, keychain, API key, or raw diagnostic logs. A missing result
