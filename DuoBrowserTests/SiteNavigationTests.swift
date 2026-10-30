@@ -1,5 +1,6 @@
 import Combine
 import WebKit
+import UIKit
 import XCTest
 @testable import DuoBrowser
 
@@ -101,6 +102,10 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
 
     private func page(demo: Bool = false) async throws -> WKWebView {
         let view = WKWebView(frame: CGRect(x: 0, y: 0, width: 480, height: 800))
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = try XCTUnwrap(scene.windows.first(where: \.isKeyWindow))
+        view.frame = window.bounds
+        window.addSubview(view)
         view.navigationDelegate = self
         let ready = expectation(description: "Site navigation DOM loaded")
         loaded = ready
@@ -120,7 +125,13 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
         }
         await fulfillment(of: [ready], timeout: 15)
         if demo { try await view.evaluateJavaScript("document.querySelector('#site-navigation').hidden = false; true") }
-        addTeardownBlock { await MainActor.run { view.stopLoading(); view.navigationDelegate = nil } }
+        addTeardownBlock {
+            await MainActor.run {
+                view.stopLoading()
+                view.navigationDelegate = nil
+                view.removeFromSuperview()
+            }
+        }
         return view
     }
 
