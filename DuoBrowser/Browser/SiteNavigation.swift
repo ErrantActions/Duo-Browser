@@ -207,8 +207,12 @@ final class SiteNavigationModel: ObservableObject {
     }
 
     func setActive(_ value: Bool) {
+        let wasActive = active
         active = value
-        if value { refresh() } else { cancel(clear: false) }
+        if value {
+            if !wasActive, isRefreshing { cancel(clear: false) }
+            refresh()
+        } else { cancel(clear: false) }
     }
 
     func setSuppressed(_ value: Bool) {

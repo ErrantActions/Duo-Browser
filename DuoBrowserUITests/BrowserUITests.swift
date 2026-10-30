@@ -94,7 +94,7 @@ final class BrowserUITests: XCTestCase {
         revealControl(enable, in: app.webViews.firstMatch)
         enable.tap()
         XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.buttons["site.navigation.all"].exists)
+        XCTAssertTrue(app.buttons["site.navigation.all"].waitForExistence(timeout: 10))
     }
 
     @MainActor

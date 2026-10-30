@@ -202,6 +202,7 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         Button { present(.siteNavigation) } label: {
                             Label("Site Navigation", systemImage: "list.bullet")
                         }
+                        .labelStyle(.iconOnly)
                         .disabled(addressExpanded)
                         .accessibilityIdentifier("site.navigation.all")
                     }

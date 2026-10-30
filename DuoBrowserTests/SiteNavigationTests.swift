@@ -150,4 +150,30 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
         XCTAssertNil(navigation.snapshot)
         XCTAssertFalse(navigation.isOpening)
     }
+
+    func testResumingAfterReviewRearmsLiveNavigationUpdates() async throws {
+        let view = try await page()
+        let folder = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        addTeardownBlock { if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) } }
+        let navigation = SiteNavigationModel(library: BrowserLibrary(fileURL: folder.appendingPathComponent("test.json")), isPrivate: false)
+        defer { navigation.tearDown() }
+        try navigation.install(on: view)
+        let source = context(try XCTUnwrap(view.url))
+        navigation.contextProvider = { source }
+        navigation.setActive(false)
+        navigation.refreshForReview()
+        let ready = expectation(description: "Active navigation after modal review")
+        let initial = navigation.$snapshot.compactMap { $0 }.prefix(1).sink { _ in ready.fulfill() }
+        navigation.setActive(true)
+        await fulfillment(of: [ready], timeout: 10)
+        initial.cancel()
+        let updated = expectation(description: "Observed primary link label changed")
+        let observation = navigation.$snapshot.compactMap { $0 }.filter {
+            $0.links.first?.label == "Catalog"
+        }.prefix(1).sink { _ in updated.fulfill() }
+        try await view.evaluateJavaScript("document.querySelector('a').textContent = 'Catalog'; true")
+        await fulfillment(of: [updated], timeout: 10)
+        observation.cancel()
+        XCTAssertEqual(navigation.toolbarLinks.first?.label, "Catalog")
+    }
 }
