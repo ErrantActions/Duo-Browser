@@ -3,6 +3,11 @@ import UIKit
 import XCTest
 @testable import DuoBrowser
 
+private final class ScannerDOMWebView: WKWebView {
+    // Test DOM focus without starting iOS keyboard and autofill services.
+    override var canBecomeFirstResponder: Bool { false }
+}
+
 @MainActor
 final class ScannerTests: XCTestCase, WKNavigationDelegate {
     private var loaded: XCTestExpectation?
@@ -13,7 +18,7 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
     }
 
     private func page() async throws -> WKWebView {
-        let view = WKWebView()
+        let view = ScannerDOMWebView()
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
         let window = try XCTUnwrap(scene.windows.first(where: \.isKeyWindow))
         view.frame = window.bounds
@@ -134,7 +139,7 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         XCTAssertEqual(noSubmissionDependency as? String, "987654ZZ", "Plain input must not depend on a valid form action")
     }
 
-    func testScannerRejectsChangedSensitiveHiddenAndOversizedTargets() async throws {
+    func testScannerRejectsExpiredAndNormalizedInput() async throws {
         let view = try await page()
         let expired = try await capture(view)
         await reject { try await self.apply(view, token: expired, deadline: -1) }
@@ -142,27 +147,44 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         await reject { try await self.apply(view, token: sanitized, insertion: "replace", value: "123\n456") }
         let preserved = try await view.evaluateJavaScript("document.querySelector('#target').value")
         XCTAssertEqual(preserved as? String, "abcdef", "Browser input sanitization must not silently corrupt a barcode")
-        let token = try await capture(view)
-        try await view.evaluateJavaScript("document.querySelector('#target').value = 'changed'")
-        await reject { try await self.apply(view, token: token) }
-        for mutation in [
-            "document.querySelector('#target').readOnly = true",
-            "document.querySelector('#target').style.display = 'none'",
-            "document.querySelector('#target').type = 'password'",
-            "document.querySelector('#target').maxLength = 1",
-            "history.replaceState(null, '', '/different')",
-            "document.querySelector('#secret').focus()"
-        ] {
-            try await view.evaluateJavaScript("""
-                history.replaceState(null, '', '/');
-                var field = document.querySelector('#target');
-                field.readOnly = false; field.style.display = ''; field.type = 'text'; field.maxLength = 100;
-                field.value = ''; field.focus();
-                """)
-            let current = try await capture(view)
-            try await view.evaluateJavaScript(mutation)
-            await reject { try await self.apply(view, token: current) }
-        }
+    }
+
+    private func rejectMutation(_ mutation: String) async throws {
+        let view = try await page()
+        let ticket = try await capture(view)
+        try await view.evaluateJavaScript(mutation)
+        await reject { try await self.apply(view, token: ticket) }
+    }
+
+    func testScannerRejectsChangedFieldValue() async throws {
+        try await rejectMutation("document.querySelector('#target').value = 'changed'")
+    }
+
+    func testScannerRejectsReadOnlyTarget() async throws {
+        try await rejectMutation("document.querySelector('#target').readOnly = true")
+    }
+
+    func testScannerRejectsHiddenTarget() async throws {
+        try await rejectMutation("document.querySelector('#target').style.display = 'none'")
+    }
+
+    func testScannerRejectsPasswordTarget() async throws {
+        try await rejectMutation("document.querySelector('#target').type = 'password'")
+    }
+
+    func testScannerRejectsOversizedInput() async throws {
+        try await rejectMutation("document.querySelector('#target').maxLength = 1")
+    }
+
+    func testScannerRejectsChangedDocument() async throws {
+        try await rejectMutation("history.replaceState(null, '', '/different')")
+    }
+
+    func testScannerRejectsChangedFocusAndPaymentFields() async throws {
+        let view = try await page()
+        let ticket = try await capture(view)
+        try await view.evaluateJavaScript("document.querySelector('#secret').focus()")
+        await reject { try await self.apply(view, token: ticket) }
         try await view.evaluateJavaScript("document.querySelector('#payment').focus()")
         await reject { _ = try await self.capture(view) }
     }
