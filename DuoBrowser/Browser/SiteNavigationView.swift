@@ -7,6 +7,18 @@ struct SiteNavigationView: View {
     let navigate: (SiteNavigationAction) -> Void
 
     var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Label(model.isPrivate ? "Private site preferences" : "Website shortcuts",
+                      systemImage: model.isPrivate ? "hand.raised" : "globe")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                Spacer()
+                Button("Done") { dismiss() }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityIdentifier("site.navigation.close")
+            }
+            .padding(.horizontal, 16)
+            Divider()
         List {
             Section {
                 Label("Detected on this website", systemImage: "list.bullet")
@@ -51,7 +63,9 @@ struct SiteNavigationView: View {
                         Button {
                             Task { @MainActor in
                                 do { navigate(try await navigation.prepare(link)) }
-                                catch { navigation.showValidationError(error) }
+                                catch {
+                                    if !(error is CancellationError) { navigation.showValidationError(error) }
+                                }
                             }
                         } label: {
                             VStack(alignment: .leading, spacing: 5) {
@@ -100,16 +114,12 @@ struct SiteNavigationView: View {
             }
         }
         .accessibilityIdentifier("site.navigation.list")
+        }
         .navigationTitle("Site Navigation")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Done") { dismiss() }
-                    .accessibilityIdentifier("site.navigation.close")
-            }
-        }
         .onAppear {
             if navigation.detectionEnabled, model.bridge.panel == nil { navigation.refreshForReview() }
         }
+        .onDisappear { navigation.cancelOpening() }
     }
 }

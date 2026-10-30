@@ -233,10 +233,7 @@ final class SiteNavigationModel: ObservableObject {
         work = nil
         deadline = nil
         isRefreshing = false
-        linkOperation = UUID()
-        linkDeadline?.cancel()
-        linkDeadline = nil
-        isOpening = false
+        cancelOpening()
         if clear { snapshot = nil; errorMessage = nil }
         let shouldPause = watching
         watching = false
@@ -310,6 +307,13 @@ final class SiteNavigationModel: ObservableObject {
         }
     }
 
+    func cancelOpening() {
+        linkOperation = UUID()
+        linkDeadline?.cancel()
+        linkDeadline = nil
+        isOpening = false
+    }
+
     func prepare(_ link: SiteNavigationLink) async throws -> SiteNavigationAction {
         guard !isOpening else { throw SiteNavigationError.busy }
         guard let snapshot, snapshot.context == contextProvider?(), snapshot.links.contains(link),
@@ -341,7 +345,8 @@ final class SiteNavigationModel: ObservableObject {
             "mode": "validate", "allowDemo": snapshot.context.origin == "duo-demo",
             "sourceURL": snapshot.context.url.absoluteString, "documentID": snapshot.documentID, "href": link.url.absoluteString
         ])
-        guard linkOperation == id, valid as? Bool == true, snapshot.context == contextProvider?() else { throw SiteNavigationError.changedPage }
+        guard linkOperation == id else { throw CancellationError() }
+        guard valid as? Bool == true, snapshot.context == contextProvider?() else { throw SiteNavigationError.changedPage }
         return SiteNavigationAction(context: snapshot.context, documentID: snapshot.documentID, destination: link.url)
     }
 
@@ -364,6 +369,7 @@ final class SiteNavigationModel: ObservableObject {
                 guard let open = self.open else { throw SiteNavigationError.unavailable }
                 open(action.destination)
             } catch {
+                if error is CancellationError { return }
                 self.showValidationError(error)
                 if let message = self.errorMessage { self.notify?(message) }
             }
