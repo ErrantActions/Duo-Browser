@@ -82,6 +82,28 @@ work without page access. No live web search or persistent conversation exists.
 
 ### Browser layout
 
+`SiteNavigationModel` is a browser-owned, tab-scoped fallback for pages without
+approved DuoKit controls. Its fixed isolated-world reader bounds element/root/
+link work, selects a high-confidence primary navigation cluster and emits at
+most twelve candidate links. Native decoding independently checks source URL,
+document UUID, same-origin HTTPS (or exact demo document), size/action limits
+and deduplication. No page HTML is copied or changed.
+
+A coalesced MutationObserver posts only source/document identity, no page text.
+Native code captures fresh candidates only for eligible active pages; modal
+review uses an explicit bounded capture without enabling background observation.
+Navigation epochs, source changes, inactive tabs, disabling and closure cancel
+work. Link validation has its own single-flight deadline and rejects late/stale
+results before native GET navigation. Root-sheet actions are rechecked after
+dismissal, like other browser page tools.
+
+Per-origin regular preferences store only stable SHA-256 route digests for
+pin/hide choices, not link href/query text. Private preferences remain per-tab
+and never touch the library. Up to three links are shown, pinned first.
+Explicit panels and the user's browser-only state suppress the entire detected
+set. The native rail groups Back/Refresh separately from URL and Ask/Tabs/Menu;
+the existing website-actions group remains distinct.
+
 SwiftUI/MVVM, iOS 17+. `BrowserView` owns a `BrowserLibrary` and
 `BrowserTabManager`. The selected tab is observed by a dedicated tab view with
 stable identity. Each `BrowserViewModel` retains one `WKWebView`, one navigation/UI

@@ -99,3 +99,16 @@ test("a DuoKit scanner result fills the local demo field without implicit form s
     assert.ok(prevented);
     assert.equal(elements.get("#barcode-status").textContent, "Local lookup submitted: 123456789");
 });
+
+test("semantic navigation demo changes local markup without configuring privileged website controls", () => {
+    const { elements, panels, requests } = createDemo(false);
+    assert.equal(elements.get("#site-navigation").hidden, true);
+    elements.get("#navigation-demo").onclick();
+    assert.equal(elements.get("#site-navigation").hidden, false);
+    elements.get("#navigation-label").onclick();
+    assert.equal(elements.get("#nav-help-link").textContent, "Support");
+    elements.get("#navigation-label").onclick();
+    assert.equal(elements.get("#nav-help-link").textContent, "Help");
+    assert.equal(panels.length, 0);
+    assert.equal(requests.length, 0);
+});

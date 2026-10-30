@@ -81,7 +81,7 @@ defaults() {
 export -f xcodebuild xcrun mkdir defaults
 exec bash .github/scripts/test-ios.sh "$SUITE"
 `;
-    for (const suite of ["unit", "all", "duo-panel", "ask-duo", "reading", "scanner", "page-tools", "invalid"]) {
+    for (const suite of ["unit", "all", "duo-panel", "ask-duo", "reading", "scanner", "page-tools", "site-navigation", "invalid"]) {
         const result = cp.spawnSync(bash, ["-c", fixture], {
             cwd: root, encoding: "utf8",
             env: { ...process.env, SUITE: suite, EXPECTED_IOS_SDK: "27.1" }
@@ -127,8 +127,13 @@ exec bash .github/scripts/test-ios.sh "$SUITE"
                     assert.ok(result.stdout.includes(`XCODE_ARG<-only-testing:DuoBrowserUITests/BrowserUITests/${method}>`));
                 }
                 assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests/);
+            } else if (suite === "site-navigation") {
+                for (const method of ["testSiteNavigationNativeLinksAndDuoKitPrecedence", "testSiteNavigationProfilesPersistAndPrivateChoicesStayLocal", "testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation"]) {
+                    assert.ok(result.stdout.includes(`XCODE_ARG<-only-testing:DuoBrowserUITests/BrowserUITests/${method}>`));
+                }
+                assert.doesNotMatch(result.stdout, /XCODE_ARG<-only-testing:DuoBrowserTests/);
             } else assert.doesNotMatch(result.stdout, /only-testing|skip-testing/);
-            assert.match(result.stdout, new RegExp(`XCODE_ARG<-maximum-test-execution-time-allowance>\\nXCODE_ARG<${["all", "ask-duo", "reading", "page-tools"].includes(suite) ? 300 : 180}>`));
+            assert.match(result.stdout, new RegExp(`XCODE_ARG<-maximum-test-execution-time-allowance>\\nXCODE_ARG<${["all", "ask-duo", "reading", "page-tools", "site-navigation"].includes(suite) ? 300 : 180}>`));
         }
     }
 });

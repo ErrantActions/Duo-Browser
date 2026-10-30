@@ -58,6 +58,11 @@ private struct DuoNativeToolbarContent<Content: View>: View {
         model.bridge.browserControlsVisible ? nil : model.bridge.panel
     }
 
+    private var detectedNavigation: SiteNavigationSnapshot? {
+        guard activePanel == nil, !model.bridge.browserControlsVisible, !model.siteNavigation.toolbarLinks.isEmpty else { return nil }
+        return model.siteNavigation.visibleSnapshot
+    }
+
     private var usesVerticalBar: Bool { verticalEdge != nil }
 
     private var addressTitle: String {
@@ -81,7 +86,7 @@ private struct DuoNativeToolbarContent<Content: View>: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackgroundVisibility(usesVerticalBar ? .hidden : .automatic,
                                         for: .navigationBar, .bottomBar)
-            .toolbarVisibility(usesVerticalBar || activePanel != nil ? .visible : .hidden,
+            .toolbarVisibility(usesVerticalBar || activePanel != nil || detectedNavigation != nil ? .visible : .hidden,
                                for: .navigationBar, .bottomBar)
             .toolbar {
                 if usesVerticalBar {
@@ -91,13 +96,14 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         }
                         .disabled(addressExpanded || (!model.canGoBack && !(model.showingStartPage && model.currentURL != nil)))
                         .accessibilityIdentifier("duo.browser.back")
-                        Button { present(.assistant) } label: {
-                            Label("Ask Duo", systemImage: "sparkles")
+                        Button {
+                            if model.isLoading { model.stop() } else { model.reload() }
+                        } label: {
+                            Label(model.isLoading ? "Stop" : "Refresh",
+                                  systemImage: model.isLoading ? "xmark" : "arrow.clockwise")
                         }
-                        .labelStyle(.iconOnly)
                         .disabled(addressExpanded)
-                        .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
-                        .accessibilityIdentifier("browser.askduo")
+                        .accessibilityIdentifier("duo.browser.refresh")
                     }
                     .axisBehavior(.verticalPreferred)
                     ToolbarItem(placement: .topBarTrailing) {
@@ -128,14 +134,13 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                     .axisBehavior(.verticalPreferred)
                     .sharedBackgroundVisibility(addressExpanded ? .hidden : .automatic)
                     ToolbarItemGroup(placement: .topBarTrailing) {
-                        Button {
-                            if model.isLoading { model.stop() } else { model.reload() }
-                        } label: {
-                            Label(model.isLoading ? "Stop" : "Refresh",
-                                  systemImage: model.isLoading ? "xmark" : "arrow.clockwise")
+                        Button { present(.assistant) } label: {
+                            Label("Ask Duo", systemImage: "sparkles")
                         }
+                        .labelStyle(.iconOnly)
                         .disabled(addressExpanded)
-                        .accessibilityIdentifier("duo.browser.refresh")
+                        .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
+                        .accessibilityIdentifier("browser.askduo")
                         Button { present(.tabs) } label: {
                             Label("Tabs", systemImage: "square.on.square")
                         }
@@ -170,6 +175,35 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                         }
                         .disabled(addressExpanded)
                         .accessibilityIdentifier("duo.controls.all")
+                    }
+                    .axisBehavior(.verticalPreferred)
+                } else if let detectedNavigation {
+                    if !usesVerticalBar {
+                        ToolbarItem(placement: .principal) {
+                            Text("Navigation from \(detectedNavigation.context.url.host ?? "DuoKit Demo")")
+                                .font(.caption).lineLimit(1)
+                        }
+                        .axisBehavior(.horizontalOnly)
+                    }
+                    ToolbarItemGroup(placement: .bottomBar) {
+                        ForEach(Array(model.siteNavigation.toolbarLinks.enumerated()), id: \.element.id) { index, link in
+                            Button { model.siteNavigation.activate(link) } label: {
+                                VStack(spacing: 2) {
+                                    Image(systemName: link.icon)
+                                    Text(verbatim: link.label).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
+                                }
+                                .frame(width: 44, height: 44)
+                            }
+                            .disabled(addressExpanded || model.siteNavigation.isOpening)
+                            .accessibilityLabel(link.label)
+                            .accessibilityHint("Detected website link from \(detectedNavigation.context.url.host ?? "DuoKit Demo")")
+                            .accessibilityIdentifier("site.navigation.quick.\(index)")
+                        }
+                        Button { present(.siteNavigation) } label: {
+                            Label("Site Navigation", systemImage: "list.bullet")
+                        }
+                        .disabled(addressExpanded)
+                        .accessibilityIdentifier("site.navigation.all")
                     }
                     .axisBehavior(.verticalPreferred)
                 }

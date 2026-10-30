@@ -1,5 +1,15 @@
 "use strict";
 const logElement = document.querySelector("#log");
+const navigationFragment = window.location?.hash || "";
+document.querySelector("#site-navigation").hidden = !(navigationFragment.startsWith("#nav-") || navigationFragment === "#fallback");
+document.querySelector("#navigation-destination").textContent = `Navigation destination: ${navigationFragment.slice(1) || "none"}`;
+document.querySelector("#navigation-demo").onclick = () => {
+    document.querySelector("#site-navigation").hidden = false;
+};
+document.querySelector("#navigation-label").onclick = () => {
+    const link = document.querySelector("#nav-help-link");
+    link.textContent = link.textContent === "Support" ? "Help" : "Support";
+};
 function log(value) {
     const displayValue = value && typeof value === "object" && Object.hasOwn(value, "gestureToken")
         ? { ...value, gestureToken: "[redacted]" }

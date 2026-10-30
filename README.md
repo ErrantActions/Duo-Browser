@@ -396,6 +396,31 @@ start screen opens without contacting your configured custom start page.
 Bookmarks, Reading List, settings, and completed downloads are preserved.
 The in-memory recently closed tab list is cleared.
 
+### Automatic Site Navigation
+
+Duo can detect visible primary navigation from a website's `nav`, navigation
+landmark or header, then show up to **three** same-site links in its controls.
+The website's original menu stays untouched. This is local semantic inspection,
+not AI, web search, execution of site-provided actions or an external service.
+
+**Browser Menu → Site Navigation** lets you pin links, hide individual shortcuts,
+disable detection for an exact site, or reset choices. Pinned links come first.
+Only route digests are saved in regular per-site choices; private choices remain
+in the requesting tab's memory. **Settings → Automatically Detect Navigation**
+controls the feature globally. Ambiguous, hidden, footer/article menus,
+script-only actions, downloads, foreign origins and common consequential
+actions are not promoted; some websites will have no detected shortcuts.
+
+Approved **DuoKit controls always take priority**, never showing a second
+detected action set beside them. Navigation is rechecked against the current
+document before a normal link opens. Source changes, navigation and background
+states cancel stale work; DOM updates are coalesced rather than continuously
+rescanned. Browser controls remain distinct: Back/Refresh, URL, Ask Duo/Tabs/Menu,
+then website actions. Older layouts retain a Site Navigation launcher.
+
+The bundled demo includes **Enable Navigation Demo** and **Rename Help Link**
+to demonstrate native detection, live updates and DuoKit precedence.
+
 ### Configurable scanner and text-field input
 
 **Browser Menu → Scan Into Field** works on verified HTTPS pages and the bundled

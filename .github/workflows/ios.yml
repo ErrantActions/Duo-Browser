@@ -24,6 +24,7 @@ on:
           - reading
           - scanner
           - page-tools
+          - site-navigation
         default: all
 
 permissions:

@@ -66,12 +66,15 @@ struct BrowserSettings: Codable, Equatable {
     var denyWebsiteMedia = false
     var reader = ReaderPreferences()
     var scanner = ScannerPreferences()
+    var automaticallyDetectNavigation = true
+    var navigationProfiles: [String: SiteNavigationPreferences] = [:]
 }
 
 extension BrowserSettings {
     private enum CodingKeys: String, CodingKey {
         case searchProvider, maximumTabs, restoreTabs, historyRetentionDays, startPageAddress
         case appearance, defaultDuoPermission, defaultScannerPermission, denyWebsiteMedia, reader, scanner
+        case automaticallyDetectNavigation, navigationProfiles
     }
 
     init(from decoder: Decoder) throws {
@@ -87,6 +90,8 @@ extension BrowserSettings {
         denyWebsiteMedia = try container.decode(Bool.self, forKey: .denyWebsiteMedia)
         reader = try container.decodeIfPresent(ReaderPreferences.self, forKey: .reader) ?? ReaderPreferences()
         scanner = try container.decodeIfPresent(ScannerPreferences.self, forKey: .scanner) ?? ScannerPreferences()
+        automaticallyDetectNavigation = try container.decodeIfPresent(Bool.self, forKey: .automaticallyDetectNavigation) ?? true
+        navigationProfiles = try container.decodeIfPresent([String: SiteNavigationPreferences].self, forKey: .navigationProfiles) ?? [:]
     }
 }
 

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum BrowserSheet: String, Identifiable {
-    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs, assistant, reader, scanner
+    case tabs, bookmarks, history, readingList, downloads, settings, permissions, bookmark, recentlyClosedTabs, assistant, reader, scanner, siteNavigation
     var id: String { rawValue }
 }
 
@@ -11,6 +11,7 @@ struct BrowserView: View {
     @State private var sheet: BrowserSheet?
     @State private var pageToolTab: BrowserViewModel?
     @State private var pendingAssistantNavigation: AskDuoNavigation?
+    @State private var pendingSiteNavigation: SiteNavigationAction?
     @State private var scannerDetent: PresentationDetent = .fraction(0.45)
     @State private var assistantDetent: PresentationDetent = .fraction(0.55)
     @Environment(\.scenePhase) private var scenePhase
@@ -70,8 +71,9 @@ struct BrowserView: View {
             }
         }
         .onChange(of: manager.selectedID) { _, _ in
-            if (sheet == .assistant || sheet == .reader || sheet == .scanner), pageToolTab?.id != manager.selectedID {
+            if (sheet == .assistant || sheet == .reader || sheet == .scanner || sheet == .siteNavigation), pageToolTab?.id != manager.selectedID {
                 pendingAssistantNavigation = nil
+                pendingSiteNavigation = nil
                 sheet = nil
                 manager.notice = "The page tool was closed because the selected tab changed."
             }
@@ -109,6 +111,13 @@ struct BrowserView: View {
             if let pageToolTab { ReaderView(model: pageToolTab, library: pageToolTab.library) }
         case .scanner:
             EmptyView()
+        case .siteNavigation:
+            if let pageToolTab {
+                SiteNavigationView(model: pageToolTab, navigation: pageToolTab.siteNavigation) { action in
+                    pendingSiteNavigation = action
+                    sheet = nil
+                }
+            }
         case .bookmark:
             if let tab = manager.selectedTab, let url = tab.shareURL {
                 BookmarkEditor(
@@ -146,11 +155,11 @@ struct BrowserView: View {
         if selection == .scanner {
             scannerDetent = library.settings.scanner.compact ? .fraction(0.45) : .large
         }
-        if selection == .assistant || selection == .reader || selection == .scanner {
+        if selection == .assistant || selection == .reader || selection == .scanner || selection == .siteNavigation {
             pageToolTab = manager.selectedTab
             if selection == .assistant { pageToolTab?.beginAssistantPresentation() }
             else if selection == .scanner { pageToolTab?.beginScannerPresentation() }
-            else { pageToolTab?.beginReaderPresentation() }
+            else if selection == .reader { pageToolTab?.beginReaderPresentation() }
         }
         manager.selectedTab?.deactivate()
         sheet = selection
@@ -164,6 +173,17 @@ struct BrowserView: View {
         }
         pageToolTab = nil
         manager.selectedTab?.isActive = scenePhase == .active
+        let siteAction = pendingSiteNavigation
+        pendingSiteNavigation = nil
+        if let siteAction {
+            guard scenePhase == .active, let tab = manager.selectedTab,
+                  tab.siteNavigation.isCurrent(siteAction) else {
+                manager.notice = "Site navigation was canceled because the page or tab changed."
+                return
+            }
+            tab.loadSiteNavigation(siteAction.destination)
+            return
+        }
         let navigation = pendingAssistantNavigation
         pendingAssistantNavigation = nil
         guard let navigation else { return }
@@ -215,7 +235,7 @@ private struct BrowserTabView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     private var showsSiteControls: Bool {
-        model.bridge.panel != nil && !model.bridge.browserControlsVisible
+        !model.bridge.browserControlsVisible && (model.bridge.panel != nil || !model.siteNavigation.toolbarLinks.isEmpty)
     }
 
     var body: some View {
@@ -367,9 +387,11 @@ private struct BrowserTabView: View {
             }
             if showControlsButton {
                 Button {
-                    showsCompactControls = true
+                    if model.bridge.panel != nil { showsCompactControls = true }
+                    else { present(.siteNavigation) }
                 } label: {
-                    Label("Duo Controls", systemImage: "slider.horizontal.3")
+                    Label(model.bridge.panel != nil ? "Duo Controls" : "Site Navigation",
+                          systemImage: model.bridge.panel != nil ? "slider.horizontal.3" : "list.bullet")
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.bordered)

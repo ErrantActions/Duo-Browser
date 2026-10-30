@@ -2,8 +2,8 @@
 set -euo pipefail
 
 suite="${1:-all}"
-if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo && "$suite" != reading && "$suite" != scanner && "$suite" != page-tools ) ]]; then
-  echo "::error::Choose all, unit, duo-panel, ask-duo, reading, scanner, or page-tools for the native test suite."
+if [[ "$#" -gt 1 || ( "$suite" != all && "$suite" != unit && "$suite" != duo-panel && "$suite" != ask-duo && "$suite" != reading && "$suite" != scanner && "$suite" != page-tools && "$suite" != site-navigation ) ]]; then
+  echo "::error::Choose all, unit, duo-panel, ask-duo, reading, scanner, page-tools, or site-navigation for the native test suite."
   exit 1
 fi
 set --
@@ -31,9 +31,13 @@ elif [[ "$suite" == page-tools ]]; then
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoRequiresConsentAndConfirmsNavigation \
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoOpensAsCompactChatAndReviewsQuickPromptContext \
     -only-testing:DuoBrowserUITests/BrowserUITests/testAskDuoGeneralChatKeepsFollowUpsWithoutReadingPage
+elif [[ "$suite" == site-navigation ]]; then
+  set -- -only-testing:DuoBrowserUITests/BrowserUITests/testSiteNavigationNativeLinksAndDuoKitPrecedence \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testSiteNavigationProfilesPersistAndPrivateChoicesStayLocal \
+    -only-testing:DuoBrowserUITests/BrowserUITests/testDuoNativeToolbarKeepsWebsiteVisibleAndDeliversNavigation
 fi
 maximum_test_seconds=180
-if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading || "$suite" == page-tools ]]; then
+if [[ "$suite" == all || "$suite" == ask-duo || "$suite" == reading || "$suite" == page-tools || "$suite" == site-navigation ]]; then
   maximum_test_seconds=300
 fi
 

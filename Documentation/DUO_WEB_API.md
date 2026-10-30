@@ -202,6 +202,13 @@ handling; disclose that behavior to your users.
 
 ## Lifecycle and permissions
 
+Browser-owned automatic Site Navigation may provide same-site link shortcuts on
+ordinary pages. It is not a DuoKit configuration or capability grant.
+An approved `controls.set` panel suppresses those detected links immediately;
+`controls.clear` can reveal the browser fallback again when detection is
+enabled. The two sets are never merged. Sites should keep their own HTML menu:
+Duo does not remove it, and ambiguous/script-only navigation may not be detected.
+
 ### Scanner presentation and browser keyboard input
 
 The native scanner now defaults to a compact, resizable sheet instead of taking

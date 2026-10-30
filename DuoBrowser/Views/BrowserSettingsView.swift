@@ -29,6 +29,12 @@ struct BrowserSettingsView: View {
                 Text("Otherwise, WebKit and iOS ask when a website requests access. Location and other website permissions remain subject to iOS prompts.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section("Website Navigation") {
+                Toggle("Automatically Detect Navigation", isOn: $settings.automaticallyDetectNavigation)
+                    .accessibilityIdentifier("settings.site-navigation")
+                Text("Read visible primary navigation locally on verified HTTPS pages. No AI or cloud service is used. Website-provided DuoKit controls take priority. Pin, hide or disable links per site in Browser Menu → Site Navigation.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("Duo Permissions for New Sites") {
                 permissionPicker("Duo Controls", value: $settings.defaultDuoPermission)
                 permissionPicker("Scanner", value: $settings.defaultScannerPermission)

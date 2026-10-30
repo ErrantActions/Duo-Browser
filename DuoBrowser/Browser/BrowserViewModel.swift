@@ -10,13 +10,20 @@ final class BrowserViewModel: ObservableObject {
     let library: BrowserLibrary
     let downloads: DownloadManager
     let bridge: DuoBridge
+    let siteNavigation: SiteNavigationModel
     var onNewWindow: ((URLRequest) -> Void)?
     var onStateChanged: (() -> Void)?
     var isActive: Bool {
         get { !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader && !isShowingScanner && bridge.isActive }
-        set { bridge.isActive = newValue && !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader && !isShowingScanner }
+        set {
+            let active = newValue && !isClosed && !isEditingAddress && !isShowingAssistant && !isShowingReader && !isShowingScanner
+            bridge.isActive = active
+            siteNavigation.setActive(active)
+        }
     }
-    @Published private(set) var navigationID = UUID()
+    @Published private(set) var navigationID = UUID() {
+        didSet { siteNavigation.reset() }
+    }
     @Published private(set) var currentURL: URL?
     @Published private(set) var pageTitle = ""
     @Published private(set) var isLoading = false
@@ -40,6 +47,8 @@ final class BrowserViewModel: ObservableObject {
     let webView: WKWebView
     private let webDelegate: BrowserWebDelegate
     private var bridgeObservation: AnyCancellable?
+    private var navigationObservation: AnyCancellable?
+    private var panelObservation: AnyCancellable?
     private var observations: [NSKeyValueObservation] = []
     private var requestedURL: URL?
     private var dialogCompletion: ((String?) -> Void)?
@@ -91,6 +100,7 @@ final class BrowserViewModel: ObservableObject {
         self.isPrivate = isPrivate
         self.requestsDesktopSite = requestsDesktopSite
         bridge = DuoBridge(library: library, isPrivate: isPrivate)
+        siteNavigation = SiteNavigationModel(library: library, isPrivate: isPrivate)
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = dataStore
         configuration.defaultWebpagePreferences.preferredContentMode = requestsDesktopSite ? .desktop : .mobile
@@ -121,6 +131,23 @@ final class BrowserViewModel: ObservableObject {
             try ScannerInput.install(on: webView)
         } catch {
             showNotice("Scanner text input could not be loaded. \(error.localizedDescription)")
+        }
+        do {
+            try siteNavigation.install(on: webView)
+        } catch {
+            showNotice("Automatic site navigation could not be loaded. \(error.localizedDescription)")
+        }
+        siteNavigation.contextProvider = { [weak self] in
+            guard let self, !self.isClosed, !self.showingStartPage, self.navigationError == nil,
+                  !self.webView.isLoading, let url = self.webView.url, let origin = DuoOrigin.canonical(url),
+                  origin == "duo-demo" || self.isSecure else { return nil }
+            return SiteNavigationContext(tabID: self.id, epoch: self.navigationID, url: url, origin: origin)
+        }
+        siteNavigation.open = { [weak self] url in self?.loadSiteNavigation(url) }
+        siteNavigation.notify = { [weak self] message in self?.showNotice(message) }
+        navigationObservation = siteNavigation.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
+        panelObservation = bridge.$panel.combineLatest(bridge.$browserControlsVisible).sink { [weak self] panel, hidden in
+            self?.siteNavigation.setSuppressed(panel != nil || hidden)
         }
         bridgeObservation = bridge.objectWillChange.sink { [weak self] _ in
             self?.objectWillChange.send()
@@ -244,12 +271,26 @@ final class BrowserViewModel: ObservableObject {
             showNotice("The DuoKit demo is missing from this build.")
             return
         }
+        loadDemoURL(url)
+    }
+
+    private func loadDemoURL(_ url: URL) {
+        guard let directory = DuoOrigin.demoURL?.deletingLastPathComponent() else {
+            showNotice("The DuoKit demo is missing from this build.")
+            return
+        }
         navigationID = UUID()
         showingStartPage = false
         navigationError = nil
         requestedURL = url
-        webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
+        webView.loadFileURL(url, allowingReadAccessTo: directory)
         onStateChanged?()
+    }
+
+    func loadSiteNavigation(_ url: URL) {
+        guard !isClosed else { return }
+        if DuoOrigin.canonical(url) == "duo-demo" { loadDemoURL(url) }
+        else { load(url) }
     }
 
     func goBack() {
@@ -257,6 +298,7 @@ final class BrowserViewModel: ObservableObject {
         navigationID = UUID()
         if showingStartPage, currentURL != nil {
             showingStartPage = false
+            siteNavigation.refresh()
             onStateChanged?()
         } else {
             webView.goBack()
@@ -359,6 +401,7 @@ final class BrowserViewModel: ObservableObject {
         guard !isClosed else { return }
         navigationError = nil
         synchronizeState()
+        siteNavigation.refresh()
         webView.scrollView.refreshControl?.endRefreshing()
         if let url = currentURL {
             library.recordVisit(title: pageTitle, url: url, isPrivate: isPrivate)
@@ -434,6 +477,7 @@ final class BrowserViewModel: ObservableObject {
 
     func deactivate() {
         bridge.deactivate()
+        siteNavigation.setActive(false)
         cancelPageDialog()
         webView.pauseAllMediaPlayback()
     }
@@ -444,8 +488,11 @@ final class BrowserViewModel: ObservableObject {
         navigationID = UUID()
         deactivate()
         bridge.tearDown()
+        siteNavigation.tearDown()
         observations.removeAll()
         bridgeObservation = nil
+        navigationObservation = nil
+        panelObservation = nil
         webView.stopLoading()
         webView.navigationDelegate = nil
         webView.uiDelegate = nil
@@ -484,6 +531,7 @@ final class BrowserViewModel: ObservableObject {
 
     private func synchronizeState() {
         guard !isClosed else { return }
+        let previousURL = currentURL
         currentURL = webView.url
         pageTitle = webView.title ?? ""
         isLoading = webView.isLoading
@@ -494,6 +542,10 @@ final class BrowserViewModel: ObservableObject {
         pageBackgroundColor = webView.underPageBackgroundColor ?? .systemBackground
         if !isLoading {
             webView.scrollView.refreshControl?.endRefreshing()
+            if previousURL != currentURL {
+                siteNavigation.reset()
+                siteNavigation.refresh()
+            }
         }
     }
 }

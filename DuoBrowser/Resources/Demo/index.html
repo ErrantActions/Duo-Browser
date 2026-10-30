@@ -9,6 +9,13 @@
     <script defer src="demo.js"></script>
 </head>
 <body>
+    <header id="site-navigation" hidden>
+        <nav aria-label="Primary navigation">
+            <a href="#nav-catalog">Catalog</a>
+            <a id="nav-help-link" href="#fallback">Help</a>
+            <a href="#nav-scan">Scanner</a>
+        </nav>
+    </header>
     <main>
         <h1>DuoKit Demo</h1>
         <p id="availability" role="status">Detecting Duo Browser…</p>
@@ -23,9 +30,12 @@
             <button id="update">Update Duo Controls</button>
             <button id="clear">Clear Duo Panel</button>
             <button id="background">Toggle Page Background</button>
+            <button id="navigation-demo">Enable Navigation Demo</button>
+            <button id="navigation-label">Rename Help Link</button>
+            <p id="navigation-destination" role="status">Navigation destination: none</p>
             <p id="background-status" role="status">Page background: Default</p>
         </section>
-        <section aria-labelledby="record-heading">
+        <section id="nav-catalog" aria-labelledby="record-heading">
             <h2 id="record-heading">Website navigation</h2>
             <p id="record-position">Record 1 of 3</p>
             <p id="record-title">LP-100: Sample Part</p>
@@ -47,18 +57,6 @@
             </label>
         </section>
         <section>
-            <h2>Scanner keyboard input</h2>
-            <p>Select Barcode, then use Browser Menu → Scan Into Field. Configure
-                insertion and Enter behavior in the scanner sheet. This local form
-                demonstrates submission without sending data anywhere. The native
-                DuoKit Scan button only fills Barcode; it does not submit.</p>
-            <form id="barcode-lookup" action="index.html">
-                <label>Barcode <input id="barcode-input" aria-label="Barcode" type="text" maxlength="4096"></label>
-                <button type="submit">Look Up Barcode</button>
-            </form>
-            <p id="barcode-status" role="status">No barcode entered</p>
-        </section>
-        <section>
             <h2>Browser checks</h2>
             <a href="https://example.com">Open example.com</a>
             <a href="https://www.apple.com" target="_blank" rel="noopener">Open Apple in a new tab</a>
@@ -71,6 +69,18 @@
             <button id="alert">JavaScript alert</button>
             <button id="confirm">JavaScript confirmation</button>
             <button id="prompt">JavaScript prompt</button>
+        </section>
+        <section id="nav-scan">
+            <h2>Scanner keyboard input</h2>
+            <p>Select Barcode, then use Browser Menu → Scan Into Field. Configure
+                insertion and Enter behavior in the scanner sheet. This local form
+                demonstrates submission without sending data anywhere. The native
+                DuoKit Scan button only fills Barcode; it does not submit.</p>
+            <form id="barcode-lookup" action="index.html">
+                <label>Barcode <input id="barcode-input" aria-label="Barcode" type="text" maxlength="4096"></label>
+                <button type="submit">Look Up Barcode</button>
+            </form>
+            <p id="barcode-status" role="status">No barcode entered</p>
         </section>
         <section>
             <h2>Event log</h2>

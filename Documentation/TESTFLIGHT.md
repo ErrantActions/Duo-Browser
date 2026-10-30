@@ -101,6 +101,15 @@ Unit tests exercise actual WKWebView field insertion, beforeinput/input/change
 and Enter events, normal form validation, cancellation, target changes, exact
 barcode preservation, migration and on-disk settings. Camera recognition and
 vibration still require a supported physical iPhone.
+
+For detected navigation and control grouping, `test_scope=site-navigation`
+selects native link geometry/uniqueness, semantic DOM updates, real demo-fragment
+navigation, DuoKit precedence/clear fallback, persisted pin/hide choices and
+private isolation, plus the existing full native-strip/RGB/address/navigation
+regression. The demo's semantic header is opt-in so ordinary DuoKit/AI fixtures
+do not silently gain detected controls. Unit tests separately exercise actual
+WebKit extraction/validation, source reset/suppression, URL policy, route-digest
+preferences and backward-compatible settings.
 For local reading/start-page changes, `test_scope=reading` selects reader
 appearance/persistence, original-page-state retention, real PDF share
 presentation and private-export confirmation plus continued private-AI

@@ -3,6 +3,101 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testSiteNavigationNativeLinksAndDuoKitPrecedence() {
+        continueAfterFailure = false
+        executionTimeAllowance = 300
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        openReadingDemo(in: app, isPrivate: false)
+        enableNavigationDemo(in: app)
+        let first = app.buttons["site.navigation.quick.0"]
+        XCTAssertTrue(first.waitForExistence(timeout: 15))
+        let webpage = app.webViews.firstMatch
+        for index in 0..<3 {
+            let link = app.buttons["site.navigation.quick.\(index)"]
+            XCTAssertEqual(app.buttons.matching(identifier: "site.navigation.quick.\(index)").count, 1)
+            XCTAssertTrue(link.isHittable)
+            XCTAssertFalse(link.frame.intersects(webpage.frame))
+        }
+        XCTAssertGreaterThan(webpage.frame.height / app.frame.height, 0.85)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
+        let rename = app.webViews.buttons["Rename Help Link"]
+        revealControl(rename, in: webpage)
+        rename.tap()
+        let changed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label == %@", "Support"), object: app.buttons["site.navigation.quick.1"]
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 15), .completed)
+        first.tap()
+        XCTAssertTrue(app.webViews.staticTexts["Navigation destination: nav-catalog"].waitForExistence(timeout: 15))
+        let install = app.webViews.buttons["Install Duo Panel"]
+        revealControl(install, in: webpage)
+        install.tap()
+        let allow = app.buttons["Allow for This Site"]
+        XCTAssertTrue(allow.waitForExistence(timeout: 10))
+        allow.tap()
+        XCTAssertTrue(app.buttons["duo.control.next"].waitForExistence(timeout: 10))
+        XCTAssertTrue(first.waitForNonExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["site.navigation.all"].exists)
+        let clear = app.webViews.buttons["Clear Duo Panel"]
+        revealControl(clear, in: webpage)
+        clear.tap()
+        XCTAssertTrue(first.waitForExistence(timeout: 15))
+        XCTAssertTrue(app.buttons["duo.control.next"].waitForNonExistence(timeout: 10))
+        print("Detected navigation: uniqueNativeLinks=true, noWebOverlap=true, mutationUpdated=true, fragmentNavigated=true, DuoKitPriority=true")
+    }
+
+    @MainActor
+    func testSiteNavigationProfilesPersistAndPrivateChoicesStayLocal() {
+        continueAfterFailure = false
+        executionTimeAllowance = 300
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        openReadingDemo(in: app, isPrivate: false)
+        enableNavigationDemo(in: app)
+        app.buttons["site.navigation.all"].tap()
+        XCTAssertTrue(app.navigationBars["Site Navigation"].waitForExistence(timeout: 10))
+        let visible = app.switches["site.navigation.visible.0"]
+        revealControl(visible, in: app.collectionViews["site.navigation.list"])
+        visible.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        XCTAssertEqual(visible.value as? String, "0")
+        let pin = app.buttons["site.navigation.pin.2"]
+        revealControl(pin, in: app.collectionViews["site.navigation.list"])
+        pin.tap()
+        app.buttons["Done"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.buttons["site.navigation.quick.0"].label, "Scanner")
+        XCTAssertFalse(app.buttons["site.navigation.quick.2"].exists)
+        app.terminate()
+        openReadingDemo(in: app, isPrivate: false)
+        enableNavigationDemo(in: app)
+        XCTAssertEqual(app.buttons["site.navigation.quick.0"].label, "Scanner")
+        openReadingDemo(in: app, isPrivate: true)
+        enableNavigationDemo(in: app)
+        XCTAssertEqual(app.buttons["site.navigation.quick.0"].label, "Catalog")
+        app.buttons["site.navigation.all"].tap()
+        XCTAssertTrue(app.staticTexts["Private choices stay in this tab only"].waitForExistence(timeout: 10))
+        let enabled = app.switches["site.navigation.enabled"]
+        revealControl(enabled, in: app.collectionViews["site.navigation.list"])
+        enabled.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        app.buttons["Done"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForNonExistence(timeout: 10))
+        openReadingDemo(in: app, isPrivate: false)
+        enableNavigationDemo(in: app)
+        XCTAssertEqual(app.buttons["site.navigation.quick.0"].label, "Scanner")
+        print("Detected navigation preferences: savedAcrossLaunch=true, pinsPrioritized=true, hiddenNotDuplicated=true, privateIsolated=true")
+    }
+
+    @MainActor
+    private func enableNavigationDemo(in app: XCUIApplication) {
+        let enable = app.webViews.buttons["Enable Navigation Demo"]
+        revealControl(enable, in: app.webViews.firstMatch)
+        enable.tap()
+        XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.buttons["site.navigation.all"].exists)
+    }
+
+    @MainActor
     func testAskDuoGeneralChatKeepsFollowUpsWithoutReadingPage() {
         continueAfterFailure = false
         executionTimeAllowance = 180

@@ -53,6 +53,17 @@ struct BrowserToolbar: View {
                         menuAction("Find on Page", icon: "doc.text.magnifyingglass", action: model.findInPage)
                             .disabled(model.showingStartPage || model.navigationError != nil)
                     }
+                    Section("Website") {
+                        menuAction("Site Navigation", icon: "list.bullet") {
+                            present(.siteNavigation)
+                        }
+                        .accessibilityIdentifier("browser.site-navigation")
+                        if model.bridge.panel == nil, model.bridge.browserControlsVisible, model.siteNavigation.snapshot != nil {
+                            menuAction("Show Site Navigation", icon: "list.bullet") {
+                                model.bridge.browserControlsVisible = false
+                            }
+                        }
+                    }
                     Section("Tabs") {
                         menuAction("Forward", icon: "chevron.forward", action: model.goForward)
                             .disabled(!model.canGoForward || model.showingStartPage)

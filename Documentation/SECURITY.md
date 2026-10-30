@@ -149,6 +149,31 @@ small catalog, not arbitrary native styling or images. VoiceOver labels and
 minimum touch targets are provided; physical-device accessibility review is
 still required.
 
+## Detected site navigation
+
+This is a browser feature, not a website capability grant. A fixed bundled
+script runs in its own main-frame WKContentWorld. It reads visible anchor
+labels/hrefs only in bounded semantic navigation/header candidates; it does not
+read input values, cookies or storage, execute page-generated code, or hide
+website elements. Ambiguity produces no shortcuts, not guessed actions.
+
+Only verified HTTPS and the exact bundled demo are eligible. Cross-origin URLs,
+credentials, script schemes, downloads, non-self targets and common
+action/token queries are excluded. Native decoding rechecks all destinations.
+These heuristics cannot prove that a website GET has no side effects; detected
+controls are labeled as website links, not trusted browser commands.
+
+Observation is coalesced and disabled for inactive/suppressed/off states.
+Messages carry only document identity and URL and are accepted only from the
+current isolated main frame. Before navigation, native and isolated checks
+revalidate the source epoch/URL/document and continued primary-link membership.
+Separate deadlines/cancellation tokens prevent delayed validations opening links
+after a page/tab/policy change. Approved DuoKit controls always win.
+
+Regular pin/hide choices persist SHA-256 route identifiers, not full destinations.
+Private choices stay in the individual tab. Detection never grants DuoKit or
+camera access and never triggers a scanner or model.
+
 ## Scanner
 
 1. A user activates a visible native Duo control.
