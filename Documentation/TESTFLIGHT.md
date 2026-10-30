@@ -637,6 +637,42 @@ not capture content or bypass model availability/private-tab restrictions.
 The backend was not changed and live generation is not claimed by this
 entry-point-only validation. Actual phone installation remains unverified.
 
+### Verified scanner/chat delivery: version 1.0, build 1.0.8
+
+[Run 40985308733](https://github.com/ErrantActions/Duo-Browser/actions/runs/40985308733)
+delivered commit `196dc4fdf58ab2ecdbd6f84bbaa3a3336d49b98e`. The application
+logic matches the verified UI scopes above, with updated launch accessibility
+hints. **97 native cases executed: 96 passed, one explicitly skipped, zero
+failures**, in 35.49 seconds. The skipped case was the real-provider probe:
+the simulator reported available but failed even its minimal plain-text prompt
+with untyped `FoundationModels.LanguageModelError -1`. This is not a successful
+inference result. Release uses the real Apple provider, not the DEBUG fixture.
+
+Earlier signed attempts stopped before archive/upload because a combined
+DOM-rejection test exceeded its unchanged 120-second default deadline while
+starting keyboard/autofill services. Test-only non-first-responder WebKit
+fixtures and independent fresh-document cases resolved that issue without
+removing assertions or raising limits. All **35 Node tests**, **four Python
+tests**, and project membership for **50 Swift files / six resources** passed.
+
+Preflight chose and rechecked **1.0.8** above Apple uploads. Logs separately
+confirm `ARCHIVE SUCCEEDED`, the archive's Boolean exempt-encryption declaration,
+`EXPORT SUCCEEDED`, and `UPLOAD SUCCEEDED with no errors` on October 30, 2026
+at **01:39:13 UTC**.
+
+After a short listing delay, Apple verified the build as **VALID**, not expired,
+`usesNonExemptEncryption=false`, internal **IN_BETA_TESTING**, and external
+**READY_FOR_BETA_SUBMISSION**. It appeared automatically in **Owner Testing
+Auto**, still internal with access to all builds, no public link, and exactly
+the same one owner as the preserved original group. No manual build assignment,
+new tester, external review, or permission escalation was performed. English
+`whatsNew` testing notes were created and re-read successfully; other locales
+were preserved.
+
+Actual phone installation, supported-device Apple Intelligence generation,
+camera recognition and vibration remain unverified. The notes explicitly ask
+the owner to check those hardware-dependent paths.
+
 After an upload:
 
 1. Confirm archive, export, and delivery success separately.

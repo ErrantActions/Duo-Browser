@@ -110,7 +110,7 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   Voice output, live AI generation and physical-phone installation remain
   device checks; this release is not a claim of perfection or complete Safari
   parity.
-- **Latest: build 1.0.7** puts **Ask Duo** directly in the native Duo controls
+- **Build 1.0.7** puts **Ask Duo** directly in the native Duo controls
   as a sparkle icon, with the same direct control in other browser layouts.
   The menu duplicate is removed. Delivered through
   [release run 40910443054](https://github.com/ErrantActions/Duo-Browser/actions/runs/40910443054)
@@ -139,6 +139,18 @@ A native SwiftUI iPhone browser using Apple WebKit, with website-configurable
   x=399 in a 466-point window with all eight site controls, appeared only once,
   and did not overlap the 382-point webpage. Opening it did not capture content
   or change Record 2, and the menu contained no duplicate Ask Duo action.
+
+- **Latest: build 1.0.8** adds compact, expandable **Ask Duo chat** with optional
+  reviewed page access, quick prompts, follow-ups and New Chat, plus configurable
+  compact scanning and **Scan Into Field** with opt-in Enter/form submission.
+  [Release run 40985308733](https://github.com/ErrantActions/Duo-Browser/actions/runs/40985308733)
+  passed **96 native unit tests**, with one real-Apple-model probe explicitly
+  skipped after the simulator failed a minimal plain-text request. Six focused
+  native UI checks passed separately; scripted UI replies are DEBUG-only and
+  are not included in the Release app. Apple reports **VALID** and
+  **IN_BETA_TESTING**, automatically delivered to the same single-owner internal
+  group with encryption accepted and English testing notes. Real iPhone model
+  inference, camera recognition, vibration and installation remain device checks.
 
 ## Build, run, and test
 
