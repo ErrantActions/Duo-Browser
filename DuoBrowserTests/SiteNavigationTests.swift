@@ -62,6 +62,16 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
         XCTAssertThrowsError(try snapshot(Array(repeating: ["label": "Page", "href": source.absoluteString], count: 13)))
     }
 
+    func testDemoFragmentsRemainBoundToTheExactBundledFile() throws {
+        let demo = try XCTUnwrap(DuoOrigin.demoURL)
+        var target = try XCTUnwrap(URLComponents(url: demo, resolvingAgainstBaseURL: false))
+        target.fragment = "nav-catalog"
+        XCTAssertEqual(DuoOrigin.canonical(target.url), "duo-demo")
+        target.query = "private=value"
+        XCTAssertNil(DuoOrigin.canonical(target.url))
+        XCTAssertNil(DuoOrigin.canonical(demo.deletingLastPathComponent().appendingPathComponent("other.html")))
+    }
+
     func testOldSettingsMigrateAndPrivateChoicesNeverPersist() throws {
         var raw = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(BrowserSettings())) as? [String: Any])
         raw.removeValue(forKey: "automaticallyDetectNavigation")
@@ -89,11 +99,15 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
         regular.tearDown()
     }
 
-    private func page() async throws -> WKWebView {
+    private func page(demo: Bool = false) async throws -> WKWebView {
         let view = WKWebView(frame: CGRect(x: 0, y: 0, width: 480, height: 800))
         view.navigationDelegate = self
         let ready = expectation(description: "Site navigation DOM loaded")
         loaded = ready
+        if demo {
+            let url = try XCTUnwrap(DuoOrigin.demoURL)
+            view.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
+        } else {
         view.loadHTMLString("""
             <header><nav aria-label="Primary navigation">
               <a href="/products">Products</a><a href="/help">Help</a>
@@ -103,7 +117,9 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
             <main><nav aria-label="Table of contents"><a href="/toc">Contents</a></nav></main>
             <footer><nav><a href="/footer">Footer</a><a href="/footer2">Other</a></nav></footer>
             """, baseURL: source)
+        }
         await fulfillment(of: [ready], timeout: 15)
+        if demo { try await view.evaluateJavaScript("document.querySelector('#site-navigation').hidden = false; true") }
         addTeardownBlock { await MainActor.run { view.stopLoading(); view.navigationDelegate = nil } }
         return view
     }
@@ -131,7 +147,7 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
     }
 
     func testControllerRefreshSuppressionAndDocumentReset() async throws {
-        let view = try await page()
+        let view = try await page(demo: true)
         let folder = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         addTeardownBlock { if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) } }
         let navigation = SiteNavigationModel(library: BrowserLibrary(fileURL: folder.appendingPathComponent("test.json")), isPrivate: false)
@@ -154,7 +170,7 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
     }
 
     func testResumingAfterReviewRearmsLiveNavigationUpdates() async throws {
-        let view = try await page()
+        let view = try await page(demo: true)
         let folder = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         addTeardownBlock { if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) } }
         let navigation = SiteNavigationModel(library: BrowserLibrary(fileURL: folder.appendingPathComponent("test.json")), isPrivate: false)
@@ -171,11 +187,11 @@ final class SiteNavigationTests: XCTestCase, WKNavigationDelegate {
         initial.cancel()
         let updated = expectation(description: "Observed primary link label changed")
         let observation = navigation.$snapshot.compactMap { $0 }.filter {
-            $0.links.first?.label == "Catalog"
+            $0.links.first?.label == "Inventory"
         }.prefix(1).sink { _ in updated.fulfill() }
-        try await view.evaluateJavaScript("document.querySelector('a').textContent = 'Catalog'; true")
+        try await view.evaluateJavaScript("document.querySelector('a').textContent = 'Inventory'; true")
         await fulfillment(of: [updated], timeout: 10)
         observation.cancel()
-        XCTAssertEqual(navigation.toolbarLinks.first?.label, "Catalog")
+        XCTAssertEqual(navigation.toolbarLinks.first?.label, "Inventory")
     }
 }

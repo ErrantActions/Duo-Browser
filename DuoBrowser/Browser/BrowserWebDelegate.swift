@@ -28,9 +28,7 @@ final class BrowserWebDelegate: NSObject, WKNavigationDelegate, WKUIDelegate {
             decisionHandler(navigationAction.shouldPerformDownload ? .download : .allow, preferences)
             return
         }
-        if url.isFileURL, let demoURL = DuoOrigin.demoURL,
-           url.deletingLastPathComponent() == demoURL.deletingLastPathComponent(),
-           url.lastPathComponent == demoURL.lastPathComponent {
+        if url.isFileURL, DuoOrigin.canonical(url) == "duo-demo" {
             decisionHandler(.allow, preferences)
             return
         }

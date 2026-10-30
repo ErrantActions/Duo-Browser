@@ -1,8 +1,12 @@
 "use strict";
 const logElement = document.querySelector("#log");
-const navigationFragment = window.location?.hash || "";
-document.querySelector("#site-navigation").hidden = !(navigationFragment.startsWith("#nav-") || navigationFragment === "#fallback");
-document.querySelector("#navigation-destination").textContent = `Navigation destination: ${navigationFragment.slice(1) || "none"}`;
+function updateNavigationDestination() {
+    const fragment = window.location?.hash || "";
+    document.querySelector("#site-navigation").hidden = !(fragment.startsWith("#nav-") || fragment === "#fallback");
+    document.querySelector("#navigation-destination").textContent = `Navigation destination: ${fragment.slice(1) || "none"}`;
+}
+updateNavigationDestination();
+window.addEventListener?.("hashchange", updateNavigationDestination);
 document.querySelector("#navigation-demo").onclick = () => {
     document.querySelector("#site-navigation").hidden = false;
 };

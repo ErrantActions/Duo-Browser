@@ -67,6 +67,8 @@ final class BrowserUITests: XCTestCase {
         let pinned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", "Unpin Link"), object: pin)
         XCTAssertEqual(XCTWaiter.wait(for: [pinned], timeout: 5), .completed)
         XCTAssertTrue(app.navigationBars["Site Navigation"].exists)
+        print("Site navigation close AX types: \(app.descendants(matching: .any).matching(identifier: "site.navigation.close").allElementsBoundByIndex.map { $0.elementType.rawValue })")
+        XCTAssertTrue(app.buttons["site.navigation.close"].waitForExistence(timeout: 10))
         app.buttons["site.navigation.close"].tap()
         XCTAssertTrue(app.buttons["site.navigation.quick.0"].waitForExistence(timeout: 10))
         XCTAssertEqual(app.buttons["site.navigation.quick.0"].label, "Scanner")

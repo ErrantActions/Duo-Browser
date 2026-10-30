@@ -103,7 +103,7 @@ struct SiteNavigationView: View {
         .navigationTitle("Site Navigation")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") { dismiss() }
                     .accessibilityIdentifier("site.navigation.close")
             }
