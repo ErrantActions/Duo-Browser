@@ -29,7 +29,13 @@ monograms rather than fetching third-party favicons.
 
 ### Ask Duo
 
-`AskDuoView` is a browser-owned compact/expandable chat sheet, opened directly by the trusted sparkle
+Ask Duo is temporarily hidden. `AskDuoModel.isEnabled` is false; both toolbar
+surfaces and the root presenter use the same visibility gate. Explicit
+DEBUG-only assistant UI fixtures may expose the retained feature for testing,
+but normal builds have no launcher, menu replacement or enable setting.
+Reader extraction remains available independently.
+
+When enabled, `AskDuoView` is a browser-owned compact/expandable chat sheet, opened directly by the trusted sparkle
 button in the native Duo strip. The nonvertical/legacy browser toolbar has the
 same direct action, and the menu does not repeat it. Opening the icon uses the
 existing page-tool presenter and does not capture content automatically.
@@ -102,7 +108,7 @@ pin/hide choices, not link href/query text. Private preferences remain per-tab
 and never touch the library. Up to two links are shown, pinned first, with
 configuration in the existing browser menu rather than another crowded item.
 Explicit panels and the user's browser-only state suppress the entire detected
-set. The native rail groups Back/Refresh separately from URL and Ask/Tabs/Menu;
+set. The native rail groups Back/Refresh separately from URL and Tabs/Menu;
 the existing website-actions group remains distinct.
 
 SwiftUI/MVVM, iOS 17+. `BrowserView` owns a `BrowserLibrary` and

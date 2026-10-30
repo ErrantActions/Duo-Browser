@@ -65,7 +65,8 @@ It compiles with `build-for-testing` before booting the simulator, then runs the
 selected tests with `test-without-building` using the same build directory.
 Compilation errors therefore fail before the potentially slow simulator startup.
 
-For an edge-control change, `test_scope=duo-panel` selects only the focused
+For an edge-control change, `test_scope=duo-panel` selects default-off Ask Duo
+visibility on ordinary/DuoKit/private pages and menus, plus the focused
 native-strip geometry/navigation UI regression. It checks the collapsed
 address on ordinary pages, absence of duplicate bottom chrome, a webpage
 height above 85% of the window, no overlap with core edge buttons, address
@@ -84,6 +85,8 @@ excerpt approval with confirmed navigation. These explicitly launch a visibly
 labeled DEBUG-only scripted engine. They verify real UI/page-reader/controller
 behavior, **not Apple model inference**. Release builds exclude that engine and
 always use the real Apple provider; it is never an availability/error fallback.
+While Ask Duo is temporarily hidden, only these explicit DEBUG fixtures enable
+its retained UI. Default-off acceptance never supplies that fixture flag.
 
 The native unit suite separately tests conversation bounds, prompt metadata
 omission, two-turn pipeline history, stale contexts, modal capability suspension

@@ -19,3 +19,16 @@ test("assistant UI fixtures are explicit debug-only dependencies, never release 
     assert.match(tests, /Reply with OK only\./);
     assert.match(tests, /Live inference remains unverified/);
 });
+
+test("normal assistant presentation is off across both toolbars and the sheet presenter", () => {
+    const root = path.join(__dirname, "..", "DuoBrowser");
+    const model = fs.readFileSync(path.join(root, "Browser", "AskDuoModel.swift"), "utf8");
+    assert.match(model, /static let isEnabled = false/);
+    assert.match(model, /static var isVisible: Bool \{ isEnabled \|\| usesUITestFixture \}/);
+    for (const file of [path.join(root, "Browser", "BrowserToolbar.swift"), path.join(root, "DuoControls", "DuoNativeToolbar.swift")]) {
+        assert.match(fs.readFileSync(file, "utf8"), /if AskDuoModel\.isVisible \{[\s\S]*?present\(\.assistant\)/);
+    }
+    const presenter = fs.readFileSync(path.join(root, "Browser", "BrowserView.swift"), "utf8");
+    assert.match(presenter, /if selection == \.assistant, !AskDuoModel\.isVisible/);
+    assert.match(presenter, /Ask Duo is temporarily unavailable\./);
+});

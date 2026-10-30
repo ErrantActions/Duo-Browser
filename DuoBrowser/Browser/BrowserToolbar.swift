@@ -32,10 +32,12 @@ struct BrowserToolbar: View {
             .accessibilityValue("\(manager.tabs.count)")
             .accessibilityIdentifier("browser.tabs")
             Spacer(minLength: 0)
-            toolbarButton("Ask Duo", icon: "sparkles") { present(.assistant) }
-                .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
-                .accessibilityIdentifier("browser.askduo")
-            Spacer(minLength: 0)
+            if AskDuoModel.isVisible {
+                toolbarButton("Ask Duo", icon: "sparkles") { present(.assistant) }
+                    .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
+                    .accessibilityIdentifier("browser.askduo")
+                Spacer(minLength: 0)
+            }
             }
             toolbarButton("Browser menu", icon: "ellipsis.circle") {
                 model.deactivate()

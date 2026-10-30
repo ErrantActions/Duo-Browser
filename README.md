@@ -239,9 +239,15 @@ The start page has a new adaptive card layout, original gradient hero, richer
 favorite tiles and a distinct private palette. No remote favicon requests,
 background tracking calls, or second URL/navigation bar were added.
 
-### Ask Duo
+### Ask Duo (temporarily hidden)
 
-Tap the **Ask Duo** sparkle icon directly in the native Duo controls.
+**Ask Duo is currently hidden in normal builds.** Its toolbar icons and normal
+presentation are disabled; no menu replacement or user-facing enable toggle is
+provided. The implementation is retained for future work, with explicit
+DEBUG-only acceptance fixtures still covered. The following describes that
+retained implementation, not a currently exposed browser feature.
+
+When re-enabled, tap the **Ask Duo** sparkle icon in the native Duo controls.
 Other layouts have the same direct icon in their browser toolbar. It uses **Apple Intelligence's
 on-device Foundation Models**, not OpenAI, Copilot, a cloud fallback, or an API
 key. Generation requires iOS 26+ on a supported device with Apple Intelligence
@@ -279,7 +285,7 @@ clears the conversation. Nothing is saved as chat history. There is no arbitrary
 purchase automation, image analysis, or Duo Control execution in this first
 version. AI can be wrong: verify its answer against the page.
 
-There is exactly one Ask Duo launcher in each layout, not a second menu entry.
+When enabled, there is one Ask Duo launcher in each layout, not a second menu entry.
 The icon remains available on ordinary and DuoKit websites, and private tabs
 open an explanatory blocked state rather than reading their content.
 Real on-device inference must be checked on eligible hardware; a
@@ -426,7 +432,7 @@ Approved **DuoKit controls always take priority**, never showing a second
 detected action set beside them. Navigation is rechecked against the current
 document before a normal link opens. Source changes, navigation and background
 states cancel stale work; DOM updates are coalesced rather than continuously
-rescanned. Browser controls remain distinct: Back/Refresh, URL, Ask Duo/Tabs/Menu,
+rescanned. Browser controls remain distinct: Back/Refresh, URL, Tabs/Menu,
 then website actions. Older layouts retain a Site Navigation launcher.
 
 The bundled demo includes **Enable Navigation Demo** and **Rename Help Link**

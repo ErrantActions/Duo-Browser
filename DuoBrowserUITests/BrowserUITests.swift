@@ -3,6 +3,37 @@ import UIKit
 
 final class BrowserUITests: XCTestCase {
     @MainActor
+    func testAskDuoIsHiddenFromBrowserControlsAndMenu() {
+        continueAfterFailure = false
+        executionTimeAllowance = 180
+        let app = XCUIApplication()
+        captureFinalState(of: app)
+        app.launch()
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 0)
+        openMenu(in: app)
+        XCTAssertFalse(app.buttons["Ask Duo"].exists)
+        XCTAssertTrue(app.buttons["browser.reader"].exists)
+        XCTAssertTrue(app.buttons["browser.scanner"].exists)
+        app.buttons["Close Menu"].tap()
+        openReadingDemo(in: app, isPrivate: false)
+        let ready = app.webViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "DuoKit 1.0 is available.")).firstMatch
+        XCTAssertTrue(ready.waitForExistence(timeout: 10))
+        let install = app.webViews.buttons["Install Duo Panel"]
+        revealControl(install, in: app.webViews.firstMatch)
+        install.tap()
+        let allow = app.buttons["Allow for This Site"]
+        XCTAssertTrue(allow.waitForExistence(timeout: 10))
+        allow.tap()
+        XCTAssertTrue(app.buttons["duo.control.next"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 0)
+        openMenu(in: app)
+        XCTAssertFalse(app.buttons["Ask Duo"].exists)
+        app.buttons["New Private Tab"].tap()
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 0)
+        print("Ask Duo hidden: ordinary=true, DuoKit=true, private=true, noMenuEntry=true, readerAndScannerRetained=true")
+    }
+
+    @MainActor
     func testSiteNavigationNativeLinksAndDuoKitPrecedence() {
         continueAfterFailure = false
         executionTimeAllowance = 300
@@ -20,7 +51,7 @@ final class BrowserUITests: XCTestCase {
             XCTAssertFalse(link.frame.intersects(webpage.frame))
         }
         XCTAssertGreaterThan(webpage.frame.height / app.frame.height, 0.85)
-        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 1)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 0)
         let rename = app.webViews.buttons["Rename Help Link"]
         revealControl(rename, in: webpage)
         rename.tap()
@@ -242,6 +273,7 @@ final class BrowserUITests: XCTestCase {
         continueAfterFailure = false
         executionTimeAllowance = 180
         let app = XCUIApplication()
+        app.launchArguments += ["--ask-duo-ui-fixture"]
         captureFinalState(of: app)
         app.launch()
         openAskDuo(in: app)
@@ -359,9 +391,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(warning.waitForNonExistence(timeout: 10))
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.share").firstMatch.exists)
         app.navigationBars["Reading View"].buttons["Done"].tap()
-        openAskDuo(in: app)
-        XCTAssertTrue(app.staticTexts["askduo.page.blocked"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.buttons["askduo.capture"].exists)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 0)
     }
 
     @MainActor
@@ -624,15 +654,15 @@ final class BrowserUITests: XCTestCase {
         XCTAssertLessThanOrEqual(addressButton.frame.width, 64)
         XCTAssertFalse(app.textFields["Address and search"].exists)
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "browser.bottom.chrome").firstMatch.exists)
-        for button in [addressButton, app.buttons["duo.browser.back"], app.buttons["duo.browser.refresh"], app.buttons["browser.tabs"], app.buttons["Browser menu"], app.buttons["browser.askduo"]] {
+        for button in [addressButton, app.buttons["duo.browser.back"], app.buttons["duo.browser.refresh"], app.buttons["browser.tabs"], app.buttons["Browser menu"]] {
             XCTAssertTrue(button.exists)
             XCTAssertFalse(webpage.frame.intersects(button.frame))
         }
-        for identifier in ["browser.address.open", "duo.browser.back", "duo.browser.refresh", "browser.tabs", "browser.askduo"] {
+        for identifier in ["browser.address.open", "duo.browser.back", "duo.browser.refresh", "browser.tabs"] {
             XCTAssertEqual(app.buttons.matching(identifier: identifier).count, 1)
         }
         XCTAssertEqual(app.buttons.matching(identifier: "Browser menu").count, 1)
-        XCTAssertTrue(app.buttons["browser.askduo"].isHittable)
+        XCTAssertEqual(app.buttons.matching(identifier: "browser.askduo").count, 0)
         captureScreenshot(app, name: "Full Safe Viewport With Native Duo Edge Controls")
 
         let background = app.webViews.buttons["Toggle Page Background"]

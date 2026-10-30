@@ -5,6 +5,12 @@ or complete resistance to WebKit/OS vulnerabilities.
 
 ## Ask Duo / Apple Intelligence boundary
 
+Normal Ask Duo presentation is temporarily disabled at both toolbar entry
+points and the root sheet presenter. No user-facing switch or alternative menu
+entry exposes it. Its retained implementation can be presented only by explicit
+DEBUG UI acceptance fixtures; Release never enables that override. The
+following boundaries describe the retained code, not an exposed Release feature.
+
 Ask Duo uses Apple's on-device `SystemLanguageModel`; it has no OpenAI/Copilot
 backend, API key, cloud fallback, or model-registered action tools. The browser
 control opens a native sheet but does not read the page. A separate Read This Page

@@ -151,6 +151,10 @@ struct BrowserView: View {
     }
 
     private func present(_ selection: BrowserSheet) {
+        if selection == .assistant, !AskDuoModel.isVisible {
+            manager.notice = "Ask Duo is temporarily unavailable."
+            return
+        }
         if selection == .assistant { assistantDetent = .fraction(0.55) }
         if selection == .scanner {
             scannerDetent = library.settings.scanner.compact ? .fraction(0.45) : .large

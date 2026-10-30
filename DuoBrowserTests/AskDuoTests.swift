@@ -5,6 +5,11 @@ import Combine
 
 @MainActor
 final class AskDuoTests: XCTestCase {
+    func testAskDuoPresentationIsDisabledByDefault() {
+        XCTAssertFalse(AskDuoModel.isEnabled)
+        XCTAssertFalse(AskDuoModel.isVisible)
+    }
+
     private let source = URL(string: "https://example.test/article?private-query-value")!
 
     private func context(

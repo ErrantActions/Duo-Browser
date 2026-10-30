@@ -20,6 +20,10 @@ private struct AskDuoGeneratedAnswer {
 
 @MainActor
 final class AskDuoModel: ObservableObject {
+    // Keep normal presentation off while retaining explicit DEBUG acceptance coverage.
+    static let isEnabled = false
+    static var isVisible: Bool { isEnabled || usesUITestFixture }
+
     typealias Generator = @MainActor (String, AskDuoContext?, String, Bool) async throws -> AskDuoAnswer
     @Published private(set) var context: AskDuoContext?
     @Published private(set) var hasApprovedContext = false

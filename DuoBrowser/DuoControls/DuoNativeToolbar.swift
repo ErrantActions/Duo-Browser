@@ -134,13 +134,15 @@ private struct DuoNativeToolbarContent<Content: View>: View {
                     .axisBehavior(.verticalPreferred)
                     .sharedBackgroundVisibility(addressExpanded ? .hidden : .automatic)
                     ToolbarItemGroup(placement: .topBarTrailing) {
-                        Button { present(.assistant) } label: {
-                            Label("Ask Duo", systemImage: "sparkles")
+                        if AskDuoModel.isVisible {
+                            Button { present(.assistant) } label: {
+                                Label("Ask Duo", systemImage: "sparkles")
+                            }
+                            .labelStyle(.iconOnly)
+                            .disabled(addressExpanded)
+                            .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
+                            .accessibilityIdentifier("browser.askduo")
                         }
-                        .labelStyle(.iconOnly)
-                        .disabled(addressExpanded)
-                        .accessibilityHint("Chat with Apple Intelligence. Page access requires your approval.")
-                        .accessibilityIdentifier("browser.askduo")
                         Button { present(.tabs) } label: {
                             Label("Tabs", systemImage: "square.on.square")
                         }
