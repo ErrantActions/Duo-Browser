@@ -30,12 +30,13 @@ final class ScannerTests: XCTestCase, WKNavigationDelegate {
         let ready = expectation(description: "Scanner input fixture loaded")
         loaded = ready
         view.loadHTMLString("""
-            <form id="form" action="https://example.test/lookup">
-              <input id="target" aria-label="Barcode" value="abcdef">
-              <input id="required" required>
-              <textarea id="notes"></textarea>
+            <form id="form" action="https://example.test/lookup" autocomplete="off">
+              <input id="target" aria-label="Barcode" value="abcdef" inputmode="none" autocomplete="off">
+              <input id="required" required inputmode="none">
+              <textarea id="notes" inputmode="none"></textarea>
             </form>
-            <input id="secret" type="password"><input id="payment" autocomplete="cc-number">
+            <input id="secret" type="password" inputmode="none" autocomplete="off">
+            <input id="payment" autocomplete="cc-number" inputmode="none">
             <script>
               window.events = []; window.submissions = 0;
               for (const type of ["beforeinput","input","change","keydown","keypress","keyup"]) {
